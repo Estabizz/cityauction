@@ -1,0 +1,752 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserAccountType {
+  INDIVIDUAL
+  ORGANIZATION
+}
+
+enum BidderStatus {
+  INCOMPLETE
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum KycStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum KycDocumentType {
+  PAN_CARD
+  AADHAAR
+  ADDRESS_PROOF
+  COMPANY_INCORPORATION
+  GST_CERTIFICATE
+  AUTHORIZATION_LETTER
+  BANK_STATEMENT
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum OrganizationType {
+  BANK
+  NBFC
+  ARC
+  GOVERNMENT
+  DRT
+  HOUSING_FINANCE
+  COOPERATIVE_BANK
+  OTHER
+}
+
+enum PropertyCategoryType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  AGRICULTURAL
+  LAND
+  OTHER
+}
+
+enum PossessionStatus {
+  PHYSICAL
+  SYMBOLIC
+  NOT_IN_POSSESSION
+}
+
+enum AuctionType {
+  SARFAESI
+  DRT
+  NPA
+  FORWARD
+  OTHER
+}
+
+enum AuctionStatus {
+  DRAFT
+  UPCOMING
+  LIVE
+  CLOSING_SOON
+  CLOSED
+  CANCELLED
+  SOLD
+}
+
+enum BidStatus {
+  PLACED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  WINNING
+}
+
+enum PaymentStatus {
+  PENDING
+  INITIATED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentType {
+  EMD
+  APPLICATION_FEE
+  OTHER
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CONTACTED
+  RESOLVED
+}
+
+enum NotificationType {
+  REGISTRATION
+  EMAIL_VERIFICATION
+  KYC_SUBMITTED
+  KYC_APPROVED
+  KYC_REJECTED
+  AUCTION_REMINDER
+  AUCTION_STARTING
+  BID_PLACED
+  BID_SURPASSED
+  AUCTION_CLOSED
+  APPLICATION_STATUS
+  DOCUMENT_UPDATE
+  GENERAL
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LocationType {
+  STATE
+  DISTRICT
+  CITY
+  LOCALITY
+}
+
+enum ParticipantStatus {
+  REGISTERED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                String           @id @default(cuid())
+  email             String           @unique
+  phone             String?
+  passwordHash      String?
+  fullName          String?
+  accountType       UserAccountType?
+  pan               String?
+  address           String?
+  city              String?
+  state             String?
+  pincode           String?
+  isEmailVerified   Boolean          @default(false)
+  isPhoneVerified   Boolean          @default(false)
+  isActive          Boolean          @default(true)
+  lastLoginAt       DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+
+  roles                 UserRole[]
+  bidderProfile         BidderProfile?
+  kycApplications       KycApplication[]
+  favourites            Favourite[]
+  savedSearches         SavedSearch[]
+  notifications         Notification[]
+  bids                  Bid[]
+  auctionParticipations AuctionParticipant[]
+  payments              Payment[]
+  enquiries             Enquiry[]
+  auditLogs             AuditLog[]
+  blogs                 Blog[]
+
+  @@map("users")
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String?
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  resource    String
+  action      String
+  description String?
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId String
+  roleId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  type       String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@map("verification_tokens")
+}
+
+model BidderProfile {
+  id                   String       @id @default(cuid())
+  userId               String       @unique
+  companyName          String?
+  gstNumber            String?
+  authorizationDetails String?
+  bankAccountName      String?
+  bankAccountNumber    String?
+  bankIfsc             String?
+  status               BidderStatus @default(INCOMPLETE)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bidder_profiles")
+}
+
+model KycApplication {
+  id           String        @id @default(cuid())
+  userId       String
+  status       KycStatus     @default(DRAFT)
+  adminRemarks String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  version      Int           @default(1)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents KycDocument[]
+
+  @@map("kyc_applications")
+}
+
+model KycDocument {
+  id               String          @id @default(cuid())
+  kycApplicationId String
+  documentType     KycDocumentType
+  fileName         String
+  fileUrl          String
+  fileSize         Int
+  mimeType         String
+  status           DocumentStatus  @default(PENDING)
+  uploadedAt       DateTime        @default(now())
+
+  kycApplication KycApplication @relation(fields: [kycApplicationId], references: [id], onDelete: Cascade)
+
+  @@map("kyc_documents")
+}
+
+model Organization {
+  id           String           @id @default(cuid())
+  name         String
+  slug         String           @unique
+  type         OrganizationType
+  logo         String?
+  description  String?
+  website      String?
+  contactEmail String?
+  contactPhone String?
+  address      String?
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  properties Property[]
+  auctions   Auction[]
+
+  @@map("organizations")
+}
+
+model PropertyCategory {
+  id          Int                  @id @default(autoincrement())
+  name        String
+  slug        String               @unique
+  type        PropertyCategoryType
+  description String?
+  icon        String?
+  sortOrder   Int                  @default(0)
+
+  subTypes   PropertySubType[]
+  properties Property[]
+
+  @@map("property_categories")
+}
+
+model PropertySubType {
+  id         Int    @id @default(autoincrement())
+  categoryId Int
+  name       String
+  slug       String @unique
+
+  category   PropertyCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  properties Property[]
+
+  @@map("property_sub_types")
+}
+
+model Location {
+  id        Int          @id @default(autoincrement())
+  name      String
+  slug      String       @unique
+  type      LocationType
+  parentId  Int?
+  stateCode String?
+  pincode   String?
+  latitude  Float?
+  longitude Float?
+
+  parent     Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children   Location[] @relation("LocationHierarchy")
+  properties Property[]
+
+  @@index([parentId])
+  @@index([type])
+  @@map("locations")
+}
+
+model Property {
+  id               String           @id @default(cuid())
+  title            String
+  slug             String           @unique
+  description      String?          @db.Text
+  address          String?          @db.Text
+  latitude         Float?
+  longitude        Float?
+  locationId       Int
+  organizationId   String
+  categoryId       Int
+  subTypeId        Int?
+  area             Decimal?
+  areaUnit         String?
+  possessionStatus PossessionStatus
+  estimatedValue   Decimal?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
+
+  location     Location         @relation(fields: [locationId], references: [id])
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  category     PropertyCategory @relation(fields: [categoryId], references: [id])
+  subType      PropertySubType? @relation(fields: [subTypeId], references: [id])
+
+  images     PropertyImage[]
+  documents  PropertyDocument[]
+  auctions   Auction[]
+  favourites Favourite[]
+
+  @@index([locationId])
+  @@index([organizationId])
+  @@index([categoryId])
+  @@index([slug])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String  @id @default(cuid())
+  propertyId String
+  url        String
+  altText    String?
+  sortOrder  Int     @default(0)
+  isPrimary  Boolean @default(false)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
+}
+
+model PropertyDocument {
+  id         String   @id @default(cuid())
+  propertyId String
+  name       String
+  type       String
+  url        String
+  fileSize   Int
+  mimeType   String
+  isPublic   Boolean  @default(true)
+  uploadedAt DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_documents")
+}
+
+model Auction {
+  id                  String        @id @default(cuid())
+  auctionNumber       String        @unique
+  propertyId          String
+  organizationId      String
+  type                AuctionType
+  status              AuctionStatus @default(DRAFT)
+  reservePrice        Decimal
+  emd                 Decimal
+  bidIncrement        Decimal       @default(0)
+  startDateTime       DateTime
+  endDateTime         DateTime
+  submissionDeadline  DateTime
+  inspectionDate      DateTime?
+  contactOfficerName  String?
+  contactOfficerPhone String?
+  contactOfficerEmail String?
+  description         String?       @db.Text
+  terms               String?       @db.Text
+  drtName             String?
+  isOnline            Boolean       @default(true)
+  publishedAt         DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  property       Property             @relation(fields: [propertyId], references: [id])
+  organization   Organization         @relation(fields: [organizationId], references: [id])
+  participants   AuctionParticipant[]
+  bids           Bid[]
+  documents      AuctionDocument[]
+  payments       Payment[]
+  bidHistory     BidHistory[]
+  favourites     Favourite[]
+  enquiries      Enquiry[]
+
+  @@index([status])
+  @@index([type])
+  @@index([startDateTime])
+  @@index([organizationId])
+  @@index([propertyId])
+  @@index([auctionNumber])
+  @@map("auctions")
+}
+
+model AuctionDocument {
+  id         String   @id @default(cuid())
+  auctionId  String
+  name       String
+  type       String
+  url        String
+  fileSize   Int
+  mimeType   String
+  isPublic   Boolean  @default(true)
+  uploadedAt DateTime @default(now())
+
+  auction Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  @@map("auction_documents")
+}
+
+model AuctionParticipant {
+  id           String            @id @default(cuid())
+  auctionId    String
+  userId       String
+  status       ParticipantStatus @default(REGISTERED)
+  emdPaymentId String?
+  registeredAt DateTime          @default(now())
+  approvedAt   DateTime?
+
+  auction Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([auctionId, userId])
+  @@map("auction_participants")
+}
+
+model Bid {
+  id              String    @id @default(cuid())
+  auctionId       String
+  userId          String
+  amount          Decimal
+  status          BidStatus @default(PLACED)
+  serverTimestamp DateTime  @default(now())
+  ipAddress       String?
+  createdAt       DateTime  @default(now())
+
+  auction Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([auctionId])
+  @@index([userId])
+  @@index([amount(sort: Desc)])
+  @@map("bids")
+}
+
+model BidHistory {
+  id        String   @id @default(cuid())
+  bidId     String?
+  auctionId String
+  event     String
+  details   String?  @db.Text
+  timestamp DateTime @default(now())
+
+  auction Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  @@map("bid_history")
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  auctionId        String?
+  orderId          String        @unique
+  gatewayOrderId   String?
+  gatewayPaymentId String?
+  amount           Decimal
+  currency         String        @default("INR")
+  status           PaymentStatus @default(PENDING)
+  type             PaymentType
+  gatewayResponse  Json?
+  webhookVerified  Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  auction Auction? @relation(fields: [auctionId], references: [id], onDelete: SetNull)
+
+  @@map("payments")
+}
+
+model Favourite {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String?
+  auctionId  String?
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  auction  Auction?  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@unique([userId, auctionId])
+  @@map("favourites")
+}
+
+model SavedSearch {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  filters        Json
+  lastNotifiedAt DateTime?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_searches")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  data      Json?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Enquiry {
+  id         String        @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  subject    String
+  message    String        @db.Text
+  auctionId  String?
+  propertyId String?
+  userId     String?
+  status     EnquiryStatus @default(NEW)
+  assignedTo String?
+  adminNotes String?       @db.Text
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  auction Auction? @relation(fields: [auctionId], references: [id], onDelete: SetNull)
+
+  @@map("enquiries")
+}
+
+model Blog {
+  id             String     @id @default(cuid())
+  title          String
+  slug           String     @unique
+  content        String     @db.Text
+  excerpt        String?    @db.Text
+  featuredImage  String?
+  categoryId     Int
+  authorId       String
+  status         BlogStatus @default(DRAFT)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?    @db.Text
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  category BlogCategory @relation(fields: [categoryId], references: [id])
+  author   User         @relation(fields: [authorId], references: [id])
+
+  @@map("blogs")
+}
+
+model BlogCategory {
+  id        Int    @id @default(autoincrement())
+  name      String
+  slug      String @unique
+  sortOrder Int    @default(0)
+
+  blogs Blog[]
+
+  @@map("blog_categories")
+}
+
+model Faq {
+  id          Int         @id @default(autoincrement())
+  question    String      @db.Text
+  answer      String      @db.Text
+  categoryId  Int
+  sortOrder   Int         @default(0)
+  isPublished Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  category FaqCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("faqs")
+}
+
+model FaqCategory {
+  id        Int    @id @default(autoincrement())
+  name      String
+  slug      String @unique
+  sortOrder Int    @default(0)
+
+  faqs Faq[]
+
+  @@map("faq_categories")
+}
+
+model Page {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  content        String   @db.Text
+  seoTitle       String?
+  seoDescription String?  @db.Text
+  isPublished    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("pages")
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  action        String
+  entity        String
+  entityId      String
+  previousValue Json?
+  newValue      Json?
+  ipAddress     String?
+  userAgent     String?
+  timestamp     DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model Analytics {
+  id         String   @id @default(cuid())
+  event      String
+  entityType String
+  entityId   String
+  userId     String?
+  metadata   Json?
+  timestamp  DateTime @default(now())
+
+  @@index([event])
+  @@index([entityType])
+  @@index([timestamp])
+  @@map("analytics")
+}
