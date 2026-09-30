@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,44 +14,80 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "CityAuction — Bank Auction & NPA Property Platform",
+    default: "CityAuction | Auction Assets, Investor Support, Liquidation & Strategic Opportunities",
     template: "%s | CityAuction",
   },
   description:
-    "Discover verified bank auction properties across India. Search SARFAESI, DRT, and NPA auctions from 300+ banks. Residential, commercial, industrial, and agricultural properties at competitive prices.",
+    "CityAuction is an auction and asset opportunity ecosystem for buyers, investors, Banks, NBFCs, ARCs, Liquidators, developers and companies. Discover auctions, create alerts, access due diligence support, liquidate assets, explore Customs auctions and strategic Next Chapter opportunities.",
   keywords: [
     "bank auction",
     "NPA property",
     "SARFAESI auction",
     "DRT auction",
+    "Customs auction",
+    "Asset liquidation",
     "property auction India",
-    "bank auction property",
     "distressed property",
     "foreclosure auction",
     "e-auction",
-    "auction property",
   ],
   authors: [{ name: "CityAuction" }],
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "CityAuction",
-    title: "CityAuction — Bank Auction & NPA Property Platform",
+    title: "CityAuction | See Beyond the Auction",
     description:
-      "Discover verified bank auction properties across India. Search SARFAESI, DRT, and NPA auctions from 300+ banks.",
+      "Discover, understand, acquire, liquidate and unlock the next chapter of institutional assets and strategic opportunities.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CityAuction — Bank Auction & NPA Property Platform",
+    title: "CityAuction | See Beyond the Auction",
     description:
-      "Discover verified bank auction properties across India.",
+      "Discover, understand, acquire, liquidate and unlock the next chapter of institutional assets and strategic opportunities.",
   },
   robots: {
     index: true,
     follow: true,
   },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "CityAuction",
+  url: "https://cityauction.accounts-c12.workers.dev/",
+  parentOrganization: {
+    "@type": "Organization",
+    name: "Estabizz Fintech Private Limited",
+  },
+  telephone: "+91 98256 69668",
+  email: "info@estabizz.com",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Gyan Marg, PDPU Road, Raysan",
+    addressLocality: "Gandhinagar",
+    addressRegion: "Gujarat",
+    addressCountry: "IN",
+  },
+  description:
+    "Auction and asset opportunity ecosystem for buyers, investors and institutional stakeholders.",
 };
 
 export default function RootLayout({
@@ -62,11 +98,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${manrope.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col font-sans antialiased">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col font-sans-body antialiased bg-[#fbf9f5] text-[#182129]">
         {children}
       </body>
     </html>
   );
 }
+

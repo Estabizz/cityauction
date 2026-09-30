@@ -1,224 +1,282 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import {
-  Menu,
-  X,
-  Search,
-  ChevronDown,
-  Phone,
-  Mail,
-  User,
-  LogIn,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { NAV_LINKS, APP_NAME } from "@/lib/constants";
+import { usePathname } from "next/navigation";
+import { Phone, Mail, MapPin, User, LogIn, ChevronDown, Menu, X } from "lucide-react";
 
 export function Header() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setServicesOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setServicesOpen(false);
+  }, [pathname]);
 
   return (
     <>
+      <a href="#mainContent" className="skip-link">
+        Skip to main content
+      </a>
+
       {/* Top bar */}
-      <div className="bg-primary-800 text-primary-100 text-sm hidden lg:block">
-        <div className="container-wide flex items-center justify-between py-2">
-          <div className="flex items-center gap-6">
-            <a
-              href="tel:+911234567890"
-              className="flex items-center gap-1.5 hover:text-white transition-colors"
-            >
-              <Phone className="h-3.5 w-3.5" />
-              <span>+91-124-4302020</span>
-            </a>
-            <a
-              href="mailto:support@cityauction.com"
-              className="flex items-center gap-1.5 hover:text-white transition-colors"
-            >
-              <Mail className="h-3.5 w-3.5" />
-              <span>support@cityauction.com</span>
-            </a>
+      <div className="topbar-wrapper">
+        <div className="estabizz-container">
+          <div className="py-2 text-xs">
+            <strong>CityAuction</strong> · A venture of Estabizz Fintech Private Limited
           </div>
-          <div className="text-primary-300 text-xs">
-            India&apos;s Trusted Bank Auction Platform
+          <div className="top-contact-links py-2 text-xs">
+            <a href="tel:+919825669668" className="transition-colors hover:text-white">
+              +91 98256 69668
+            </a>
+            <a href="mailto:info@estabizz.com" className="transition-colors hover:text-white">
+              info@estabizz.com
+            </a>
+            <span className="hidden sm:inline text-slate-400">Gandhinagar, Gujarat</span>
           </div>
         </div>
       </div>
 
-      {/* Main navigation */}
-      <header className="bg-white border-b border-border sticky top-0 z-50">
-        <div className="container-wide">
-          <div className="flex items-center justify-between h-16 lg:h-[72px]">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold text-primary-800 leading-tight tracking-tight">
-                  {APP_NAME}
-                </span>
-                <span className="text-[10px] text-gray-500 leading-tight -mt-0.5 tracking-wider uppercase">
-                  Auction Platform
-                </span>
-              </div>
+      {/* Main Header */}
+      <header className="estabizz-header">
+        <div className="estabizz-container header-row-custom">
+          {/* Brand */}
+          <Link href="/" className="brand-group" aria-label="CityAuction home">
+            <div className="brand-mark" aria-hidden="true">
+              C
+            </div>
+            <div>
+              <div className="brand-title">CityAuction</div>
+              <div className="brand-subtext">Auction · Assets · Capital · Resolution</div>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav className="nav-links-custom hidden lg:flex" aria-label="Primary navigation">
+            <Link
+              href="/auctions"
+              className={`hover:text-[#84663c] transition-colors ${
+                pathname === "/auctions" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              }`}
+            >
+              Auctions
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <div
-                  key={link.href}
-                  className="relative"
-                  onMouseEnter={() =>
-                    link.children && setActiveDropdown(link.href)
-                  }
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
+            {/* Services Dropdown */}
+            <div className="nav-dropdown-wrap" ref={dropdownRef}>
+              <button
+                className="nav-dropdown-btn flex items-center gap-1 hover:text-[#84663c] transition-colors"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={servicesOpen}
+                onClick={() => setServicesOpen(!servicesOpen)}
+              >
+                Services <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+
+              {servicesOpen && (
+                <div className="nav-dropdown-menu animate-fadeIn" role="menu">
                   <Link
-                    href={link.href}
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 rounded-md",
-                      "hover:text-primary hover:bg-primary-50 transition-colors"
-                    )}
+                    role="menuitem"
+                    href="/how-it-works"
+                    onClick={() => setServicesOpen(false)}
                   >
-                    {link.label}
-                    {link.children && (
-                      <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-                    )}
+                    Investor Desk & Due Diligence
                   </Link>
-
-                  {/* Dropdown */}
-                  {link.children && activeDropdown === link.href && (
-                    <div className="absolute top-full left-0 pt-1 z-50">
-                      <div className="bg-white rounded-lg shadow-dropdown border border-border py-1.5 min-w-[200px] animate-fade-in">
-                        {link.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary transition-colors"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <Link
+                    role="menuitem"
+                    href="/#alerts"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    Personalised Auction Alerts
+                  </Link>
+                  <Link
+                    role="menuitem"
+                    href="/liquidate-an-asset"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    Institutional Liquidation
+                  </Link>
+                  <Link
+                    role="menuitem"
+                    href="/#institutions"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    Institutional Services
+                  </Link>
                 </div>
-              ))}
-            </nav>
-
-            {/* Right actions */}
-            <div className="flex items-center gap-2">
-              {/* Search button */}
-              <button
-                className="p-2 text-gray-500 hover:text-primary hover:bg-primary-50 rounded-lg transition-colors"
-                aria-label="Search auctions"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-
-              {/* Auth buttons — desktop */}
-              <div className="hidden md:flex items-center gap-2 ml-2">
-                <Link
-                  href="/auth/login"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium",
-                    "text-primary border border-primary-200 rounded-lg",
-                    "hover:bg-primary-50 transition-colors"
-                  )}
-                >
-                  <LogIn className="h-4 w-4" />
-                  Login
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium",
-                    "text-white bg-primary rounded-lg",
-                    "hover:bg-primary-700 transition-colors"
-                  )}
-                >
-                  <User className="h-4 w-4" />
-                  Register
-                </Link>
-              </div>
-
-              {/* Mobile menu button */}
-              <button
-                className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="Toggle navigation menu"
-              >
-                {mobileOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
+              )}
             </div>
+
+            <Link
+              href="/customs-auction"
+              className={`hover:text-[#84663c] transition-colors ${
+                pathname === "/customs-auction" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              }`}
+            >
+              Customs
+            </Link>
+
+            <Link
+              href="/next-chapter"
+              className={`hover:text-[#84663c] transition-colors ${
+                pathname === "/next-chapter" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              }`}
+            >
+              Next Chapter
+            </Link>
+
+            <Link
+              href="/how-it-works"
+              className={`hover:text-[#84663c] transition-colors ${
+                pathname === "/how-it-works" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              }`}
+            >
+              How It Works
+            </Link>
+
+            <Link
+              href="/about"
+              className={`hover:text-[#84663c] transition-colors ${
+                pathname === "/about" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              }`}
+            >
+              About
+            </Link>
+          </nav>
+
+          {/* Action CTAs */}
+          <div className="flex items-center gap-2.5">
+            <Link
+              className="btn-pill btn-light hidden sm:inline-flex"
+              href="/liquidate-an-asset"
+            >
+              Liquidate an Asset
+            </Link>
+
+            <Link className="btn-pill btn-dark hidden md:inline-flex" href="/auctions">
+              Explore Auctions
+            </Link>
+
+            <Link
+              href="/login"
+              className="p-2.5 rounded-full border border-[#dcd5ca] bg-white text-gray-700 hover:text-primary hover:border-primary transition-colors flex items-center justify-center"
+              title="Bidder / Banker Portal Login"
+            >
+              <LogIn className="h-4 w-4" />
+            </Link>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              className="lg:hidden w-11 h-11 rounded-full border border-gray-300 bg-white flex flex-col items-center justify-center gap-1.5 transition-colors hover:bg-gray-50"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              type="button"
+              aria-label="Open navigation"
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? (
+                <X className="h-5 w-5 text-gray-800" />
+              ) : (
+                <Menu className="h-5 w-5 text-gray-800" />
+              )}
+            </button>
           </div>
         </div>
-
-        {/* Mobile navigation drawer */}
-        {mobileOpen && (
-          <div className="lg:hidden border-t border-border bg-white animate-slide-down">
-            <div className="container-wide py-4">
-              <nav className="flex flex-col gap-1">
-                {NAV_LINKS.map((link) => (
-                  <div key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="flex items-center justify-between px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary"
-                      onClick={() => !link.children && setMobileOpen(false)}
-                    >
-                      {link.label}
-                      {link.children && (
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      )}
-                    </Link>
-                    {link.children && (
-                      <div className="ml-4 flex flex-col gap-0.5">
-                        {link.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className="px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-primary-50 hover:text-primary"
-                            onClick={() => setMobileOpen(false)}
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </nav>
-
-              {/* Mobile auth buttons */}
-              <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-                <Link
-                  href="/auth/login"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium text-primary border border-primary-200 rounded-lg hover:bg-primary-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <LogIn className="h-4 w-4" />
-                  Login
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-700"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <User className="h-4 w-4" />
-                  Register
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
+
+      {/* Mobile Menu Drawer */}
+      {mobileOpen && (
+        <nav
+          className="fixed inset-x-0 top-[118px] bottom-0 bg-[#091118]/98 z-40 p-6 overflow-y-auto text-white space-y-2 animate-fadeIn"
+          aria-label="Mobile navigation"
+        >
+          <Link
+            href="/auctions"
+            className="block py-3.5 border-b border-white/10 text-base font-semibold"
+            onClick={() => setMobileOpen(false)}
+          >
+            Explore Auctions
+          </Link>
+          <Link
+            href="/#help"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Where CityAuction Can Help
+          </Link>
+          <Link
+            href="/#institutions"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            For Institutions & Liquidators
+          </Link>
+          <Link
+            href="/liquidate-an-asset"
+            className="block py-3.5 border-b border-white/10 text-base text-[#d9c39c]"
+            onClick={() => setMobileOpen(false)}
+          >
+            Liquidate an Asset
+          </Link>
+          <Link
+            href="/customs-auction"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Customs Auction
+          </Link>
+          <Link
+            href="/next-chapter"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Next Chapter (Company / Project Capital)
+          </Link>
+          <Link
+            href="/how-it-works"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            How It Works
+          </Link>
+          <Link
+            href="/about"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            About Us
+          </Link>
+          <Link
+            href="/#contact"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Contact Us
+          </Link>
+          <Link
+            href="/login"
+            className="block py-3.5 text-base font-semibold text-[#b49361]"
+            onClick={() => setMobileOpen(false)}
+          >
+            Bidder & Banker Portal Login →
+          </Link>
+        </nav>
+      )}
     </>
   );
 }
