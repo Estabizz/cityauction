@@ -1,159 +1,241 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  Phone,
-  Mail,
-  MapPin,
-  Clock,
-  Building2,
-  Headphones,
-  ShieldCheck,
-} from "lucide-react";
 import { ContactForm } from "@/components/forms/contact-form";
 
 export const metadata: Metadata = {
-  title: "Contact Us & Regional Helpdesk | CityAuction",
+  title: "Contact Us | CityAuction",
   description:
-    "Get in touch with CityAuction support team for bidder registration, KYC assistance, EMD queries, and bank auction participation across India.",
+    "Contact CityAuction for auction opportunities, investor support, due diligence, personalised alerts, institutional services, asset liquidation, Customs auctions, strategic opportunities and support.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    type: "website",
+    title: "Contact Us | CityAuction",
+    description:
+      "Contact CityAuction for auction opportunities, investor support, due diligence, personalised alerts, institutional services, asset liquidation, Customs auctions, strategic opportunities and support.",
+    url: "/contact",
+    siteName: "CityAuction",
+  },
 };
-
-const REGIONAL_DESKS = [
-  {
-    region: "Northern Region (HQ & Delhi NCR)",
-    city: "Gurugram, Haryana",
-    address: "Plot No. 68, 3rd Floor, Sector - 44, Gurugram, Haryana - 122003",
-    phone: "+91-124-4302020 / 21",
-    email: "north.desk@cityauction.com",
-  },
-  {
-    region: "Western Region (Mumbai & Gujarat)",
-    city: "Mumbai, Maharashtra",
-    address: "B-Wing, 8th Floor, Trade World, Senapati Bapat Marg, Lower Parel, Mumbai - 400013",
-    phone: "+91-22-66981200 / 01",
-    email: "west.desk@cityauction.com",
-  },
-  {
-    region: "Southern Region (Bangalore & Chennai)",
-    city: "Bangalore, Karnataka",
-    address: "No. 14, 2nd Floor, MG Road, Ashok Nagar, Bangalore, Karnataka - 560001",
-    phone: "+91-80-22129800",
-    email: "south.desk@cityauction.com",
-  },
-  {
-    region: "Eastern Region (Kolkata & WB)",
-    city: "Kolkata, West Bengal",
-    address: "Chowringhee Court, 4th Floor, 55 Chowringhee Road, Kolkata - 700071",
-    phone: "+91-33-22824000",
-    email: "east.desk@cityauction.com",
-  },
-];
 
 export default function ContactPage() {
   return (
-    <div className="bg-surface min-h-screen py-10">
-      <div className="container-wide">
-        {/* Header */}
-        <div className="max-w-3xl mb-12">
-          <nav className="text-xs text-gray-500 mb-2">
-            <Link href="/" className="hover:text-primary">Home</Link> &gt;{" "}
-            <span className="text-gray-900 font-medium">Contact Us</span>
-          </nav>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            Bidder Helpdesk & Regional Offices
-          </h1>
-          <p className="text-sm md:text-base text-gray-600 mt-2 leading-relaxed">
-            Need assistance with an upcoming e-auction, KYC verification, or EMD deposit? Our auction specialists and regional support executives are here to assist.
-          </p>
-        </div>
+    <div className="bg-[#fbf9f5] text-[#182129] font-sans antialiased">
+      {/* Hero */}
+      <section className="contact-hero">
+        <div className="estabizz-container contact-hero-row">
+          <div>
+            <div className="eyebrow-text">Contact CityAuction</div>
+            <h1 className="text-4xl sm:text-6xl font-serif-heading font-semibold text-white tracking-tight mt-3">
+              Tell Us What You’re<br />
+              <em className="text-[#dbc39a] not-italic">Trying to Move Forward.</em>
+            </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-14">
-          {/* Form Column */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6 md:p-8 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Send an Online Enquiry</h2>
-            <p className="text-xs text-gray-500 mb-6">
-              Fill out the form below and an auction coordinator will reach out to you within 2 business hours.
+            <p className="hero-copy text-[#c7d0d7] text-base sm:text-lg max-w-xl mt-4 leading-relaxed">
+              Whether you are searching for an auction opportunity, evaluating an asset, trying to reach buyers, exploring Customs lots, or looking for capital or a strategic partner—start with the situation.
             </p>
-            <ContactForm />
-          </div>
 
-          {/* Quick Helplines Card */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-primary-900 text-white rounded-2xl p-6 shadow-md border border-primary-800">
-              <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-2">
-                <Headphones className="h-4 w-4" />
-                Central Helpline
-              </div>
-              <h3 className="text-xl font-bold">National Auction Support</h3>
-              <p className="text-xs text-primary-200 mt-1 mb-5">
-                Available Monday – Saturday (9:00 AM to 6:30 PM IST)
-              </p>
-
-              <div className="space-y-3.5 text-xs text-primary-100 border-t border-primary-800 pt-4">
-                <div className="flex items-start gap-2.5">
-                  <Phone className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block font-semibold text-white">+91-124-4302020 / 21 / 22</span>
-                    <span className="text-[11px] text-primary-300">Toll-free Bidding Assistance</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <Mail className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block font-semibold text-white">support@cityauction.com</span>
-                    <span className="text-[11px] text-primary-300">24x7 Email Ticketing</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <Clock className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block font-semibold text-white">Working Hours</span>
-                    <span className="text-[11px] text-primary-300">Mon - Fri: 9am - 6pm | Sat: 10am - 3pm</span>
-                  </div>
-                </div>
-              </div>
+            <div className="quote-block">
+              “The right conversation usually starts with the objective, not the form.”
             </div>
 
-            {/* Escrow & Payment Verification Guarantee */}
-            <div className="bg-white rounded-2xl border border-border p-5 text-xs text-gray-600 space-y-2.5">
-              <div className="flex items-center gap-2 font-bold text-gray-900">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                EMD & Payment Inquiries
-              </div>
-              <p className="leading-relaxed">
-                For EMD reconciliation and real-time RTGS/NEFT confirmation, please keep your UTR Number and Auction ID handy when contacting the desk.
-              </p>
+            <div className="actions-row">
+              <a className="btn-pill btn-gold" href="#contact-form">
+                Send an Enquiry
+              </a>
+              <a className="btn-pill btn-ghost" href="tel:+919825669668">
+                Call CityAuction
+              </a>
             </div>
           </div>
-        </div>
 
-        {/* Regional Offices */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Regional Support Centers</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {REGIONAL_DESKS.map((desk, idx) => (
-              <div key={idx} className="bg-white rounded-2xl border border-border p-5 shadow-sm space-y-3">
-                <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
-                  {desk.region}
+          <aside className="about-hero-card">
+            <div className="eyebrow-text">Quick contact</div>
+            <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
+              CityAuction
+            </h3>
+            <p className="text-sm text-[#6f777d] mt-1">
+              A venture of Estabizz Fintech Private Limited
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
+              <div className="about-fact">
+                <strong className="text-xs uppercase text-[#8e7149]">Phone</strong>
+                <a href="tel:+919825669668" className="text-sm font-bold text-[#182129] block mt-1 hover:underline">
+                  +91 98256 69668
+                </a>
+              </div>
+              <div className="about-fact">
+                <strong className="text-xs uppercase text-[#8e7149]">Email</strong>
+                <a href="mailto:info@estabizz.com" className="text-sm font-bold text-[#182129] block mt-1 hover:underline">
+                  info@estabizz.com
+                </a>
+              </div>
+              <div className="about-fact col-span-1 sm:col-span-2">
+                <strong className="text-xs uppercase text-[#8e7149]">Office</strong>
+                <span className="text-xs text-[#525d64] block mt-1">
+                  Gyan Marg, PDPU Road, Raysan, Gandhinagar, Gujarat – India
                 </span>
-                <h3 className="text-base font-bold text-gray-900">{desk.city}</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">{desk.address}</p>
-                <div className="pt-3 border-t border-border space-y-1 text-xs text-gray-700">
-                  <p className="flex items-center gap-2">
-                    <Phone className="h-3.5 w-3.5 text-gray-400" />
-                    {desk.phone}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5 text-gray-400" />
-                    {desk.email}
-                  </p>
-                </div>
               </div>
-            ))}
+              <div className="about-fact col-span-1 sm:col-span-2">
+                <strong className="text-xs uppercase text-[#8e7149]">Support Areas</strong>
+                <span className="text-xs text-[#525d64] block mt-1">
+                  Auctions · Investors · Institutions · Strategic Opportunities
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <a
+                className="btn-pill btn-dark w-full text-center flex items-center justify-center"
+                href="https://wa.me/919825669668"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WhatsApp
+              </a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* 8 Routes Grid */}
+      <section className="estabizz-section bg-white">
+        <div className="estabizz-container">
+          <div className="contact-routes-grid">
+            <article className="contact-route-card">
+              <div>
+                <h3>Buy / Invest</h3>
+                <p>Looking for auction assets or institutional opportunities.</p>
+              </div>
+              <Link href="/auctions">Explore Auctions →</Link>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Investor Desk</h3>
+                <p>Need due diligence, valuation, inspection or pre-bid support.</p>
+              </div>
+              <a href="#contact-form">Speak to Investor Desk →</a>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Institutional Services</h3>
+                <p>Bank, NBFC, ARC, Liquidator or institutional asset mandate.</p>
+              </div>
+              <Link href="/liquidate-an-asset">Institutional Desk →</Link>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Liquidate an Asset</h3>
+                <p>Need qualified buyer discovery and sale support.</p>
+              </div>
+              <Link href="/liquidate-an-asset">Start Liquidation Discussion →</Link>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Customs Auctions</h3>
+                <p>Looking for Customs lots or process guidance.</p>
+              </div>
+              <Link href="/customs-auction">Explore Customs →</Link>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Next Chapter</h3>
+                <p>Company sale, project sale, JV, investor or strategic capital.</p>
+              </div>
+              <Link href="/next-chapter">Explore Next Chapter →</Link>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Careers</h3>
+                <p>Interested in building with CityAuction.</p>
+              </div>
+              <Link href="/careers">View Careers →</Link>
+            </article>
+
+            <article className="contact-route-card">
+              <div>
+                <h3>Technical / Account Support</h3>
+                <p>Login, alerts, account access or platform assistance.</p>
+              </div>
+              <a href="#contact-form">Contact Support →</a>
+            </article>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Contact Form Section */}
+      <section className="estabizz-section bg-[#f6f2ea]" id="contact-form">
+        <div className="estabizz-container">
+          <div className="contact-wrap-box">
+            <div className="contact-info-panel">
+              <div className="eyebrow-text">Contact details</div>
+              <h2 className="text-3xl font-serif-heading font-semibold text-white mt-2">
+                Start with the Situation.
+              </h2>
+              <p className="text-sm text-[#b7c1c8] mt-3 leading-relaxed">
+                Share enough context for us to route the enquiry to the right CityAuction desk.
+              </p>
+
+              <div className="contact-items-list mt-6 space-y-3">
+                <div className="contact-item-row">
+                  <small className="text-xs uppercase text-[#cdb187] font-bold">Phone</small>
+                  <strong className="block text-white mt-1">
+                    <a href="tel:+919825669668" className="hover:underline">+91 98256 69668</a>
+                  </strong>
+                </div>
+                <div className="contact-item-row">
+                  <small className="text-xs uppercase text-[#cdb187] font-bold">Email</small>
+                  <strong className="block text-white mt-1">
+                    <a href="mailto:info@estabizz.com" className="hover:underline">info@estabizz.com</a>
+                  </strong>
+                </div>
+                <div className="contact-item-row">
+                  <small className="text-xs uppercase text-[#cdb187] font-bold">Office</small>
+                  <strong className="block text-white mt-1 font-normal text-sm">
+                    Gyan Marg, PDPU Road, Raysan, Gandhinagar, Gujarat – India
+                  </strong>
+                </div>
+                <div className="contact-item-row">
+                  <small className="text-xs uppercase text-[#cdb187] font-bold">Entity</small>
+                  <strong className="block text-white mt-1 font-normal text-sm">
+                    CityAuction · A venture of Estabizz Fintech Private Limited
+                  </strong>
+                </div>
+              </div>
+
+              <div className="actions-row mt-6">
+                <a className="btn-pill btn-gold" href="tel:+919825669668">
+                  Call
+                </a>
+                <a
+                  className="btn-pill btn-ghost"
+                  href="https://wa.me/919825669668"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <div className="contact-form-panel">
+              <ContactForm />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl border border-[#e6dfd4] bg-white text-xs text-[#5c676d] mt-5 leading-relaxed">
+            <strong>Office:</strong> Gyan Marg, PDPU Road, Raysan, Gandhinagar, Gujarat – India. For meetings, institutional discussions or document submissions, confirm an appointment before visiting.
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

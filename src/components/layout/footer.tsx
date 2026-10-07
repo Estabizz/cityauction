@@ -62,19 +62,19 @@ export function Footer() {
           <div>
             <h4>Buyer Services</h4>
             <Link href="/how-it-works">How It Works</Link>
-            <Link href="/#alerts">Personalised Alerts</Link>
-            <Link href="/how-it-works">Before You Bid</Link>
-            <Link href="/how-it-works">Due Diligence Support</Link>
-            <Link href="/#contact">Investor Desk</Link>
+            <Link href="/auction-alerts">Personalised Alerts</Link>
+            <Link href="/investor-desk">Investor Desk &amp; Diligence</Link>
+            <Link href="/investor-login">Investor Portal Login</Link>
+            <Link href="/auctions">Browse Auctions</Link>
           </div>
 
           {/* Col 3: Institutional */}
           <div>
             <h4>Institutional</h4>
             <Link href="/liquidate-an-asset">Liquidate an Asset</Link>
-            <Link href="/liquidate-an-asset#services">Institutional Services</Link>
+            <Link href="/institutional-services">Institutional Services</Link>
+            <Link href="/financial-institution-login">Financial Institution Login</Link>
             <Link href="/liquidate-an-asset#dataroom">Buyer Data Room</Link>
-            <Link href="/#contact">Institutional Desk</Link>
           </div>
 
           {/* Col 4: Special Opportunities */}
@@ -92,7 +92,8 @@ export function Footer() {
             <h4>Company</h4>
             <Link href="/about">About CityAuction</Link>
             <Link href="/how-it-works">How CityAuction Works</Link>
-            <Link href="/#contact">Contact Us</Link>
+            <Link href="/careers">Careers</Link>
+            <Link href="/contact">Contact Us</Link>
             <Link href="/resources/faqs">FAQs</Link>
             <Link href="/resources">Insights & Resources</Link>
           </div>

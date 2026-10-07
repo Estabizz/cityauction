@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
-export function ContactForm() {
+export function InvestorDeskForm() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
-  const [enquiry, setEnquiry] = useState("");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
+  const [assetType, setAssetType] = useState("Residential Property");
+  const [location, setLocation] = useState("");
+  const [auctionDate, setAuctionDate] = useState("");
+  const [auctionLink, setAuctionLink] = useState("");
+  const [concern, setConcern] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -26,8 +28,8 @@ export function ContactForm() {
           name,
           email: email || "info@estabizz.com",
           phone: mobile,
-          subject: subject || `[Enquiry: ${enquiry}] ${name}`,
-          message: `Category: ${enquiry}\nMobile: ${mobile}\nEmail: ${email}\n\nSituation / Message:\n${message}`,
+          subject: `[Investor Desk Review] ${assetType} (${location || "N/A"}) - ${name}`,
+          message: `Asset Type: ${assetType}\nLocation: ${location}\nAuction Date: ${auctionDate}\nAuction Link / Notice: ${auctionLink}\n\nKey Concerns / Due Diligence Requirements:\n${concern}`,
         }),
       });
       setSubmitted(true);
@@ -43,10 +45,10 @@ export function ContactForm() {
       <div className="bg-[#fcfaf6] border border-[#e6dfd4] rounded-2xl p-8 text-center space-y-4">
         <CheckCircle2 className="h-12 w-12 text-[#3f6b57] mx-auto" />
         <h4 className="font-serif-heading text-2xl font-bold text-[#182129]">
-          Enquiry Received
+          Diligence Request Logged
         </h4>
         <p className="text-sm text-[#6f777d] max-w-md mx-auto leading-relaxed">
-          Thank you, <strong>{name}</strong>. Your enquiry regarding <strong>{enquiry}</strong> has been logged. The relevant CityAuction desk at Estabizz Fintech will respond shortly.
+          Thank you, <strong>{name}</strong>. Your asset evaluation request for <strong>{assetType}</strong> has been assigned to the CityAuction Investor Desk. A diligence coordinator will review the notice and connect with you at <strong>{mobile}</strong>.
         </p>
         <button
           onClick={() => {
@@ -54,23 +56,24 @@ export function ContactForm() {
             setName("");
             setMobile("");
             setEmail("");
-            setEnquiry("");
-            setSubject("");
-            setMessage("");
+            setLocation("");
+            setAuctionDate("");
+            setAuctionLink("");
+            setConcern("");
           }}
           className="btn-pill btn-dark text-xs py-2 px-5 mt-2"
         >
-          Send Another Enquiry
+          Submit Another Request
         </button>
       </div>
     );
   }
 
   return (
-    <form className="contact-form" id="contactForm" onSubmit={handleSubmit}>
-      <div className="eyebrow-text">Send an enquiry</div>
+    <form className="contact-form" id="investorDeskForm" onSubmit={handleSubmit}>
+      <div className="eyebrow-text">Request review</div>
       <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
-        How Can CityAuction Help?
+        Tell Us About the Opportunity.
       </h3>
 
       <div className="search-form-grid mt-4">
@@ -110,45 +113,60 @@ export function ContactForm() {
         </div>
 
         <div className="field-custom">
-          <label htmlFor="enquiry">I Need Help With</label>
+          <label htmlFor="assetType">Asset Type</label>
           <select
-            id="enquiry"
-            value={enquiry}
-            onChange={(e) => setEnquiry(e.target.value)}
+            id="assetType"
+            value={assetType}
+            onChange={(e) => setAssetType(e.target.value)}
             required
           >
-            <option value="">Select</option>
-            <option>Buying / Investing in Auction Asset</option>
-            <option>Investor Desk / Due Diligence</option>
-            <option>Personalised Auction Alerts</option>
-            <option>Institutional Services</option>
-            <option>Liquidating an Asset</option>
-            <option>Customs Auction</option>
-            <option>Company Sale / Investor / Promoter Exit</option>
-            <option>Developer Project / JV / Investor</option>
-            <option>Careers</option>
-            <option>Login / Account Support</option>
+            <option>Residential Property</option>
+            <option>Commercial Property</option>
+            <option>Industrial Property</option>
+            <option>Land / Plot</option>
+            <option>Plant & Machinery</option>
+            <option>Business / Going Concern</option>
             <option>Other</option>
           </select>
         </div>
 
-        <div className="field-custom col-span-1 sm:col-span-2">
-          <label htmlFor="subject">Subject</label>
+        <div className="field-custom">
+          <label htmlFor="location">Asset Location</label>
           <input
-            id="subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="Short subject"
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="City, State"
+          />
+        </div>
+
+        <div className="field-custom">
+          <label htmlFor="auctionDate">Auction Date</label>
+          <input
+            id="auctionDate"
+            type="date"
+            value={auctionDate}
+            onChange={(e) => setAuctionDate(e.target.value)}
           />
         </div>
 
         <div className="field-custom col-span-1 sm:col-span-2">
-          <label htmlFor="message">Tell Us the Situation</label>
+          <label htmlFor="auctionLink">Auction Link / Notice Reference</label>
+          <input
+            id="auctionLink"
+            value={auctionLink}
+            onChange={(e) => setAuctionLink(e.target.value)}
+            placeholder="Paste auction URL or notice reference"
+          />
+        </div>
+
+        <div className="field-custom col-span-1 sm:col-span-2">
+          <label htmlFor="concern">What Do You Need Help With?</label>
           <textarea
-            id="message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Share the asset, opportunity, mandate or support issue in brief."
+            id="concern"
+            value={concern}
+            onChange={(e) => setConcern(e.target.value)}
+            placeholder="Title, possession, dues, litigation, valuation, inspection, bidder registration, funding, post-auction support, etc."
           />
         </div>
       </div>
@@ -160,16 +178,15 @@ export function ContactForm() {
       >
         {loading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Sending Enquiry...
+            <Loader2 className="h-4 w-4 animate-spin" /> Submitting Request...
           </>
         ) : (
-          "Send Enquiry"
+          "Request Investor Desk Review"
         )}
       </button>
 
       <div className="text-[11px] text-[#8a9195] mt-2.5 text-center">
-        Enquiries are routed directly to the specialized CityAuction desk at Estabizz Fintech.
+        Diligence requests are confidential and managed under Estabizz professional protocols.
       </div>
     </form>
   );

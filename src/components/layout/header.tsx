@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Phone, Mail, MapPin, User, LogIn, ChevronDown, Menu, X } from "lucide-react";
+import { LogIn, ChevronDown, Menu, X } from "lucide-react";
 
 export function Header() {
   const pathname = usePathname();
@@ -36,11 +36,11 @@ export function Header() {
 
       {/* Top bar */}
       <div className="topbar-wrapper">
-        <div className="estabizz-container">
+        <div className="header-container">
           <div className="py-2 text-xs">
             <strong>CityAuction</strong> · A venture of Estabizz Fintech Private Limited
           </div>
-          <div className="top-contact-links py-2 text-xs">
+          <div className="top-contact-links py-2 text-xs flex items-center gap-4">
             <a href="tel:+919825669668" className="transition-colors hover:text-white">
               +91 98256 69668
             </a>
@@ -54,7 +54,7 @@ export function Header() {
 
       {/* Main Header */}
       <header className="estabizz-header">
-        <div className="estabizz-container header-row-custom">
+        <div className="header-container header-row-custom">
           {/* Brand */}
           <Link href="/" className="brand-group" aria-label="CityAuction home">
             <div className="brand-mark" aria-hidden="true">
@@ -70,8 +70,8 @@ export function Header() {
           <nav className="nav-links-custom hidden lg:flex" aria-label="Primary navigation">
             <Link
               href="/auctions"
-              className={`hover:text-[#84663c] transition-colors ${
-                pathname === "/auctions" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/auctions" ? "text-[#84663c] font-semibold" : "text-[#182129]"
               }`}
             >
               Auctions
@@ -80,27 +80,27 @@ export function Header() {
             {/* Services Dropdown */}
             <div className="nav-dropdown-wrap" ref={dropdownRef}>
               <button
-                className="nav-dropdown-btn flex items-center gap-1 hover:text-[#84663c] transition-colors"
+                className="nav-dropdown-btn text-[#182129]"
                 type="button"
                 aria-haspopup="true"
                 aria-expanded={servicesOpen}
                 onClick={() => setServicesOpen(!servicesOpen)}
               >
-                Services <ChevronDown className="h-3.5 w-3.5" />
+                Services <ChevronDown className="h-3.5 w-3.5 opacity-70" />
               </button>
 
               {servicesOpen && (
                 <div className="nav-dropdown-menu animate-fadeIn" role="menu">
                   <Link
                     role="menuitem"
-                    href="/how-it-works"
+                    href="/investor-desk"
                     onClick={() => setServicesOpen(false)}
                   >
-                    Investor Desk & Due Diligence
+                    Investor Desk &amp; Due Diligence
                   </Link>
                   <Link
                     role="menuitem"
-                    href="/#alerts"
+                    href="/auction-alerts"
                     onClick={() => setServicesOpen(false)}
                   >
                     Personalised Auction Alerts
@@ -110,14 +110,23 @@ export function Header() {
                     href="/liquidate-an-asset"
                     onClick={() => setServicesOpen(false)}
                   >
-                    Institutional Liquidation
+                    Liquidate an Asset
                   </Link>
                   <Link
                     role="menuitem"
-                    href="/#institutions"
+                    href="/institutional-services"
                     onClick={() => setServicesOpen(false)}
                   >
                     Institutional Services
+                  </Link>
+                  <div className="my-1.5 border-t border-[#e6dfd4]" />
+                  <Link
+                    role="menuitem"
+                    href="/financial-institution-login"
+                    className="text-[#84663c] font-medium"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    Financial Institution Login →
                   </Link>
                 </div>
               )}
@@ -125,8 +134,8 @@ export function Header() {
 
             <Link
               href="/customs-auction"
-              className={`hover:text-[#84663c] transition-colors ${
-                pathname === "/customs-auction" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/customs-auction" ? "text-[#84663c] font-semibold" : "text-[#182129]"
               }`}
             >
               Customs
@@ -134,8 +143,8 @@ export function Header() {
 
             <Link
               href="/next-chapter"
-              className={`hover:text-[#84663c] transition-colors ${
-                pathname === "/next-chapter" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/next-chapter" ? "text-[#84663c] font-semibold" : "text-[#182129]"
               }`}
             >
               Next Chapter
@@ -143,8 +152,8 @@ export function Header() {
 
             <Link
               href="/how-it-works"
-              className={`hover:text-[#84663c] transition-colors ${
-                pathname === "/how-it-works" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/how-it-works" ? "text-[#84663c] font-semibold" : "text-[#182129]"
               }`}
             >
               How It Works
@@ -152,38 +161,44 @@ export function Header() {
 
             <Link
               href="/about"
-              className={`hover:text-[#84663c] transition-colors ${
-                pathname === "/about" ? "text-[#84663c] font-semibold" : "text-gray-800"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/about" ? "text-[#84663c] font-semibold" : "text-[#182129]"
               }`}
             >
               About
             </Link>
+
+            <Link
+              href="/contact"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/contact" ? "text-[#84663c] font-semibold" : "text-[#182129]"
+              }`}
+            >
+              Contact
+            </Link>
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <Link
-              className="btn-pill btn-light hidden sm:inline-flex"
+              className="btn-pill btn-dark hidden sm:inline-flex text-xs px-4 py-2"
               href="/liquidate-an-asset"
             >
               Liquidate an Asset
             </Link>
 
-            <Link className="btn-pill btn-dark hidden md:inline-flex" href="/auctions">
-              Explore Auctions
-            </Link>
-
             <Link
-              href="/login"
-              className="p-2.5 rounded-full border border-[#dcd5ca] bg-white text-gray-700 hover:text-primary hover:border-primary transition-colors flex items-center justify-center"
-              title="Bidder / Banker Portal Login"
+              href="/investor-login"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#dcd5ca] bg-white text-xs font-semibold text-gray-800 hover:text-[#84663c] hover:border-[#b49361] transition-colors shadow-sm"
+              title="Investor Portal Login"
             >
-              <LogIn className="h-4 w-4" />
+              <LogIn className="h-3.5 w-3.5 text-[#84663c]" />
+              <span>Sign In</span>
             </Link>
 
             {/* Mobile Hamburger Button */}
             <button
-              className="lg:hidden w-11 h-11 rounded-full border border-gray-300 bg-white flex flex-col items-center justify-center gap-1.5 transition-colors hover:bg-gray-50"
+              className="lg:hidden w-10 h-10 rounded-full border border-gray-300 bg-white flex flex-col items-center justify-center gap-1.5 transition-colors hover:bg-gray-50 cursor-pointer ml-1"
               onClick={() => setMobileOpen(!mobileOpen)}
               type="button"
               aria-label="Open navigation"
@@ -213,18 +228,25 @@ export function Header() {
             Explore Auctions
           </Link>
           <Link
-            href="/#help"
+            href="/investor-desk"
             className="block py-3.5 border-b border-white/10 text-base"
             onClick={() => setMobileOpen(false)}
           >
-            Where CityAuction Can Help
+            Investor Desk &amp; Due Diligence
           </Link>
           <Link
-            href="/#institutions"
+            href="/auction-alerts"
             className="block py-3.5 border-b border-white/10 text-base"
             onClick={() => setMobileOpen(false)}
           >
-            For Institutions & Liquidators
+            Personalised Auction Alerts
+          </Link>
+          <Link
+            href="/institutional-services"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Institutional Services
           </Link>
           <Link
             href="/liquidate-an-asset"
@@ -262,18 +284,32 @@ export function Header() {
             About Us
           </Link>
           <Link
-            href="/#contact"
+            href="/careers"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Careers
+          </Link>
+          <Link
+            href="/contact"
             className="block py-3.5 border-b border-white/10 text-base"
             onClick={() => setMobileOpen(false)}
           >
             Contact Us
           </Link>
           <Link
-            href="/login"
-            className="block py-3.5 text-base font-semibold text-[#b49361]"
+            href="/investor-login"
+            className="block py-3.5 border-b border-white/10 text-base font-semibold text-[#b49361]"
             onClick={() => setMobileOpen(false)}
           >
-            Bidder & Banker Portal Login →
+            Investor Portal Login →
+          </Link>
+          <Link
+            href="/financial-institution-login"
+            className="block py-3.5 text-base font-semibold text-[#d9c39c]"
+            onClick={() => setMobileOpen(false)}
+          >
+            Financial Institution Login →
           </Link>
         </nav>
       )}
