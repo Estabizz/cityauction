@@ -27,9 +27,9 @@ export default function InvestorDeskPage() {
         <div className="estabizz-container careers-hero-row">
           <div>
             <div className="eyebrow-text">Investor Desk &amp; Due Diligence</div>
-            <h1 className="text-4xl sm:text-6xl font-serif-heading font-semibold text-white tracking-tight mt-3">
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Find the Opportunity.<br />
-              <em className="text-[#dbc39a] not-italic">Understand It Before You Commit.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Understand It Before You Commit.</em>
             </h1>
 
             <p className="hero-copy text-[#c7d0d7] text-base sm:text-lg max-w-xl mt-4 leading-relaxed">
@@ -52,7 +52,7 @@ export default function InvestorDeskPage() {
 
           <aside className="about-hero-card">
             <div className="eyebrow-text">Before you bid</div>
-            <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
+            <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>
               Eight Questions Worth Answering.
             </h3>
             <p className="text-sm text-[#6f777d] mt-1">
@@ -105,7 +105,7 @@ export default function InvestorDeskPage() {
               <div className="eyebrow-text">When should you use the Investor Desk?</div>
             </div>
             <div>
-              <h2>When the Listing Looks Interesting—but the Decision Still Feels Incomplete.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>When the Listing Looks Interesting—but the Decision Still Feels Incomplete.</h2>
               <p className="lead-text mt-4">
                 The Investor Desk is most useful when the buyer has identified a specific opportunity and needs structured clarity before committing further capital.
               </p>
@@ -149,7 +149,7 @@ export default function InvestorDeskPage() {
               <div className="eyebrow-text">Due diligence universe</div>
             </div>
             <div>
-              <h2 className="text-white">What CityAuction Investor Desk Can Help You Review.</h2>
+              <h2 className="font-serif-heading text-white" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>What CityAuction Investor Desk Can Help You Review.</h2>
               <p className="lead-text mt-4 text-[#aeb9c1]">
                 The exact scope depends on the asset and engagement. Specialist reviews should be performed through appropriately qualified legal, valuation, technical, tax or lending professionals where required.
               </p>
@@ -275,7 +275,7 @@ export default function InvestorDeskPage() {
           <div className="data-room-box">
             <div className="room-left-panel">
               <div className="eyebrow-text">The diligence file</div>
-              <h3>Bring the Important Information Into One Decision Room.</h3>
+              <h3 className="font-serif-heading text-[#182129]" style={{ fontSize: "2rem", fontWeight: 600, lineHeight: 1.2 }}>Bring the Important Information Into One Decision Room.</h3>
               <p>
                 The Investor Desk should organise the documents, observations and open questions into a single buyer-side diligence file rather than leaving the investor to navigate disconnected records.
               </p>
@@ -338,7 +338,7 @@ export default function InvestorDeskPage() {
               <div className="eyebrow-text">How the Investor Desk works</div>
             </div>
             <div>
-              <h2>From Interesting Listing to Informed Decision.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>From Interesting Listing to Informed Decision.</h2>
               <p className="lead-text mt-4">
                 The process is designed around decision gates. The buyer can stop, proceed or deepen the review as material information emerges.
               </p>
@@ -398,7 +398,7 @@ export default function InvestorDeskPage() {
               <div className="eyebrow-text">Red flags worth respecting</div>
             </div>
             <div>
-              <h2 className="text-white">A Low Reserve Price Does Not Neutralise a Difficult Asset.</h2>
+              <h2 className="font-serif-heading text-white" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>A Low Reserve Price Does Not Neutralise a Difficult Asset.</h2>
               <p className="lead-text mt-4 text-[#aeb9c1]">
                 Some issues may be manageable. Others can materially change value, timeline, funding or the buyer&apos;s ability to take possession.
               </p>
@@ -458,7 +458,7 @@ export default function InvestorDeskPage() {
               <div className="eyebrow-text">Choose the level of support</div>
             </div>
             <div>
-              <h2>Start with the Question You Need Answered.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Start with the Question You Need Answered.</h2>
               <p className="lead-text mt-4">
                 Final scope, fee and responsible professional should be agreed before work begins. The structures below are service architecture, not fixed pricing.
               </p>
@@ -538,7 +538,7 @@ export default function InvestorDeskPage() {
           <div className="contact-wrap-box">
             <div className="contact-info-panel">
               <div className="eyebrow-text">CityAuction Investor Desk</div>
-              <h2 className="text-3xl font-serif-heading font-semibold text-white mt-2">
+              <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
                 Already Found an Asset?
               </h2>
               <p className="text-sm text-[#b7c1c8] mt-3 leading-relaxed">
@@ -602,7 +602,7 @@ export default function InvestorDeskPage() {
               <div className="eyebrow-text">Investor Desk FAQs</div>
             </div>
             <div>
-              <h2>What Buyers Usually Ask Before Engaging.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>What Buyers Usually Ask Before Engaging.</h2>
             </div>
           </div>
 
@@ -649,7 +649,7 @@ export default function InvestorDeskPage() {
           <div className="about-cta-panel">
             <div>
               <div className="eyebrow-text">Before the EMD</div>
-              <h2 className="mt-2.5">Understand the Asset Before the Clock Starts Working Against You.</h2>
+              <h2 className="font-serif-heading text-[#182129] mt-2.5" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Understand the Asset Before the Clock Starts Working Against You.</h2>
               <p>
                 If an auction opportunity has caught your attention, share it with CityAuction Investor Desk and identify the questions worth answering before you commit.
               </p>
