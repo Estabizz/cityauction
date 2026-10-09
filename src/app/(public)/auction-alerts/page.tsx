@@ -23,96 +23,99 @@ export default function AuctionAlertsPage() {
   return (
     <div className="bg-[#fbf9f5] text-[#182129] font-sans antialiased">
       {/* 1. Hero Section with Alert Form */}
-      <section className="hero" id="create-alert">
-        <div className="container hero-row">
+      <section className="about-hero" id="create-alert">
+        <div className="estabizz-container about-hero-row">
           <div>
-            <div className="eyebrow !text-[#d9c39c]">Personalised Auction Alerts</div>
-            <h1 className="font-serif-heading text-4xl sm:text-6xl font-semibold text-white tracking-tight mt-3 leading-tight">
+            <div className="eyebrow-text !text-[#d9c39c]">Personalised Auction Alerts</div>
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Define the Opportunity Once.<br />
-              <em className="text-[#dbc39a] not-italic font-normal">Let CityAuction Keep Looking.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Let CityAuction Keep Looking.</em>
             </h1>
 
-            <p className="hero-copy">
+            <p className="about-hero-copy">
               Tell us the location, asset type, budget and auction category that matter to you. CityAuction Alerts is designed to surface relevant opportunities through supported alert channels when matching inventory is identified.
             </p>
 
-            <div className="quote">
-              Spend your time evaluating opportunities—not repeatedly searching for them.
+            <div className="quote-block mt-6 text-[#d9c39c]">
+              “Spend your time evaluating opportunities—not repeatedly searching for them.”
             </div>
 
-            <div className="actions">
-              <a className="btn btn-gold" href="#alert-form">
+            <div className="actions-row mt-6">
+              <a className="btn-pill btn-gold" href="#alert-form">
                 Create My Alert
               </a>
-              <Link className="btn btn-light" href="/auctions">
+              <Link className="btn-pill btn-ghost" href="/auctions">
                 Explore Auctions
               </Link>
             </div>
           </div>
 
-          <div>
+          <aside className="about-hero-card">
             <AuctionAlertsForm />
-          </div>
+          </aside>
         </div>
       </section>
 
       {/* 2. How It Works Section */}
-      <section className="section white">
-        <div className="container">
-          <div className="section-head">
+      <section className="estabizz-section bg-white">
+        <div className="estabizz-container">
+          <div className="section-head-grid">
             <div>
-              <div className="eyebrow">How it works</div>
+              <div className="eyebrow-text">How it works</div>
             </div>
             <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold text-[#182129]">
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
                 Simple by Design.
               </h2>
-              <p className="lead mt-3">
+              <p className="lead-text mt-4">
                 CityAuction Alerts should make opportunity discovery easier without flooding users with irrelevant notifications.
               </p>
             </div>
           </div>
 
-          <div className="alert-steps-grid">
-            <article className="alert-step">
-              <small>01</small>
-              <h3>Tell Us Your Mandate</h3>
-              <p>Choose the location, asset class, budget and opportunity type that matter to you.</p>
+          <div className="about-beliefs-grid">
+            <article className="about-belief-card">
+              <small className="text-[#8e959a] font-bold tracking-wider">01</small>
+              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>Tell Us Your Mandate</h3>
+              <p className="mt-2">Choose the location, asset class, budget and opportunity type that matter to you.</p>
             </article>
 
-            <article className="alert-step">
-              <small>02</small>
-              <h3>CityAuction Matches Opportunities</h3>
-              <p>Relevant opportunities can be matched against supported inventory and alert logic.</p>
+            <article className="about-belief-card">
+              <small className="text-[#8e959a] font-bold tracking-wider">02</small>
+              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>CityAuction Matches Opportunities</h3>
+              <p className="mt-2">Relevant opportunities can be matched against supported inventory and alert logic.</p>
             </article>
 
-            <article className="alert-step">
-              <small>03</small>
-              <h3>You Decide What Deserves Attention</h3>
-              <p>Open the opportunity, review the notice and proceed only after your own evaluation and diligence.</p>
+            <article className="about-belief-card">
+              <small className="text-[#8e959a] font-bold tracking-wider">03</small>
+              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>You Decide What Deserves Attention</h3>
+              <p className="mt-2">Open the opportunity, review the notice and proceed only after your own evaluation and diligence.</p>
             </article>
           </div>
         </div>
       </section>
 
       {/* 3. Trust & Perspective Section */}
-      <section className="section bg-[#091118] text-[#edf2f5]">
-        <div className="container flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="max-w-2xl">
-            <div className="eyebrow !text-[#d9c39c]">Your alert, your decision</div>
-            <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold text-white mt-3 leading-tight">
-              Relevant Discovery. No Promise of Suitability.
-            </h2>
-            <p className="text-sm text-[#aeb9c1] mt-3 leading-relaxed">
-              An alert means an opportunity matches the preferences you provided. It does not mean CityAuction has certified title, possession, market value, legal safety or investment suitability. The relevant auction notice and independent due diligence still matter.
-            </p>
+      <section className="estabizz-section bg-[#091118] text-[#edf2f5] dark-bg">
+        <div className="estabizz-container">
+          <div className="section-head-grid">
+            <div>
+              <div className="eyebrow-text !text-[#d9c39c]">Your alert, your decision</div>
+            </div>
+            <div>
+              <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
+                Relevant Discovery. No Promise of Suitability.
+              </h2>
+              <p className="lead-text mt-4 text-[#aeb9c1]">
+                An alert means an opportunity matches the preferences you provided. It does not mean CityAuction has certified title, possession, market value, legal safety or investment suitability. The relevant auction notice and independent due diligence still matter.
+              </p>
+            </div>
           </div>
-
-          <div className="flex gap-3 flex-wrap flex-shrink-0">
-            <a className="btn btn-gold" href="#alert-form">
+          <div className="actions-row mt-8">
+            <a className="btn-pill btn-gold" href="#alert-form">
               Create Alert
             </a>
-            <Link className="btn btn-ghost" href="/investor-desk">
+            <Link className="btn-pill btn-ghost" href="/investor-desk">
               Investor Desk
             </Link>
           </div>
