@@ -26,7 +26,7 @@ export default function AboutPage() {
         <div className="estabizz-container about-hero-row">
           <div>
             <div className="eyebrow-text">About CityAuction</div>
-            <h1 className="font-serif-heading mt-4 leading-tight" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600, color: "#182129" }}>
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Built from Experience.<br />
               <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Designed for What Comes Next.</em>
             </h1>
