@@ -26,7 +26,7 @@ export default function HowItWorksPage() {
         <div className="estabizz-container hiw-hero-row">
           <div>
             <div className="eyebrow-text">How CityAuction works</div>
-            <h1 className="font-serif-heading mt-4 leading-tight" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600, color: "#182129" }}>
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               From Discovery to Completion.<br />
               <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Know What Happens Next.</em>
             </h1>
