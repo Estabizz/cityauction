@@ -26,9 +26,9 @@ export default function AboutPage() {
         <div className="estabizz-container about-hero-row">
           <div>
             <div className="eyebrow-text">About CityAuction</div>
-            <h1>
+            <h1 className="font-serif-heading mt-4 leading-tight" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600, color: "#182129" }}>
               Built from Experience.<br />
-              <em>Designed for What Comes Next.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Designed for What Comes Next.</em>
             </h1>
             <p className="about-hero-copy">
               CityAuction was born from a simple observation: valuable institutional assets often struggle to find the right audience, while serious buyers struggle to find, understand and evaluate those opportunities.
@@ -48,7 +48,7 @@ export default function AboutPage() {
 
           <aside className="about-hero-card">
             <div className="eyebrow-text">The experience behind the platform</div>
-            <h3>A digital chapter built on years inside the auction ecosystem.</h3>
+            <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>A digital chapter built on years inside the auction ecosystem.</h3>
             <p>
               CityAuction is a proposed brand initiative of Estabizz Fintech Private Limited. The experience behind the platform dates to 2016 and includes work across auction properties, financial institutions, buyer coordination and transaction support.
             </p>
@@ -82,7 +82,7 @@ export default function AboutPage() {
               <div className="eyebrow-text">Why CityAuction exists</div>
             </div>
             <div>
-              <h2>The Auction Market Has Information. What It Often Lacks Is Connection.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>The Auction Market Has Information. What It Often Lacks Is Connection.</h2>
               <p className="lead-text mt-4">
                 The auction ecosystem is not short of notices. It is short of structured discovery, context and relevant buyer access.
               </p>
@@ -126,7 +126,7 @@ export default function AboutPage() {
           />
           <div className="about-story-copy">
             <div className="eyebrow-text">Our story</div>
-            <h2>Ten Years of Seeing What Others Often Overlook.</h2>
+            <h2 className="font-serif-heading text-[#182129] mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Ten Years of Seeing What Others Often Overlook.</h2>
             <p>
               Our journey with auction properties began in 2016—through years of working around properties, sale notices, financial institutions, documents, bidder queries, inspections and buyers trying to make sense of an unfamiliar process.
             </p>
@@ -154,7 +154,7 @@ export default function AboutPage() {
               <div className="eyebrow-text">Experience in numbers</div>
             </div>
             <div>
-              <h2>Experience Gives Perspective. Technology Gives It Scale.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Experience Gives Perspective. Technology Gives It Scale.</h2>
               <p className="lead-text mt-4">
                 These numbers reflect the cumulative experience and network associated with the promoters/team, including work preceding the launch of CityAuction.
               </p>
@@ -193,7 +193,7 @@ export default function AboutPage() {
               <div className="eyebrow-text">What we believe</div>
             </div>
             <div>
-              <h2 className="text-white">The Principles Behind CityAuction.</h2>
+              <h2 className="font-serif-heading text-white" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>The Principles Behind CityAuction.</h2>
               <p className="lead-text mt-4 text-[#aeb9c1]">
                 The brand is being built around a few simple ideas that guide how we present opportunities and how we want users to experience the market.
               </p>
@@ -253,7 +253,7 @@ export default function AboutPage() {
               <div className="eyebrow-text">Who we serve</div>
             </div>
             <div>
-              <h2>Built for Both Sides of the Transaction.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Built for Both Sides of the Transaction.</h2>
               <p className="lead-text mt-4">
                 CityAuction is intended to serve the people looking for opportunities and the institutions looking for the right market.
               </p>
@@ -297,7 +297,7 @@ export default function AboutPage() {
               <div className="eyebrow-text">The CityAuction ecosystem</div>
             </div>
             <div>
-              <h2>One Marketplace. Two Journeys.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>One Marketplace. Two Journeys.</h2>
             </div>
           </div>
 
@@ -341,7 +341,7 @@ export default function AboutPage() {
         <div className="estabizz-container about-vision-grid">
           <div className="about-vision-copy">
             <div className="eyebrow-text">Where we are going</div>
-            <h2 className="text-white mt-3">The Future Is Not Another Listing Portal.</h2>
+            <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>The Future Is Not Another Listing Portal.</h2>
             <p>
               Our ambition is to build CityAuction into a connected digital infrastructure for institutional asset discovery and transaction support.
             </p>
@@ -389,7 +389,7 @@ export default function AboutPage() {
               <div className="eyebrow-text">Our promise</div>
             </div>
             <div>
-              <h2>What You Should Expect from CityAuction.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>What You Should Expect from CityAuction.</h2>
             </div>
           </div>
 
@@ -422,7 +422,7 @@ export default function AboutPage() {
           <div className="about-cta-panel">
             <div>
               <div className="eyebrow-text">CityAuction</div>
-              <h2 className="mt-2.5">See Beyond the Auction.</h2>
+              <h2 className="font-serif-heading text-[#182129] mt-2.5" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>See Beyond the Auction.</h2>
               <p>
                 Discover institutional asset opportunities if you are looking to acquire. Bring an asset to CityAuction if you are looking for the right buyer market.
               </p>
