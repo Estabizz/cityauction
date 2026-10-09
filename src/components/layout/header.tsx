@@ -30,10 +30,6 @@ export function Header() {
 
   return (
     <>
-      <a href="#mainContent" className="skip-link">
-        Skip to main content
-      </a>
-
       {/* Top bar */}
       <div className="topbar-wrapper">
         <div className="header-container">
