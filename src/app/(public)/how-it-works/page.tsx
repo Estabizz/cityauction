@@ -26,9 +26,9 @@ export default function HowItWorksPage() {
         <div className="estabizz-container hiw-hero-row">
           <div>
             <div className="eyebrow-text">How CityAuction works</div>
-            <h1>
+            <h1 className="font-serif-heading mt-4 leading-tight" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600, color: "#182129" }}>
               From Discovery to Completion.<br />
-              <em>Know What Happens Next.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Know What Happens Next.</em>
             </h1>
             <p className="hiw-hero-copy">
               Auction opportunities can look complicated from the outside. CityAuction is designed to make the journey easier to understand—whether you are exploring an asset, preparing to bid, completing an acquisition, or taking an institutional asset to market.
@@ -48,7 +48,7 @@ export default function HowItWorksPage() {
 
           <aside className="hiw-hero-panel">
             <div className="eyebrow-text">Choose your journey</div>
-            <h3>What brings you to CityAuction?</h3>
+            <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>What brings you to CityAuction?</h3>
             <p>Start from the path that is relevant to you.</p>
             <div className="hiw-role-grid">
               <a className="hiw-role-card" href="#buyer-journey">
@@ -80,7 +80,7 @@ export default function HowItWorksPage() {
               <div className="eyebrow-text">Two sides of one marketplace</div>
             </div>
             <div>
-              <h2>One Process. Different Objectives.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>One Process. Different Objectives.</h2>
               <p className="lead-text mt-4">
                 A buyer wants to find, understand and acquire the right asset. An institution wants the asset to reach relevant buyers and move efficiently through the auction process. CityAuction is built to support both sides.
               </p>
@@ -129,7 +129,7 @@ export default function HowItWorksPage() {
               <div className="eyebrow-text">Buyer journey</div>
             </div>
             <div>
-              <h2>Seven Steps From Interest to Acquisition.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Seven Steps From Interest to Acquisition.</h2>
               <p className="lead-text mt-4">
                 The exact requirements differ from auction to auction. The concerned sale notice and institution&apos;s terms always prevail, but this is the practical journey most buyers should expect.
               </p>
@@ -193,7 +193,7 @@ export default function HowItWorksPage() {
           <div className="hiw-checkpoint-box">
             <div className="hiw-checkpoint-left">
               <div className="eyebrow-text">Before you bid</div>
-              <h3>Price is only one part of the decision.</h3>
+              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "2rem", fontWeight: 600, lineHeight: 1.2 }}>Price is only one part of the decision.</h3>
               <p>
                 Auction assets require independent judgement. Before paying EMD, understand the asset, the documents, the possession position and the obligations that may continue after purchase.
               </p>
@@ -248,7 +248,7 @@ export default function HowItWorksPage() {
               <div className="eyebrow-text">Auction frameworks</div>
             </div>
             <div>
-              <h2 className="text-white">Different Legal Routes. Different Transaction Context.</h2>
+              <h2 className="font-serif-heading text-white" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Different Legal Routes. Different Transaction Context.</h2>
               <p className="lead-text mt-4 text-[#aeb9c1]">
                 CityAuction may feature opportunities arising through multiple legal and institutional channels. The applicable sale notice, statute, rules, tribunal directions and authorised stakeholder process govern each transaction.
               </p>
@@ -293,7 +293,7 @@ export default function HowItWorksPage() {
         <div className="estabizz-container hiw-institution-box">
           <div>
             <div className="eyebrow-text">For Banks, NBFCs, ARCs &amp; Liquidators</div>
-            <h2 className="text-white mt-3">Your Asset Should Reach More Than an Auction Notice.</h2>
+            <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Your Asset Should Reach More Than an Auction Notice.</h2>
             <p>
               Publishing an auction notice is a regulatory or procedural step. Reaching relevant buyers is a market-discovery challenge.
             </p>
@@ -350,7 +350,7 @@ export default function HowItWorksPage() {
               <div className="eyebrow-text">Risk &amp; responsibility</div>
             </div>
             <div>
-              <h2>CityAuction Helps You Understand. The Decision Remains Yours.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>CityAuction Helps You Understand. The Decision Remains Yours.</h2>
               <p className="lead-text mt-4">
                 Auction assets can involve legal, financial, possession and execution risks. CityAuction&apos;s role is to improve information access and facilitate support—not to replace independent professional advice or the buyer&apos;s own decision-making.
               </p>
@@ -388,7 +388,7 @@ export default function HowItWorksPage() {
               <div className="eyebrow-text">Frequently asked questions</div>
             </div>
             <div>
-              <h2>The Questions Serious Bidders Usually Ask.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>The Questions Serious Bidders Usually Ask.</h2>
             </div>
           </div>
 
@@ -439,7 +439,7 @@ export default function HowItWorksPage() {
           <div className="about-cta-panel">
             <div>
               <div className="eyebrow-text">Your next step</div>
-              <h2 className="mt-2.5">Know the Process. Then Decide.</h2>
+              <h2 className="font-serif-heading text-[#182129] mt-2.5" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Know the Process. Then Decide.</h2>
               <p>
                 Explore auction opportunities if you are looking to acquire. Speak with the Institutional Desk if you are looking to take an asset to the buyer market.
               </p>

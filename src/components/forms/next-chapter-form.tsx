@@ -75,8 +75,8 @@ export function NextChapterForm() {
 
   return (
     <form onSubmit={handleSubmit} id="nextChapterForm">
-      <div className="form-grid">
-        <div className="field">
+      <div className="contact-inputs-grid">
+        <div className="field-custom">
           <label htmlFor="opportunityType">Situation Type</label>
           <select
             id="opportunityType"
@@ -93,7 +93,7 @@ export function NextChapterForm() {
           </select>
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="objective">Primary Objective</label>
           <select
             id="objective"
@@ -113,7 +113,7 @@ export function NextChapterForm() {
           </select>
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="location">Location</label>
           <input
             id="location"
@@ -124,7 +124,7 @@ export function NextChapterForm() {
           />
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="value">Indicative Asset / Project Value</label>
           <input
             id="value"
@@ -134,7 +134,7 @@ export function NextChapterForm() {
           />
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="name">Contact Person</label>
           <input
             id="name"
@@ -144,7 +144,7 @@ export function NextChapterForm() {
           />
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -155,7 +155,7 @@ export function NextChapterForm() {
           />
         </div>
 
-        <div className="field full">
+        <div className="field-custom col-span-1 sm:col-span-2">
           <label htmlFor="context">Brief Situation</label>
           <textarea
             id="context"
@@ -168,7 +168,7 @@ export function NextChapterForm() {
       </div>
 
       <button
-        className="btn btn-dark w-full mt-4 flex items-center justify-center gap-2 cursor-pointer"
+        className="btn-pill btn-dark w-full mt-6 flex items-center justify-center gap-2 cursor-pointer"
         type="submit"
         disabled={loading}
       >

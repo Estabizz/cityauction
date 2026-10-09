@@ -77,8 +77,8 @@ export function AuctionAlertsForm() {
       </h3>
       <p className="text-xs text-[#6f777d] mt-1">Keep the alert broad or make it very specific.</p>
 
-      <div className="form-grid">
-        <div className="field">
+      <div className="contact-inputs-grid">
+        <div className="field-custom">
           <label htmlFor="location">Location</label>
           <input
             id="location"
@@ -88,7 +88,7 @@ export function AuctionAlertsForm() {
           />
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="asset">Asset Type</label>
           <select
             id="asset"
@@ -107,7 +107,7 @@ export function AuctionAlertsForm() {
           </select>
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="budget">Budget</label>
           <select
             id="budget"
@@ -123,7 +123,7 @@ export function AuctionAlertsForm() {
           </select>
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="channel">Auction / Opportunity Type</label>
           <select
             id="channel"
@@ -141,7 +141,7 @@ export function AuctionAlertsForm() {
           </select>
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="name">Name</label>
           <input
             id="name"
@@ -152,7 +152,7 @@ export function AuctionAlertsForm() {
           />
         </div>
 
-        <div className="field">
+        <div className="field-custom">
           <label htmlFor="mobile">Mobile / WhatsApp</label>
           <input
             id="mobile"
@@ -164,7 +164,7 @@ export function AuctionAlertsForm() {
           />
         </div>
 
-        <div className="field full">
+        <div className="field-custom col-span-1 sm:col-span-2">
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -177,7 +177,7 @@ export function AuctionAlertsForm() {
       </div>
 
       <button
-        className="btn btn-dark w-full mt-4 flex items-center justify-center gap-2 cursor-pointer"
+        className="btn-pill btn-dark w-full mt-6 flex items-center justify-center gap-2 cursor-pointer"
         type="submit"
         disabled={loading}
       >
