@@ -23,24 +23,24 @@ export default function CareersPage() {
   return (
     <div className="bg-[#fbf9f5] text-[#182129] font-sans antialiased">
       {/* Hero */}
-      <section className="careers-hero">
-        <div className="estabizz-container careers-hero-row">
+      <section className="nc-hero">
+        <div className="estabizz-container nc-hero-row">
           <div>
-            <div className="eyebrow-text">Careers at CityAuction</div>
-            <h1 className="text-4xl sm:text-6xl font-serif-heading font-semibold text-white tracking-tight mt-3">
+            <div className="eyebrow-text !text-[#d9c39c]">Careers at CityAuction</div>
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Build the Market<br />
-              <em className="text-[#dbc39a] not-italic">Behind the Opportunity.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Behind the Opportunity.</em>
             </h1>
 
             <p className="hero-copy text-[#c7d0d7] text-base sm:text-lg max-w-xl mt-4 leading-relaxed">
               CityAuction is building a new way to discover, understand, distribute and transact institutional assets. We are looking for people who combine curiosity, discipline, commercial judgement and respect for process.
             </p>
 
-            <div className="quote-block">
+            <div className="quote-block mt-6 text-[#d9c39c]">
               “We are not building another listing portal. We are building the operating layer around auction and asset opportunity.”
             </div>
 
-            <div className="actions-row">
+            <div className="actions-row mt-6">
               <a className="btn-pill btn-gold" href="#open-roles">
                 Explore Career Tracks
               </a>
@@ -50,30 +50,30 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <aside className="about-hero-card">
+          <aside className="nc-hero-card text-[#182129]">
             <div className="eyebrow-text">Who fits here</div>
-            <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
+            <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>
               People Who Think Beyond the Listing.
             </h3>
             <p className="text-sm text-[#6f777d] mt-2">
               We value clarity, ownership and execution over titles alone.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
               <div className="about-fact">
-                <strong className="text-sm font-bold font-sans text-[#182129]">Commercial Thinkers</strong>
+                <strong className="text-sm font-bold font-sans text-[#182129] block">Commercial Thinkers</strong>
                 <span className="text-xs text-[#6f777d]">Understand buyers, assets and market behaviour.</span>
               </div>
               <div className="about-fact">
-                <strong className="text-sm font-bold font-sans text-[#182129]">Execution People</strong>
+                <strong className="text-sm font-bold font-sans text-[#182129] block">Execution People</strong>
                 <span className="text-xs text-[#6f777d]">Follow through on details, timelines and outcomes.</span>
               </div>
               <div className="about-fact">
-                <strong className="text-sm font-bold font-sans text-[#182129]">Problem Solvers</strong>
+                <strong className="text-sm font-bold font-sans text-[#182129] block">Problem Solvers</strong>
                 <span className="text-xs text-[#6f777d]">Work comfortably across incomplete and complex situations.</span>
               </div>
               <div className="about-fact">
-                <strong className="text-sm font-bold font-sans text-[#182129]">Process Builders</strong>
+                <strong className="text-sm font-bold font-sans text-[#182129] block">Process Builders</strong>
                 <span className="text-xs text-[#6f777d]">Turn knowledge into repeatable systems and technology.</span>
               </div>
             </div>
@@ -89,40 +89,40 @@ export default function CareersPage() {
               <div className="eyebrow-text">Career tracks</div>
             </div>
             <div>
-              <h2>Where You Could Build With Us.</h2>
+              <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Where You Could Build With Us.</h2>
               <p className="lead-text mt-4">
                 Openings can change over time. Even where a specific position is not currently advertised, strong profiles may be considered for future requirements.
               </p>
             </div>
           </div>
 
-          <div className="careers-roles-grid">
-            <article className="careers-role-card">
+          <div className="core-grid mt-10">
+            <article className="core">
               <small>Business</small>
               <h3>Institutional Relationships</h3>
               <p>Work with Banks, NBFCs, ARCs, Liquidators, Insolvency Professionals and institutional asset owners.</p>
             </article>
-            <article className="careers-role-card">
+            <article className="core">
               <small>Marketplace</small>
               <h3>Buyer &amp; Investor Desk</h3>
               <p>Understand investor mandates, auction assets, buyer questions and transaction-support workflows.</p>
             </article>
-            <article className="careers-role-card">
+            <article className="core">
               <small>Operations</small>
               <h3>Auction Operations</h3>
               <p>Manage auction information, documentation, alerts, deadlines, enquiry tracking and bidder-support processes.</p>
             </article>
-            <article className="careers-role-card">
+            <article className="core">
               <small>Research</small>
               <h3>Asset &amp; Auction Intelligence</h3>
               <p>Research asset opportunities, institutional notices, market information and transaction context.</p>
             </article>
-            <article className="careers-role-card">
+            <article className="core">
               <small>Technology</small>
               <h3>Product &amp; Engineering</h3>
               <p>Build marketplace, search, alerts, CRM, automation, data-room and AI-assisted workflow capabilities.</p>
             </article>
-            <article className="careers-role-card">
+            <article className="core">
               <small>Growth</small>
               <h3>Content &amp; Market Development</h3>
               <p>Translate complex auction and asset opportunities into clear, high-quality investor communication.</p>
@@ -136,29 +136,29 @@ export default function CareersPage() {
         <div className="estabizz-container">
           <div className="section-head-grid">
             <div>
-              <div className="eyebrow-text">How we work</div>
+              <div className="eyebrow-text !text-[#d9c39c]">How we work</div>
             </div>
             <div>
-              <h2 className="text-white">Judgement Matters. So Does Discipline.</h2>
+              <h2 className="font-serif-heading text-white" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>Judgement Matters. So Does Discipline.</h2>
             </div>
           </div>
 
-          <div className="culture-grid">
-            <article className="culture-card">
-              <h3>Ownership</h3>
-              <p>Take responsibility for the outcome, not only the assigned task.</p>
+          <div className="core-grid mt-10">
+            <article className="core" style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.1)" }}>
+              <h3 className="text-white">Ownership</h3>
+              <p className="text-[#aeb9c1]">Take responsibility for the outcome, not only the assigned task.</p>
             </article>
-            <article className="culture-card">
-              <h3>Clarity</h3>
-              <p>Complex transactions still need simple, precise communication.</p>
+            <article className="core" style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.1)" }}>
+              <h3 className="text-white">Clarity</h3>
+              <p className="text-[#aeb9c1]">Complex transactions still need simple, precise communication.</p>
             </article>
-            <article className="culture-card">
-              <h3>Integrity</h3>
-              <p>Do not overstate an opportunity, a fact or what we can deliver.</p>
+            <article className="core" style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.1)" }}>
+              <h3 className="text-white">Integrity</h3>
+              <p className="text-[#aeb9c1]">Do not overstate an opportunity, a fact or what we can deliver.</p>
             </article>
-            <article className="culture-card">
-              <h3>Learning</h3>
-              <p>Markets, regulation and technology change. Curiosity is part of the role.</p>
+            <article className="core" style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.1)" }}>
+              <h3 className="text-white">Learning</h3>
+              <p className="text-[#aeb9c1]">Markets, regulation and technology change. Curiosity is part of the role.</p>
             </article>
           </div>
         </div>
@@ -167,27 +167,18 @@ export default function CareersPage() {
       {/* Apply */}
       <section className="estabizz-section bg-[#f6f2ea]" id="apply">
         <div className="estabizz-container">
-          <div className="contact-wrap-box">
-            <div className="contact-info-panel">
-              <div className="eyebrow-text">Join CityAuction</div>
-              <h2 className="text-3xl font-serif-heading font-semibold text-white mt-2">
+          <div className="nc-cta" style={{ background: "radial-gradient(circle at 78% 15%,rgba(180,147,97,.16),transparent 24%), linear-gradient(145deg,#0f1921,#152833)" }}>
+            <div className="max-w-xl">
+              <div className="eyebrow-text !text-[#d9c39c]">Join CityAuction</div>
+              <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
                 Think You Can Add Value?
               </h2>
-              <p className="text-sm text-[#b7c1c8] mt-3 leading-relaxed">
+              <p className="text-sm text-[#b7c1c8] mt-4 leading-relaxed">
                 Tell us where you fit best and what you have built, sold, researched, managed or improved before. We are more interested in evidence of ownership than a long introduction.
               </p>
-
-              <div className="actions-row mt-6">
-                <a
-                  className="btn-pill btn-gold"
-                  href="mailto:info@estabizz.com?subject=Career%20Application%20-%20CityAuction"
-                >
-                  Email Your Profile
-                </a>
-              </div>
             </div>
 
-            <div className="contact-form-panel">
+            <div>
               <CareerForm />
             </div>
           </div>

@@ -26,21 +26,21 @@ export default function ContactPage() {
       <section className="contact-hero">
         <div className="estabizz-container contact-hero-row">
           <div>
-            <div className="eyebrow-text">Contact CityAuction</div>
-            <h1 className="text-4xl sm:text-6xl font-serif-heading font-semibold text-white tracking-tight mt-3">
+            <div className="eyebrow-text !text-[#d9c39c]">Contact CityAuction</div>
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Tell Us What You’re<br />
-              <em className="text-[#dbc39a] not-italic">Trying to Move Forward.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Trying to Move Forward.</em>
             </h1>
 
             <p className="hero-copy text-[#c7d0d7] text-base sm:text-lg max-w-xl mt-4 leading-relaxed">
               Whether you are searching for an auction opportunity, evaluating an asset, trying to reach buyers, exploring Customs lots, or looking for capital or a strategic partner—start with the situation.
             </p>
 
-            <div className="quote-block">
+            <div className="quote-block mt-6 text-[#d9c39c]">
               “The right conversation usually starts with the objective, not the form.”
             </div>
 
-            <div className="actions-row">
+            <div className="actions-row mt-6">
               <a className="btn-pill btn-gold" href="#contact-form">
                 Send an Enquiry
               </a>
@@ -50,16 +50,16 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <aside className="about-hero-card">
+          <aside className="nc-hero-card text-[#182129]">
             <div className="eyebrow-text">Quick contact</div>
-            <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
+            <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>
               CityAuction
             </h3>
             <p className="text-sm text-[#6f777d] mt-1">
               A venture of Estabizz Fintech Private Limited
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
               <div className="about-fact">
                 <strong className="text-xs uppercase text-[#8e7149]">Phone</strong>
                 <a href="tel:+919825669668" className="text-sm font-bold text-[#182129] block mt-1 hover:underline">
@@ -86,7 +86,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-6">
               <a
                 className="btn-pill btn-dark w-full text-center flex items-center justify-center"
                 href="https://wa.me/919825669668"
@@ -174,36 +174,36 @@ export default function ContactPage() {
       {/* Contact Form Section */}
       <section className="estabizz-section bg-[#f6f2ea]" id="contact-form">
         <div className="estabizz-container">
-          <div className="contact-wrap-box">
-            <div className="contact-info-panel">
-              <div className="eyebrow-text">Contact details</div>
-              <h2 className="text-3xl font-serif-heading font-semibold text-white mt-2">
+          <div className="nc-cta" style={{ background: "radial-gradient(circle at 78% 15%,rgba(180,147,97,.16),transparent 24%), linear-gradient(145deg,#0f1921,#152833)" }}>
+            <div className="max-w-xl text-white">
+              <div className="eyebrow-text !text-[#d9c39c]">Contact details</div>
+              <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
                 Start with the Situation.
               </h2>
               <p className="text-sm text-[#b7c1c8] mt-3 leading-relaxed">
                 Share enough context for us to route the enquiry to the right CityAuction desk.
               </p>
 
-              <div className="contact-items-list mt-6 space-y-3">
-                <div className="contact-item-row">
+              <div className="mt-8 space-y-4">
+                <div className="pb-3 border-b border-white/10">
                   <small className="text-xs uppercase text-[#cdb187] font-bold">Phone</small>
                   <strong className="block text-white mt-1">
                     <a href="tel:+919825669668" className="hover:underline">+91 98256 69668</a>
                   </strong>
                 </div>
-                <div className="contact-item-row">
+                <div className="pb-3 border-b border-white/10">
                   <small className="text-xs uppercase text-[#cdb187] font-bold">Email</small>
                   <strong className="block text-white mt-1">
                     <a href="mailto:info@estabizz.com" className="hover:underline">info@estabizz.com</a>
                   </strong>
                 </div>
-                <div className="contact-item-row">
+                <div className="pb-3 border-b border-white/10">
                   <small className="text-xs uppercase text-[#cdb187] font-bold">Office</small>
                   <strong className="block text-white mt-1 font-normal text-sm">
                     Gyan Marg, PDPU Road, Raysan, Gandhinagar, Gujarat – India
                   </strong>
                 </div>
-                <div className="contact-item-row">
+                <div>
                   <small className="text-xs uppercase text-[#cdb187] font-bold">Entity</small>
                   <strong className="block text-white mt-1 font-normal text-sm">
                     CityAuction · A venture of Estabizz Fintech Private Limited
@@ -211,12 +211,12 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="actions-row mt-6">
+              <div className="actions-row mt-8">
                 <a className="btn-pill btn-gold" href="tel:+919825669668">
                   Call
                 </a>
                 <a
-                  className="btn-pill btn-ghost"
+                  className="btn-pill btn-ghost border-white/20 hover:border-white text-white"
                   href="https://wa.me/919825669668"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -226,7 +226,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="contact-form-panel">
+            <div>
               <ContactForm />
             </div>
           </div>

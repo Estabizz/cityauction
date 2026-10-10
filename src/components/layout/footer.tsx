@@ -7,18 +7,8 @@ export function Footer() {
         <div className="footer-top-grid">
           {/* Brand Intro Column */}
           <div className="footer-intro space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-[#091118] border border-[#b49361]/80 text-[#d9c39c] flex items-center justify-center font-serif text-2xl font-bold">
-                C
-              </div>
-              <div>
-                <div className="font-serif text-2xl font-bold text-white leading-none">
-                  CityAuction
-                </div>
-                <div className="text-[10px] uppercase tracking-wider text-[#aeb9c1] mt-1">
-                  Auction · Assets · Capital · Resolution
-                </div>
-              </div>
+            <div className="flex items-center">
+              <img src="/logo.png" alt="CityAuction Logo" className="h-20 sm:h-24 w-auto object-contain" />
             </div>
 
             <p className="text-xs text-[#aab3ba] leading-relaxed max-w-sm pt-2">

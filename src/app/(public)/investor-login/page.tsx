@@ -30,18 +30,8 @@ export default function InvestorLoginPage() {
       {/* Header */}
       <header className="bg-[rgba(251,249,245,0.97)] border-b border-[rgba(24,33,41,0.07)]">
         <div className="container flex items-center justify-between min-h-[80px]">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-[43px] h-[43px] rounded-full grid place-items-center bg-[#091118] border border-[rgba(180,147,97,0.8)] text-[#d9c39c] font-serif-heading text-2xl font-semibold">
-              C
-            </div>
-            <div>
-              <div className="font-serif-heading text-[1.42rem] font-semibold text-[#182129] leading-none">
-                CityAuction
-              </div>
-              <div className="text-[0.59rem] uppercase tracking-[0.14em] text-[#7e868b] mt-0.5">
-                Auction · Assets · Capital · Resolution
-              </div>
-            </div>
+          <Link href="/" className="flex items-center">
+            <img src="/logo.png" alt="CityAuction Logo" className="h-16 sm:h-20 w-auto object-contain" />
           </Link>
 
           <Link href="/auctions" className="text-xs text-[#59636a] hover:text-[#7f623b] flex items-center gap-1 font-medium">

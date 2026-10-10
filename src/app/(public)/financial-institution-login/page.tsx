@@ -65,14 +65,8 @@ export default function FinancialInstitutionLoginPage() {
       {/* Header */}
       <header className="header border-b border-[#e6dfd4] bg-[#fbf9f5]">
         <div className="container header-row flex items-center justify-between py-4">
-          <Link href="/" className="brand flex items-center gap-3">
-            <div className="mark w-11 h-11 rounded-full bg-[#091118] border border-[#b49361] text-[#d9c39c] flex items-center justify-center font-serif-heading font-semibold text-2xl">
-              C
-            </div>
-            <div>
-              <div className="brand-name font-serif-heading font-semibold text-xl text-[#182129]">CityAuction</div>
-              <div className="brand-sub text-[10px] uppercase tracking-widest text-[#7e868b]">Auction · Assets · Capital · Resolution</div>
-            </div>
+          <Link href="/" className="flex items-center">
+            <img src="/logo.png" alt="CityAuction Logo" className="h-16 sm:h-20 w-auto object-contain" />
           </Link>
 
           <Link href="/institutional-services" className="back text-xs text-[#59636a] hover:text-[#7f623b] flex items-center gap-1 font-semibold">
@@ -82,71 +76,71 @@ export default function FinancialInstitutionLoginPage() {
       </header>
 
       {/* Login Shell */}
-      <main className="login-shell">
-        <div className="container login-grid">
+      <main className="min-h-[calc(100vh-116px)] flex items-center py-12" style={{ background: "radial-gradient(circle at 18% 20%, rgba(180, 147, 97, 0.15), transparent 24%), linear-gradient(135deg, #0a1218 0%, #10202b 58%, #172d39 100%)" }}>
+        <div className="estabizz-container grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Column */}
-          <section className="left text-white">
-            <div className="eyebrow-text">Financial Institution Portal</div>
-            <h1 className="text-4xl sm:text-6xl font-serif-heading font-semibold text-white tracking-tight mt-3">
+          <section className="text-white">
+            <div className="eyebrow-text !text-[#d9c39c]">Financial Institution Portal</div>
+            <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Institutional Access.<br />
-              <em className="text-[#dbc39a] not-italic">Built Around the Mandate.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Built Around the Mandate.</em>
             </h1>
 
-            <p className="lead text-[#c5cfd5] text-base mt-4 max-w-xl leading-relaxed">
+            <p className="text-[#c5cfd5] text-base sm:text-lg mt-6 max-w-xl leading-relaxed">
               Secure access for Banks, NBFCs, ARCs, Liquidators, Insolvency Professionals and Financial Institutions managing assets, mandates, buyer enquiries, documents, inspections and institutional reporting through CityAuction.
             </p>
 
-            <div className="quote-block">
+            <div className="quote-block mt-8 text-[#d9c39c]">
               “One secure workspace for the market-facing side of institutional asset resolution.”
             </div>
 
-            <div className="login-trust-grid">
-              <div className="login-trust-item">
-                <strong>Role-Based Access</strong>
-                Access can be structured for authorised users, teams and institutional responsibilities.
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+              <div className="p-5 border border-white/10 rounded-2xl bg-white/5">
+                <strong className="block text-white mb-2">Role-Based Access</strong>
+                <span className="text-sm text-[#aeb9c1]">Access can be structured for authorised users, teams and institutional responsibilities.</span>
               </div>
-              <div className="login-trust-item">
-                <strong>Controlled Documents</strong>
-                Seller-approved files and data-room materials can be permissioned by workflow.
+              <div className="p-5 border border-white/10 rounded-2xl bg-white/5">
+                <strong className="block text-white mb-2">Controlled Documents</strong>
+                <span className="text-sm text-[#aeb9c1]">Seller-approved files and data-room materials can be permissioned by workflow.</span>
               </div>
-              <div className="login-trust-item">
-                <strong>Buyer Funnel Visibility</strong>
-                Review enquiries, inspection requests, lead status and participation readiness.
+              <div className="p-5 border border-white/10 rounded-2xl bg-white/5">
+                <strong className="block text-white mb-2">Buyer Funnel Visibility</strong>
+                <span className="text-sm text-[#aeb9c1]">Review enquiries, inspection requests, lead status and participation readiness.</span>
               </div>
-              <div className="login-trust-item">
-                <strong>Institutional MIS</strong>
-                Track agreed asset, campaign and buyer-engagement activity through one interface.
+              <div className="p-5 border border-white/10 rounded-2xl bg-white/5">
+                <strong className="block text-white mb-2">Institutional MIS</strong>
+                <span className="text-sm text-[#aeb9c1]">Track agreed asset, campaign and buyer-engagement activity through one interface.</span>
               </div>
             </div>
           </section>
 
           {/* Right Column: Card */}
-          <section className="login-card" aria-labelledby="loginTitle">
+          <section className="bg-[rgba(251,249,245,0.99)] border border-white/25 rounded-[30px] p-[34px] shadow-2xl relative" aria-labelledby="loginTitle">
             <div className="card-head flex justify-between items-start gap-4">
               <div>
                 <div className="eyebrow-text">Secure Sign In</div>
-                <h2 id="loginTitle" className="text-2xl font-serif-heading font-semibold text-[#182129] mt-1">
+                <h2 id="loginTitle" className="font-serif-heading font-semibold text-[#182129] mt-1" style={{ fontSize: "1.75rem", lineHeight: 1.2 }}>
                   Institution Login
                 </h2>
-                <p className="text-xs text-[#6f777d] mt-1">
+                <p className="text-xs text-[#6f777d] mt-2">
                   Use the credentials assigned to your authorised institutional account.
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#edf4ef] text-[#416b58] text-[11px] font-bold shrink-0">
-                <span className="w-2 h-2 rounded-full bg-[#416b58]" /> Secure Institutional Access
+                <span className="w-2 h-2 rounded-full bg-[#416b58]" /> Secure Access
               </div>
             </div>
 
-            <div className="login-tabs" role="tablist">
+            <div className="grid grid-cols-2 gap-2 mt-6 p-1.5 bg-[#efeae1] rounded-xl" role="tablist">
               <button
-                className={`login-tab-btn ${mode === "password" ? "active" : ""}`}
+                className={`py-2 text-sm font-semibold rounded-lg transition-all ${mode === "password" ? "bg-white text-[#182129] shadow-sm" : "text-[#7f8a92] hover:text-[#182129]"}`}
                 type="button"
                 onClick={() => { setMode("password"); setStatus(null); }}
               >
                 Password
               </button>
               <button
-                className={`login-tab-btn ${mode === "otp" ? "active" : ""}`}
+                className={`py-2 text-sm font-semibold rounded-lg transition-all ${mode === "otp" ? "bg-white text-[#182129] shadow-sm" : "text-[#7f8a92] hover:text-[#182129]"}`}
                 type="button"
                 onClick={() => { setMode("otp"); setStatus(null); }}
               >
@@ -154,7 +148,7 @@ export default function FinancialInstitutionLoginPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="field-custom">
                 <label htmlFor="institutionId">Institution ID / Registered Email</label>
                 <input

@@ -45,7 +45,7 @@ export function AuctionAlertsForm() {
 
   if (submitted) {
     return (
-      <div className="alert-card text-center space-y-4">
+      <div className="text-center space-y-4">
         <CheckCircle2 className="h-12 w-12 text-[#3f6b57] mx-auto" />
         <h3 className="font-serif-heading text-2xl font-bold text-[#182129]">
           Personalised Alert Activated
@@ -70,14 +70,14 @@ export function AuctionAlertsForm() {
   }
 
   return (
-    <form className="alert-card" id="alert-form" onSubmit={handleSubmit}>
-      <div className="eyebrow">Build your mandate</div>
+    <form id="alert-form" onSubmit={handleSubmit}>
+      <div className="eyebrow-text">Build your mandate</div>
       <h3 className="font-serif-heading text-2xl font-bold text-[#182129] mt-2">
         What Should CityAuction Watch For?
       </h3>
-      <p className="text-xs text-[#6f777d] mt-1">Keep the alert broad or make it very specific.</p>
+      <p className="text-xs text-[#6f777d] mt-2">Keep the alert broad or make it very specific.</p>
 
-      <div className="contact-inputs-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <div className="field-custom">
           <label htmlFor="location">Location</label>
           <input
@@ -185,7 +185,7 @@ export function AuctionAlertsForm() {
         {loading ? "Activating Alert..." : "Create Personalised Alert"}
       </button>
 
-      <div className="micro text-[11px] text-[#8a9195] mt-2.5">
+      <div className="micro text-[11px] text-[#8a9195] mt-3 leading-relaxed">
         Personalised alerts are delivered over WhatsApp and email when matched inventory is discovered.
       </div>
     </form>

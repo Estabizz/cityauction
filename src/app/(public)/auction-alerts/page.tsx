@@ -67,29 +67,29 @@ export default function AuctionAlertsPage() {
               <h2 className="font-serif-heading text-[#182129]" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
                 Simple by Design.
               </h2>
-              <p className="lead-text mt-4">
+              <p className="lead-text mt-4 text-[#59636a]">
                 CityAuction Alerts should make opportunity discovery easier without flooding users with irrelevant notifications.
               </p>
             </div>
           </div>
 
-          <div className="about-beliefs-grid">
-            <article className="about-belief-card">
-              <small className="text-[#8e959a] font-bold tracking-wider">01</small>
-              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>Tell Us Your Mandate</h3>
-              <p className="mt-2">Choose the location, asset class, budget and opportunity type that matter to you.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <article className="p-8 border border-[#e6dfd4] rounded-2xl bg-[#fbf9f5] shadow-sm">
+              <small className="text-[#b49361] font-bold tracking-wider text-xs uppercase">01</small>
+              <h3 className="font-serif-heading mt-4 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>Tell Us Your Mandate</h3>
+              <p className="mt-3 text-[#59636a] text-sm leading-relaxed">Choose the location, asset class, budget and opportunity type that matter to you.</p>
             </article>
 
-            <article className="about-belief-card">
-              <small className="text-[#8e959a] font-bold tracking-wider">02</small>
-              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>CityAuction Matches Opportunities</h3>
-              <p className="mt-2">Relevant opportunities can be matched against supported inventory and alert logic.</p>
+            <article className="p-8 border border-[#e6dfd4] rounded-2xl bg-[#fbf9f5] shadow-sm">
+              <small className="text-[#b49361] font-bold tracking-wider text-xs uppercase">02</small>
+              <h3 className="font-serif-heading mt-4 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>CityAuction Matches Opportunities</h3>
+              <p className="mt-3 text-[#59636a] text-sm leading-relaxed">Relevant opportunities can be matched against supported inventory and alert logic.</p>
             </article>
 
-            <article className="about-belief-card">
-              <small className="text-[#8e959a] font-bold tracking-wider">03</small>
-              <h3 className="font-serif-heading mt-3 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>You Decide What Deserves Attention</h3>
-              <p className="mt-2">Open the opportunity, review the notice and proceed only after your own evaluation and diligence.</p>
+            <article className="p-8 border border-[#e6dfd4] rounded-2xl bg-[#fbf9f5] shadow-sm">
+              <small className="text-[#b49361] font-bold tracking-wider text-xs uppercase">03</small>
+              <h3 className="font-serif-heading mt-4 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>You Decide What Deserves Attention</h3>
+              <p className="mt-3 text-[#59636a] text-sm leading-relaxed">Open the opportunity, review the notice and proceed only after your own evaluation and diligence.</p>
             </article>
           </div>
         </div>

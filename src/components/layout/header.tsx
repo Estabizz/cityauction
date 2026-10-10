@@ -52,14 +52,8 @@ export function Header() {
       <header className="estabizz-header">
         <div className="header-container header-row-custom">
           {/* Brand */}
-          <Link href="/" className="brand-group" aria-label="CityAuction home">
-            <div className="brand-mark" aria-hidden="true">
-              C
-            </div>
-            <div>
-              <div className="brand-title">CityAuction</div>
-              <div className="brand-subtext">Auction · Assets · Capital · Resolution</div>
-            </div>
+          <Link href="/" className="flex items-center" aria-label="CityAuction home">
+            <img src="/logo.png" alt="CityAuction Logo" className="h-16 sm:h-20 w-auto object-contain" />
           </Link>
 
           {/* Desktop Nav */}
