@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Hostinger's build server reports 64 CPUs but caps threads per account, so
+    // the default (CPUs - 1 = 63 workers) crashes with "can't spawn worker thread".
+    cpus: 2,
+  },
   images: {
     remotePatterns: [
       {
