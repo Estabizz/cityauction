@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
               </p>
               <div className="pt-4 border-t border-border">
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
 
               <div className="pt-2 text-center">
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-primary transition-colors"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />

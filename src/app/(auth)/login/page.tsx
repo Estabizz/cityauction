@@ -56,18 +56,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemo = (type: "admin" | "bidder") => {
-    if (type === "admin") {
-      setEmail("admin@cityauction.com");
-      setPassword("CityAuction@2026");
-      setLoginAs("banker");
-    } else {
-      setEmail("bidder@cityauction.com");
-      setPassword("CityAuction@2026");
-      setLoginAs("bidder");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-surface flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -144,7 +132,7 @@ export default function LoginPage() {
                   Password
                 </label>
                 <Link
-                  href="/auth/forgot-password"
+                  href="/forgot-password"
                   className="text-xs text-primary hover:underline font-medium"
                 >
                   Forgot password?
@@ -182,32 +170,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Reviewer / Demo Quick Login Pills */}
-          <div className="mt-6 pt-5 border-t border-border">
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-2 text-center">
-              Demo Test Accounts (Click to Fill)
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemo("bidder")}
-                className="py-1.5 px-2 bg-primary-50 hover:bg-primary-100 text-primary rounded-lg text-xs font-medium border border-primary-100 transition-colors text-center cursor-pointer"
-              >
-                Demo Bidder
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo("admin")}
-                className="py-1.5 px-2 bg-accent-50 hover:bg-accent-100 text-accent-800 rounded-lg text-xs font-medium border border-accent-200 transition-colors text-center cursor-pointer"
-              >
-                Demo Administrator
-              </button>
-            </div>
-          </div>
-
           <div className="mt-6 text-center text-xs text-gray-600">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/register" className="font-semibold text-primary hover:underline">
+            <Link href="/register" className="font-semibold text-primary hover:underline">
               Register as Bidder
             </Link>
           </div>

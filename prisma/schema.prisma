@@ -3,7 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  // Hostinger MySQL (set DATABASE_URL in the Hostinger environment).
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -169,6 +170,9 @@ model User {
   isPhoneVerified   Boolean          @default(false)
   isActive          Boolean          @default(true)
   lastLoginAt       DateTime?
+  // One-time link to set or reset the password (admin bootstrap, forgot password).
+  passwordSetToken   String?          @unique
+  passwordSetExpires DateTime?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
@@ -631,6 +635,11 @@ model Enquiry {
   propertyId String?
   userId     String?
   status     EnquiryStatus @default(NEW)
+  // Which form it came from: contact, auction-alerts, career, investor-desk,
+  // liquidate-asset, institutional-mandate, next-chapter, homepage, ...
+  source     String        @default("contact")
+  pagePath   String?       @db.VarChar(500)
+  metadata   Json?
   assignedTo String?
   adminNotes String?       @db.Text
   createdAt  DateTime      @default(now())
@@ -639,7 +648,29 @@ model Enquiry {
   user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   auction Auction? @relation(fields: [auctionId], references: [id], onDelete: SetNull)
 
+  @@index([createdAt])
+  @@index([source])
   @@map("enquiries")
+}
+
+enum SubscriberStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+// Newsletter / update subscribers (footer and homepage subscribe boxes).
+model Subscriber {
+  id        String           @id @default(cuid())
+  email     String           @unique
+  name      String?
+  source    String           @default("footer")
+  pagePath  String?          @db.VarChar(500)
+  status    SubscriberStatus @default(ACTIVE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([createdAt])
+  @@map("subscribers")
 }
 
 model Blog {

@@ -43,10 +43,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/auth/login");
+      router.push("/login");
       router.refresh();
     } catch (err) {
-      router.push("/auth/login");
+      router.push("/login");
     }
   };
 

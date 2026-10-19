@@ -19,7 +19,8 @@ export async function getAuctions(filters: AuctionFilters = {}): Promise<Paginat
       where.type = filters.auctionType;
     }
     if (filters.city) {
-      where.property = { location: { name: { contains: filters.city, mode: 'insensitive' } } };
+      // MySQL's default collation is case-insensitive.
+      where.property = { location: { name: { contains: filters.city } } };
     }
     if (filters.minPrice || filters.maxPrice) {
       where.reservePrice = {};
