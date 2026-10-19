@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getStateGroups } from "@/content/cities/states";
+import { cityCardData, cityPath, getStateGroups } from "@/content/cities/states";
 import { LocationDirectory, type DirectoryState } from "@/components/city/location-directory";
 import "./locations.css";
 
@@ -28,14 +28,7 @@ export default function LocationsPage() {
   const states: DirectoryState[] = groups.map((group) => ({
     state: group.state,
     slug: group.slug,
-    cities: group.cities.map((page) => ({
-      slug: page.slug,
-      city: page.city,
-      // "Surat · Residential property auction discovery" -> "Residential property auction discovery"
-      eyebrow: page.hero.eyebrow.replace(new RegExp(`^${page.city}\\s*·\\s*`, "i"), ""),
-      title: `${page.hero.titleLead} ${page.hero.titleEmphasis}`.replace(/\.$/, ""),
-      localityCount: page.localities.items.length,
-    })),
+    cities: group.cities.map(cityCardData),
   }));
 
   const jsonLd = {
@@ -55,7 +48,7 @@ export default function LocationsPage() {
             "@type": "ListItem",
             position: i + 1,
             name: `${page.city}, ${page.state}`,
-            url: `${SITE_URL}/${page.slug}`,
+            url: `${SITE_URL}${cityPath(page)}`,
           })),
       },
     ],

@@ -3,12 +3,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CITY_PAGES, getCityPage } from "@/content/cities";
 import type { CityAdSlot } from "@/content/cities/types";
-import { stateSlug } from "@/content/cities/states";
+import { cityPath, statePath, stateSlug } from "@/content/cities/states";
+import type { CityPage as CityPageData } from "@/content/cities/types";
 import { CityAuctionFinder } from "@/components/city/city-auction-finder";
 import { getAuctions } from "@/services/auction.service";
 import "./city-page.css";
 
-// Only the approved city pages exist; any other top-level slug is a 404.
+// Only published city pages exist (/locations/<state>/<city>); anything else is a 404.
 export const dynamicParams = false;
 // Re-render periodically so newly published city listings appear without a rebuild.
 export const revalidate = 900;
@@ -25,17 +26,24 @@ const SERVICE_LINKS = [
 const SERVICE_ANCHORS = ["customs", "next-chapter", "liquidator"];
 
 interface PageProps {
-  params: Promise<{ city: string }>;
+  params: Promise<{ state: string; city: string }>;
 }
 
 export function generateStaticParams() {
-  return CITY_PAGES.map((page) => ({ city: page.slug }));
+  return CITY_PAGES.map((page) => ({ state: stateSlug(page.state), city: page.slug }));
+}
+
+// The city must exist and sit under its own state's URL.
+async function resolvePage(params: PageProps["params"]): Promise<CityPageData | undefined> {
+  const { state, city } = await params;
+  const page = getCityPage(city);
+  return page && stateSlug(page.state) === state ? page : undefined;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const page = getCityPage((await params).city);
+  const page = await resolvePage(params);
   if (!page) return {};
-  const pageUrl = `${SITE_URL}/${page.slug}`;
+  const pageUrl = `${SITE_URL}${cityPath(page)}`;
 
   return {
     // The approved SEO titles already end in "| CityAuction".
@@ -77,12 +85,12 @@ function BannerAd({ ad, label }: { ad: CityAdSlot; label: string }) {
 }
 
 export default async function CityPage({ params }: PageProps) {
-  const page = getCityPage((await params).city);
+  const page = await resolvePage(params);
   if (!page) notFound();
 
   const { data: auctions } = await getAuctions({ city: page.city, limit: 50 });
   const servicesId = `${page.slug}-services`;
-  const pageUrl = `${SITE_URL}/${page.slug}`;
+  const pageUrl = `${SITE_URL}${cityPath(page)}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -98,7 +106,9 @@ export default async function CityPage({ params }: PageProps) {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
-          { "@type": "ListItem", position: 2, name: page.city, item: pageUrl },
+          { "@type": "ListItem", position: 2, name: "Locations", item: `${SITE_URL}/locations` },
+          { "@type": "ListItem", position: 3, name: page.state, item: `${SITE_URL}${statePath(page.state)}` },
+          { "@type": "ListItem", position: 4, name: page.city, item: pageUrl },
         ],
       },
     ],
@@ -114,7 +124,9 @@ export default async function CityPage({ params }: PageProps) {
           <nav className="city-crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link>
             <span aria-hidden="true">/</span>
-            <Link href={`/locations#${stateSlug(page.state)}`}>{page.state}</Link>
+            <Link href="/locations">Locations</Link>
+            <span aria-hidden="true">/</span>
+            <Link href={statePath(page.state)}>{page.state}</Link>
             <span aria-hidden="true">/</span>
             <span>{page.breadcrumb}</span>
           </nav>

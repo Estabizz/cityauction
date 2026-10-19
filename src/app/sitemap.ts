@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { MOCK_AUCTIONS } from '@/services/mock-data';
 import { PROPERTY_CATEGORIES } from '@/lib/constants';
 import { CITY_PAGES } from '@/content/cities';
+import { cityPath, getStateGroups, statePath } from '@/content/cities/states';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cityauction.in';
@@ -36,12 +37,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
+  const statePages: MetadataRoute.Sitemap = getStateGroups().map((group) => ({
+    url: `${baseUrl}${statePath(group.state)}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
   const cityPages: MetadataRoute.Sitemap = CITY_PAGES.map((page) => ({
-    url: `${baseUrl}/${page.slug}`,
+    url: `${baseUrl}${cityPath(page)}`,
     lastModified: new Date(),
     changeFrequency: 'daily',
     priority: 0.8,
   }));
 
-  return [...staticPages, ...cityPages, ...categoryPages, ...auctionPages];
+  return [...staticPages, ...statePages, ...cityPages, ...categoryPages, ...auctionPages];
 }
