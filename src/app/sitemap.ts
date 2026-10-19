@@ -4,7 +4,7 @@ import { PROPERTY_CATEGORIES } from '@/lib/constants';
 import { CITY_PAGES } from '@/content/cities';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cityauction.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cityauction.in';
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },

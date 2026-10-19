@@ -78,7 +78,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "CityAuction",
-  url: "https://cityauction.accounts-c12.workers.dev/",
+  url: "https://cityauction.in/",
   parentOrganization: {
     "@type": "Organization",
     name: "Estabizz Fintech Private Limited",
