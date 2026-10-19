@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
 import { MOCK_AUCTIONS } from '@/services/mock-data';
 import { PROPERTY_CATEGORIES } from '@/lib/constants';
+import { CITY_PAGES } from '@/content/cities';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cityauction.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cityauction.in';
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
@@ -34,5 +35,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...staticPages, ...categoryPages, ...auctionPages];
+  const cityPages: MetadataRoute.Sitemap = CITY_PAGES.map((page) => ({
+    url: `${baseUrl}/${page.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...cityPages, ...categoryPages, ...auctionPages];
 }
