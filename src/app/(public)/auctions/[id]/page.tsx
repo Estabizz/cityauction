@@ -14,12 +14,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!auction) {
     return {
-      title: "Auction Not Found | CityAuction",
+      title: "Auction Not Found",
     };
   }
 
   return {
-    title: `${auction.title} | CityAuction`,
+    title: auction.title,
     description: `Bank auction for ${auction.title} in ${auction.city}, ${auction.state}. Reserve price ₹${auction.reservePrice}. Conducted by ${auction.organizationName}.`,
     openGraph: {
       title: auction.title,

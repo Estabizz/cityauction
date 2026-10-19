@@ -5,7 +5,7 @@ import { PROPERTY_CATEGORIES } from "@/lib/constants";
 import { getCategories } from "@/services/property.service";
 
 export const metadata: Metadata = {
-  title: "Property Categories | CityAuction",
+  title: "Property Categories",
   description:
     "Explore bank auction properties categorized into Residential, Commercial, Industrial, Agricultural, and Land plots across India.",
 };

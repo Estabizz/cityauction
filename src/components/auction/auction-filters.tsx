@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
+import { CITY_LIST } from "@/content/cities/list";
 import {
   RotateCcw,
   SlidersHorizontal,
@@ -166,7 +167,8 @@ export function AuctionFilters() {
             <label className="block text-[11px] text-gray-500 mb-1">City / District</label>
             <input
               type="text"
-              placeholder="e.g. Mumbai, Pune..."
+              placeholder="e.g. Surat, Ahmedabad..."
+              list="city-suggestions"
               defaultValue={currentCity}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -176,6 +178,11 @@ export function AuctionFilters() {
               onBlur={(e) => updateFilter("city", e.target.value)}
               className="w-full h-9 rounded-lg border border-border bg-gray-50 px-3 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
+            <datalist id="city-suggestions">
+              {CITY_LIST.map((c) => (
+                <option key={c.slug} value={c.city} />
+              ))}
+            </datalist>
           </div>
         </div>
       </FilterSection>
