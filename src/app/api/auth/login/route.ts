@@ -49,27 +49,6 @@ export async function POST(req: Request) {
       // Database offline/not yet connected
     }
 
-    // Demo credentials fallback for offline development & client evaluation
-    if (!userSession) {
-      if (normalizedEmail === "admin@cityauction.com" && password === "CityAuction@2026") {
-        userSession = {
-          userId: "usr-admin-1",
-          email: "admin@cityauction.com",
-          fullName: "Chief Auction Administrator",
-          accountType: "INDIVIDUAL",
-          roles: ["SUPER_ADMIN", "ADMIN"],
-        };
-      } else if (normalizedEmail === "bidder@cityauction.com" && password === "CityAuction@2026") {
-        userSession = {
-          userId: "usr-bidder-1",
-          email: "bidder@cityauction.com",
-          fullName: "Vikramaditya Sharma",
-          accountType: "INDIVIDUAL",
-          roles: ["BIDDER", "REGISTERED"],
-        };
-      }
-    }
-
     if (!userSession) {
       return NextResponse.json(
         { success: false, error: "Invalid email or password. Please check your credentials." },

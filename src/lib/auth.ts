@@ -1,21 +1,16 @@
-import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { db } from "./db";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "cityauction-super-secure-production-jwt-secret-min-32-chars"
-);
-
-export const COOKIE_NAME = "cityauction_auth_token";
-
-export interface UserSessionPayload {
-  userId: string;
-  email: string;
-  fullName: string;
-  accountType: string;
-  roles: string[];
-}
+export {
+  ADMIN_ROLES,
+  COOKIE_NAME,
+  isAdmin,
+  signToken,
+  verifyToken,
+  type UserSessionPayload,
+} from "./session-token";
+import { COOKIE_NAME, verifyToken, type UserSessionPayload } from "./session-token";
 
 // 1. Password Hashing
 export async function hashPassword(password: string): Promise<string> {
@@ -25,25 +20,6 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
-}
-
-// 2. JWT Signing
-export async function signToken(payload: UserSessionPayload, expiry = "7d"): Promise<string> {
-  return new SignJWT({ ...payload })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime(expiry)
-    .sign(JWT_SECRET);
-}
-
-// 3. JWT Verification
-export async function verifyToken(token: string): Promise<UserSessionPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as unknown as UserSessionPayload;
-  } catch (error) {
-    return null;
-  }
 }
 
 // 4. Get Current User Session from Cookies (Server Components & Route Handlers)
