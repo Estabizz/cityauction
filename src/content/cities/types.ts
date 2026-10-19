@@ -42,6 +42,7 @@ export interface CityGuideBlock {
 export interface CityPage {
   slug: string;
   city: string;
+  state: string;
   seo: {
     title: string;
     description: string;

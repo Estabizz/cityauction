@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Ahmedabad: CityPage = {
   "slug": "ahmedabad",
   "city": "Ahmedabad",
+  "state": "Gujarat",
   "seo": {
     "title": "Bank Seized Property in Ahmedabad | Bank Auctions, Land & Flats | CityAuction",
     "description": "Explore bank seized property in Ahmedabad, including bank auction flats, commercial premises, industrial assets and land. Browse localities, sale notices and investor guidance on CityAuction.",

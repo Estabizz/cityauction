@@ -67,6 +67,15 @@ export function Header() {
               Auctions
             </Link>
 
+            <Link
+              href="/locations"
+              className={`transition-colors hover:text-[#84663c] ${
+                pathname === "/locations" ? "text-[#84663c] font-semibold" : "text-[#182129]"
+              }`}
+            >
+              Locations
+            </Link>
+
             {/* Services Dropdown */}
             <div className="nav-dropdown-wrap" ref={dropdownRef}>
               <button
@@ -216,6 +225,13 @@ export function Header() {
             onClick={() => setMobileOpen(false)}
           >
             Explore Auctions
+          </Link>
+          <Link
+            href="/locations"
+            className="block py-3.5 border-b border-white/10 text-base"
+            onClick={() => setMobileOpen(false)}
+          >
+            Auctions by State &amp; City
           </Link>
           <Link
             href="/investor-desk"

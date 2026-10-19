@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Mehsana: CityPage = {
   "slug": "mehsana",
   "city": "Mehsana",
+  "state": "Gujarat",
   "seo": {
     "title": "Residential and Industrial Properties for Auction in Mehsana | Flats, Factory & GIDC Plots | CityAuction",
     "description": "Explore residential and industrial properties for auction in Mehsana, including flats, houses, industrial GIDC plots, factory sheds and bank e-auction opportunities.",

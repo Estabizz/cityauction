@@ -42,6 +42,7 @@ export function Footer() {
           <div>
             <h4>Explore Auctions</h4>
             <Link href="/auctions">All Opportunities</Link>
+            <Link href="/locations">Auctions by State &amp; City</Link>
             <Link href="/auctions?auctionType=SARFAESI">SARFAESI Auctions</Link>
             <Link href="/auctions?auctionType=DRT">DRT Auctions</Link>
             <Link href="/auctions?auctionType=ARC">ARC Auctions</Link>

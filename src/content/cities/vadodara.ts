@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Vadodara: CityPage = {
   "slug": "vadodara",
   "city": "Vadodara",
+  "state": "Gujarat",
   "seo": {
     "title": "Bank Auction Properties in Vadodara | Flats, Houses & Land | CityAuction",
     "description": "Explore bank auction properties in Vadodara, including flats, houses, bungalows, shops and industrial land. Discover localities, bank notices and e-auction guidance with CityAuction.",

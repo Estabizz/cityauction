@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Gandhidham: CityPage = {
   "slug": "gandhidham",
   "city": "Gandhidham",
+  "state": "Gujarat",
   "seo": {
     "title": "Logistics & Industrial Plants for Auction in Gandhidham | CityAuction",
     "description": "Explore logistics and industrial plant auctions in Gandhidham: warehouses, factory sheds, industrial land and port-linked commercial assets near Kandla, Mithi Rohar and Anjar.",
