@@ -66,7 +66,7 @@ export default function FinancialInstitutionLoginPage() {
       <header className="header border-b border-[#e6dfd4] bg-[#fbf9f5]">
         <div className="container header-row flex items-center justify-between py-4">
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="CityAuction Logo" className="h-16 sm:h-20 w-auto object-contain" />
+            <img src="/cityauction-logo.png" alt="CityAuction" width={900} height={213} className="h-10 sm:h-12 w-auto object-contain" />
           </Link>
 
           <Link href="/institutional-services" className="back text-xs text-[#59636a] hover:text-[#7f623b] flex items-center gap-1 font-semibold">

@@ -363,6 +363,11 @@ body {
 .btn-ghost { color: #fff; border-color: rgba(255,255,255,.22); }
 .btn-ghost:hover { background: rgba(255,255,255,.08); }
 .actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+/* Header CTA: .btn-pill's display would override Tailwind's hidden, so hide it here on phones. */
+.btn-pill.header-liquidate { display: none; }
+@media (min-width: 640px) {
+  .btn-pill.header-liquidate { display: inline-flex; }
+}
 
 /* Topbar */
 .topbar-wrapper {
@@ -443,7 +448,7 @@ body {
   white-space: nowrap;
 }
 .nav-links-custom {
-  display: flex;
+  /* display comes from the hidden / xl:flex utilities in the header */
   align-items: center;
   gap: 28px;
   font-size: .84rem;
@@ -767,6 +772,14 @@ body {
   color: #d6bf95; margin-bottom: 16px;
 }
 .estabizz-footer a { display: block; font-size: .83rem; margin: 8px 0; color: #aab3ba; }
+.estabizz-footer a.footer-logo-link {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #fbf9f5;
+}
 .estabizz-footer a:hover { color: #fff; }
 .footer-contact-box {
   margin-top: 20px; padding: 18px; border: 1px solid #1a242b; border-radius: 14px; background: #0a1116;

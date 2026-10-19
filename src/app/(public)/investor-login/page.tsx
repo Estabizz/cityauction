@@ -31,7 +31,7 @@ export default function InvestorLoginPage() {
       <header className="bg-[rgba(251,249,245,0.97)] border-b border-[rgba(24,33,41,0.07)]">
         <div className="container flex items-center justify-between min-h-[80px]">
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="CityAuction Logo" className="h-16 sm:h-20 w-auto object-contain" />
+            <img src="/cityauction-logo.png" alt="CityAuction" width={900} height={213} className="h-10 sm:h-12 w-auto object-contain" />
           </Link>
 
           <Link href="/auctions" className="text-xs text-[#59636a] hover:text-[#7f623b] flex items-center gap-1 font-medium">

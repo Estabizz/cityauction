@@ -7,9 +7,10 @@ export function Footer() {
         <div className="footer-top-grid">
           {/* Brand Intro Column */}
           <div className="footer-intro space-y-3">
-            <div className="flex items-center">
-              <img src="/logo.png" alt="CityAuction Logo" className="h-20 sm:h-24 w-auto object-contain" />
-            </div>
+            {/* Navy lettering needs a light ground to read on the dark footer. */}
+            <Link href="/" aria-label="CityAuction home" className="footer-logo-link">
+              <img src="/cityauction-logo.png" alt="CityAuction" width={900} height={213} className="h-11 sm:h-12 w-auto object-contain" />
+            </Link>
 
             <p className="text-xs text-[#aab3ba] leading-relaxed max-w-sm pt-2">
               CityAuction is an auction and asset opportunity ecosystem connecting buyers,
