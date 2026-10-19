@@ -1,0 +1,91 @@
+/* ============================================================
+   Locations hub (/locations): every state with published city
+   pages, matching the city landing page palette.
+   ============================================================ */
+
+.loc-page {
+  --loc-navy: #071c38;
+  --loc-gold: #c59c59;
+  --loc-goldlight: #ead2a2;
+  --loc-cream: #f8f6f2;
+  --loc-muted: #607086;
+  --loc-ink: #172b44;
+  --loc-stroke: #dfe5ea;
+  background: var(--loc-cream);
+  color: var(--loc-ink);
+  font-family: "Manrope", sans-serif;
+  line-height: 1.58;
+}
+.loc-page h1,
+.loc-page h2,
+.loc-page h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  line-height: 1.12;
+  margin: 0;
+}
+.loc-page a:focus-visible,
+.loc-page input:focus-visible { outline: 3px solid var(--loc-gold); outline-offset: 2px; }
+
+.loc-wrap { max-width: 1270px; padding: 0 24px; margin: 0 auto; }
+.loc-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 2.2px; text-transform: uppercase; color: var(--loc-gold); margin-bottom: 8px; }
+
+/* Hero */
+.loc-hero { background: radial-gradient(circle at 78% 20%, #173f64 0%, transparent 37%), linear-gradient(120deg, #071b35, #102a49 65%, #06152a); color: #fff; }
+.loc-crumb { display: flex; gap: 10px; padding: 15px 0; color: #c5d2e0; font-size: 12px; }
+.loc-crumb a { color: #e7c787; }
+.loc-hero-main { padding: 36px 0 44px; max-width: 800px; }
+.loc-page .loc-hero h1 { font-size: clamp(38px, 4.8vw, 64px); color: #fff; letter-spacing: -1px; }
+.loc-hero h1 em { color: var(--loc-goldlight); font-style: normal; }
+.loc-hero-main > p { color: #ccd7e4; font-size: 16px; max-width: 700px; margin: 20px 0 0; }
+.loc-metrics { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 28px; padding-top: 18px; border-top: 1px solid #38516d; font-size: 13px; color: #d4deeb; }
+.loc-metrics b { font: 600 30px "Cormorant Garamond", Georgia, serif; color: var(--loc-goldlight); margin-right: 6px; }
+
+/* Toolbar */
+.loc-section { padding: 48px 0 68px; }
+.loc-toolbar { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: end; margin-bottom: 34px; }
+.loc-search label { display: block; color: #596b81; font-size: 11px; font-weight: 800; letter-spacing: .45px; text-transform: uppercase; margin-bottom: 7px; }
+.loc-search input { width: 100%; border: 1px solid #d7dfe7; border-radius: 6px; padding: 12px 14px; background: #fff; color: var(--loc-ink); min-height: 48px; font: inherit; box-shadow: 0 8px 25px rgba(6, 23, 45, .04); }
+.loc-state-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.loc-state-chips a { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #d8d9dd; border-radius: 999px; padding: 9px 14px; font-size: 13px; font-weight: 800; color: #0d2a4d; }
+.loc-state-chips a:hover { border-color: #b38a48; }
+.loc-state-chips span { background: #f4ecde; color: #8f6a2f; border-radius: 999px; padding: 1px 8px; font-size: 11px; }
+
+/* State sections */
+.loc-state { margin-bottom: 44px; scroll-margin-top: 24px; }
+.loc-state-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 1px solid #e4dccd; padding-bottom: 12px; margin-bottom: 18px; }
+.loc-page .loc-state-head h2 { font-size: clamp(30px, 3vw, 42px); color: var(--loc-navy); }
+.loc-state-head span { font-size: 12px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #9e763b; }
+.loc-city-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.loc-city { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--loc-stroke); border-radius: 9px; padding: 22px 21px; min-height: 210px; transition: transform .18s, border-color .18s, box-shadow .18s; }
+.loc-city:hover { transform: translateY(-3px); border-color: var(--loc-gold); box-shadow: 0 14px 34px rgba(5, 30, 56, .08); }
+.loc-city-name { font-size: 11px; color: #a37a39; letter-spacing: 1.6px; font-weight: 900; text-transform: uppercase; }
+.loc-page .loc-city h3 { font-size: 25px; color: var(--loc-navy); margin: 12px 0 8px; }
+.loc-city p { font-size: 13px; color: var(--loc-muted); margin: 0 0 16px; }
+.loc-city-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid #edf0f3; padding-top: 12px; font-size: 12px; color: #6c7b8c; }
+.loc-city-arrow { color: #946c2e; font-weight: 800; }
+
+/* Empty search + note */
+.loc-empty { padding: 28px 23px; border: 1px solid #dce4ea; border-radius: 9px; background: #fff; margin-bottom: 30px; }
+.loc-empty strong { font: 600 27px "Cormorant Garamond", Georgia, serif; color: #122d4c; }
+.loc-empty p { font-size: 14px; color: #586f86; margin: 8px 0 16px; max-width: 640px; }
+.loc-empty-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.loc-btn { display: inline-flex; align-items: center; padding: 12px 18px; border: 1px solid var(--loc-gold); background: var(--loc-gold); color: var(--loc-navy); font-weight: 800; font-size: 13px; border-radius: 4px; }
+.loc-btn-outline { background: transparent; border-color: #b7a078; }
+.loc-note { font-size: 12px; color: #64778b; border-left: 3px solid var(--loc-gold); padding: 11px 14px; background: #fff; }
+
+@media (max-width: 1000px) {
+  .loc-city-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .loc-toolbar { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .loc-wrap { padding: 0 16px; }
+  .loc-page .loc-hero h1 { font-size: 40px; }
+  .loc-city-grid { grid-template-columns: 1fr; }
+  .loc-city { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loc-city { transition: none; transform: none !important; }
+}

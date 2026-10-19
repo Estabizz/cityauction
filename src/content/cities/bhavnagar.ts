@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Bhavnagar: CityPage = {
   "slug": "bhavnagar",
   "city": "Bhavnagar",
+  "state": "Gujarat",
   "seo": {
     "title": "Bungalow, Industrial & Commercial Property Auctions in Bhavnagar | CityAuction",
     "description": "Explore bungalow, industrial and commercial property auctions in Bhavnagar. Discover houses, factory sheds, GIDC plots and shops in Chitra, Vartej, Nari and Sihor.",

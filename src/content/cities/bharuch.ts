@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Bharuch: CityPage = {
   "slug": "bharuch",
   "city": "Bharuch",
+  "state": "Gujarat",
   "seo": {
     "title": "Industrial and Commercial Auction Properties in Bharuch | Factory, GIDC Land & Shops | CityAuction",
     "description": "Explore industrial and commercial auction properties in Bharuch, including factory sheds, GIDC plots, warehouses, shops and bank auctions around Dahej, Ankleshwar and Jhagadia.",

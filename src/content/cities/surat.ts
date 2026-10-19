@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Surat: CityPage = {
   "slug": "surat",
   "city": "Surat",
+  "state": "Gujarat",
   "seo": {
     "title": "Bank Auction Properties in Surat | Flats, Shops & E-Auctions | CityAuction",
     "description": "Explore bank auction flats, homes, commercial shops and industrial assets across Surat. Review locality-wise opportunities and original bank auction notices.",

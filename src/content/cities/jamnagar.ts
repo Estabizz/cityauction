@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Jamnagar: CityPage = {
   "slug": "jamnagar",
   "city": "Jamnagar",
+  "state": "Gujarat",
   "seo": {
     "title": "Industrial and Commercial Auction Properties in Jamnagar | Factory, Land & Shop Auctions | CityAuction",
     "description": "Discover industrial and commercial auction properties in Jamnagar: factory sheds, GIDC plots, warehouses, shops and bank e-auctions around Dared, Shankar Tekri and Hapa.",

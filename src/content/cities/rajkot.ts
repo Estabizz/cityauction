@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Rajkot: CityPage = {
   "slug": "rajkot",
   "city": "Rajkot",
+  "state": "Gujarat",
   "seo": {
     "title": "Industrial and Commercial Auction Properties in Rajkot | Factories, Plots & Shops | CityAuction",
     "description": "Explore industrial and commercial auction properties in Rajkot: factories, GIDC plots, warehouses, shops and bank auction assets near Aji, Metoda, Shapar and Gondal Road.",

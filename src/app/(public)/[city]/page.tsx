@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CITY_PAGES, getCityPage } from "@/content/cities";
 import type { CityAdSlot } from "@/content/cities/types";
+import { stateSlug } from "@/content/cities/states";
 import { CityAuctionFinder } from "@/components/city/city-auction-finder";
 import { getAuctions } from "@/services/auction.service";
 import "./city-page.css";
@@ -112,6 +113,8 @@ export default async function CityPage({ params }: PageProps) {
         <div className="city-wrap">
           <nav className="city-crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link>
+            <span aria-hidden="true">/</span>
+            <Link href={`/locations#${stateSlug(page.state)}`}>{page.state}</Link>
             <span aria-hidden="true">/</span>
             <span>{page.breadcrumb}</span>
           </nav>

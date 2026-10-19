@@ -4,6 +4,7 @@ import type { CityPage } from "./types";
 export const Ankleshwar: CityPage = {
   "slug": "ankleshwar",
   "city": "Ankleshwar",
+  "state": "Gujarat",
   "seo": {
     "title": "Chemical & Industrial Plant Auction Property in Ankleshwar | Factory & GIDC Auctions | CityAuction",
     "description": "Explore chemical and industrial plant auction property in Ankleshwar. Discover GIDC plots, chemical units, factory sheds, warehouses and commercial assets with important bidding checks.",
