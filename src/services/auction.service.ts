@@ -18,6 +18,9 @@ export async function getAuctions(filters: AuctionFilters = {}): Promise<Paginat
     if (filters.auctionType) {
       where.type = filters.auctionType;
     }
+    if (filters.city) {
+      where.property = { location: { name: { contains: filters.city, mode: 'insensitive' } } };
+    }
     if (filters.minPrice || filters.maxPrice) {
       where.reservePrice = {};
       if (filters.minPrice) (where.reservePrice as Record<string, number>).gte = filters.minPrice;
