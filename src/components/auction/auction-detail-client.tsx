@@ -25,6 +25,7 @@ import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 import { AuctionStatusBadge, Badge } from "@/components/ui/badge";
 import type { DetailedAuction } from "@/services/mock-data";
 import { EmdCheckoutModal } from "@/components/payments/emd-checkout-modal";
+import { cityPath, findCityByName } from "@/content/cities/paths";
 
 interface AuctionDetailClientProps {
   auction: DetailedAuction;
@@ -32,6 +33,7 @@ interface AuctionDetailClientProps {
 
 export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const cityPage = findCityByName(auction.city);
   const [activeTab, setActiveTab] = useState<"description" | "location" | "terms" | "documents" | "officer">("description");
   const [isFavourited, setIsFavourited] = useState(auction.isFavourited || false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -103,7 +105,14 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
                 <AuctionStatusBadge status={auction.status} />
                 <span className="text-xs text-gray-500 flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
-                  {auction.city}, {auction.state}
+                  {cityPage ? (
+                    <Link href={cityPath(cityPage)} className="underline underline-offset-2 hover:text-primary">
+                      {auction.city}
+                    </Link>
+                  ) : (
+                    auction.city
+                  )}
+                  , {auction.state}
                 </span>
               </div>
               <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
@@ -315,6 +324,14 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
                         <p className="text-xs text-gray-500 mt-2">
                           District: {auction.city} | State: {auction.state}
                         </p>
+                        {cityPage && (
+                          <Link
+                            href={cityPath(cityPage)}
+                            className="inline-block text-xs font-semibold text-primary mt-2 hover:underline"
+                          >
+                            More about {cityPage.city} auctions, localities &amp; guidance →
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>

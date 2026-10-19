@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CITY_LIST } from "@/content/cities/list";
+import { cityPath } from "@/content/cities/paths";
 import {
   Search,
   ArrowRight,
@@ -22,6 +24,12 @@ import {
 export default function HomePage() {
   const router = useRouter();
 
+  // Location options come from the published city pages, grouped by state.
+  const citiesByState = CITY_LIST.reduce<Record<string, typeof CITY_LIST>>((groups, c) => {
+    (groups[c.state] ??= []).push(c);
+    return groups;
+  }, {});
+
   // Search State
   const [location, setLocation] = useState("");
   const [assetType, setAssetType] = useState("");
@@ -39,8 +47,14 @@ export default function HomePage() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const city = CITY_LIST.find((c) => c.slug === location);
+    // A city on its own opens that city's page; with other filters, search the marketplace there.
+    if (city && !assetType && !budget && !channel) {
+      router.push(cityPath(city));
+      return;
+    }
     const params = new URLSearchParams();
-    if (location) params.set("city", location);
+    if (city) params.set("city", city.city);
     if (assetType) {
       const typeMap: Record<string, string> = {
         Residential: "RESIDENTIAL",
@@ -192,17 +206,15 @@ export default function HomePage() {
                   onChange={(e) => setLocation(e.target.value)}
                 >
                   <option value="">Select location</option>
-                  <option value="Ahmedabad">Ahmedabad</option>
-                  <option value="Gandhinagar">Gandhinagar</option>
-                  <option value="Surat">Surat</option>
-                  <option value="Vadodara">Vadodara</option>
-                  <option value="Rajkot">Rajkot</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Pune">Pune</option>
-                  <option value="Thane">Thane</option>
-                  <option value="Navi Mumbai">Navi Mumbai</option>
-                  <option value="Delhi">Delhi / NCR</option>
-                  <option value="Bangalore">Bangalore</option>
+                  {Object.entries(citiesByState).map(([state, cities]) => (
+                    <optgroup key={state} label={state}>
+                      {cities.map((c) => (
+                        <option key={c.slug} value={c.slug}>
+                          {c.city}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
 
@@ -260,6 +272,11 @@ export default function HomePage() {
             <button className="btn-pill btn-dark w-full mt-4" type="submit">
               Search Opportunities
             </button>
+            <div className="text-xs text-center mt-3">
+              <Link href="/locations" className="font-semibold text-[#84663c] underline underline-offset-2">
+                Browse all locations by state &amp; city →
+              </Link>
+            </div>
             <div className="text-[11px] text-gray-500 mt-2 text-center">
               Connected to 12,000+ active statutory Indian bank & NPA opportunities.
             </div>

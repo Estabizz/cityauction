@@ -92,11 +92,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const details = CATEGORY_DETAILS[category.toLowerCase()];
 
   if (!details) {
-    return { title: "Category Not Found | CityAuction" };
+    return { title: "Category Not Found" };
   }
 
   return {
-    title: `${details.title} | CityAuction`,
+    title: details.title,
     description: details.description,
   };
 }

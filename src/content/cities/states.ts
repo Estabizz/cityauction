@@ -1,27 +1,13 @@
 import { CITY_PAGES } from "./index";
 import type { CityPage } from "./types";
+import { cityPath, stateSlug } from "./paths";
+
+export { cityPath, statePath, stateSlug } from "./paths";
 
 export interface StateGroup {
   state: string;
   slug: string;
   cities: CityPage[];
-}
-
-export function stateSlug(state: string): string {
-  return state
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-// URL scheme: /locations/<state>/<city> (and later /locations/<state>/<city>/<area>).
-export function statePath(state: string): string {
-  return `/locations/${stateSlug(state)}`;
-}
-
-export function cityPath(page: Pick<CityPage, "state" | "slug">): string {
-  return `${statePath(page.state)}/${page.slug}`;
 }
 
 export function getStateGroup(slug: string): StateGroup | undefined {

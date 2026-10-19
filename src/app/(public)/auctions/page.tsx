@@ -1,12 +1,14 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getAuctions } from "@/services/auction.service";
 import { AuctionFilters } from "@/components/auction/auction-filters";
 import { AuctionResultsClient } from "@/components/auction/auction-results-client";
 import type { AuctionFilters as FilterType } from "@/types";
+import { cityPath, findCityByName } from "@/content/cities/paths";
 
 export const metadata: Metadata = {
-  title: "Bank Auction Properties Search | CityAuction",
+  title: "Bank Auction Properties Search",
   description:
     "Search verified Indian bank auction properties. Filter by state, city, property type, reserve price, and SARFAESI / DRT auction dates.",
 };
@@ -18,6 +20,7 @@ interface PageProps {
     district?: string;
     category?: string;
     type?: string;
+    auctionType?: string;
     status?: string;
     possession?: string;
     minPrice?: string;
@@ -36,7 +39,8 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
     city: resolvedParams.city,
     district: resolvedParams.district,
     category: resolvedParams.category,
-    auctionType: resolvedParams.type,
+    // Links use either ?type= or ?auctionType= (homepage search, footer).
+    auctionType: resolvedParams.type || resolvedParams.auctionType,
     status: resolvedParams.status,
     possession: resolvedParams.possession,
     minPrice: resolvedParams.minPrice ? Number(resolvedParams.minPrice) : undefined,
@@ -48,6 +52,8 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
   };
 
   const { data: auctions, pagination } = await getAuctions(filters);
+  // When the city filter matches a published city page, link to it.
+  const cityPage = findCityByName(resolvedParams.city);
 
   return (
     <div className="bg-surface min-h-screen py-8">
@@ -55,7 +61,7 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
         {/* Page Header */}
         <div className="mb-6">
           <nav className="text-xs text-gray-500 mb-2">
-            <span className="hover:text-primary cursor-pointer">Home</span> &gt;{" "}
+            <Link href="/" className="hover:text-primary">Home</Link> &gt;{" "}
             <span className="text-gray-800 font-medium">Auctions</span>
             {resolvedParams.state && (
               <>
@@ -79,6 +85,18 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
           <p className="text-sm text-gray-500 mt-1">
             Browse verified SARFAESI, DRT, and NPA properties on public auction
           </p>
+          {cityPage && (
+            <Link
+              href={cityPath(cityPage)}
+              className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#dbcba9] bg-[#fbf8f1] px-4 py-3 text-sm text-[#172b44] hover:border-[#b99b66]"
+            >
+              <span>
+                Exploring <strong>{cityPage.city}</strong>? See localities, services and buyer guidance on our{" "}
+                {cityPage.city} page.
+              </span>
+              <span className="font-semibold text-[#84663c]">Open {cityPage.city} page →</span>
+            </Link>
+          )}
         </div>
 
         {/* Main Grid: Sidebar Filters + Results */}
