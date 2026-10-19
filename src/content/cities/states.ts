@@ -15,6 +15,19 @@ export function stateSlug(state: string): string {
     .replace(/^-|-$/g, "");
 }
 
+// URL scheme: /locations/<state>/<city> (and later /locations/<state>/<city>/<area>).
+export function statePath(state: string): string {
+  return `/locations/${stateSlug(state)}`;
+}
+
+export function cityPath(page: Pick<CityPage, "state" | "slug">): string {
+  return `${statePath(page.state)}/${page.slug}`;
+}
+
+export function getStateGroup(slug: string): StateGroup | undefined {
+  return getStateGroups().find((group) => group.slug === slug);
+}
+
 // States that have at least one published city page, alphabetical, each with
 // its cities alphabetical. States without pages are never listed.
 export function getStateGroups(): StateGroup[] {
@@ -29,4 +42,25 @@ export function getStateGroups(): StateGroup[] {
       slug: stateSlug(state),
       cities: cities.sort((a, b) => a.city.localeCompare(b.city)),
     }));
+}
+
+export interface CityCardData {
+  slug: string;
+  href: string;
+  city: string;
+  eyebrow: string;
+  title: string;
+  localityCount: number;
+}
+
+export function cityCardData(page: CityPage): CityCardData {
+  return {
+    slug: page.slug,
+    href: cityPath(page),
+    city: page.city,
+    // "Surat · Residential property auction discovery" -> "Residential property auction discovery"
+    eyebrow: page.hero.eyebrow.replace(new RegExp(`^${page.city}\\s*·\\s*`, "i"), ""),
+    title: `${page.hero.titleLead} ${page.hero.titleEmphasis}`.replace(/\.$/, ""),
+    localityCount: page.localities.items.length,
+  };
 }

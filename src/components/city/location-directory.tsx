@@ -2,19 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-
-export interface DirectoryCity {
-  slug: string;
-  city: string;
-  eyebrow: string;
-  title: string;
-  localityCount: number;
-}
+import type { CityCardData } from "@/content/cities/states";
 
 export interface DirectoryState {
   state: string;
   slug: string;
-  cities: DirectoryCity[];
+  cities: CityCardData[];
 }
 
 export function LocationDirectory({ states }: { states: DirectoryState[] }) {
@@ -77,27 +70,35 @@ export function LocationDirectory({ states }: { states: DirectoryState[] }) {
         visible.map((group) => (
           <section key={group.slug} className="loc-state" id={group.slug} aria-labelledby={`${group.slug}-title`}>
             <div className="loc-state-head">
-              <h2 id={`${group.slug}-title`}>{group.state}</h2>
+              <h2 id={`${group.slug}-title`}>
+                <Link href={`/locations/${group.slug}`}>{group.state}</Link>
+              </h2>
               <span>
                 {group.cities.length} {group.cities.length === 1 ? "city" : "cities"}
               </span>
             </div>
             <div className="loc-city-grid">
               {group.cities.map((city) => (
-                <Link key={city.slug} className="loc-city" href={`/${city.slug}`}>
-                  <div className="loc-city-name">{city.city}</div>
-                  <h3>{city.title}</h3>
-                  <p>{city.eyebrow}</p>
-                  <div className="loc-city-foot">
-                    <span>{city.localityCount} localities</span>
-                    <span className="loc-city-arrow">Explore {city.city} →</span>
-                  </div>
-                </Link>
+                <CityCard key={city.slug} city={city} />
               ))}
             </div>
           </section>
         ))
       )}
     </>
+  );
+}
+
+export function CityCard({ city }: { city: CityCardData }) {
+  return (
+    <Link className="loc-city" href={city.href}>
+      <div className="loc-city-name">{city.city}</div>
+      <h3>{city.title}</h3>
+      <p>{city.eyebrow}</p>
+      <div className="loc-city-foot">
+        <span>{city.localityCount} localities</span>
+        <span className="loc-city-arrow">Explore {city.city} →</span>
+      </div>
+    </Link>
   );
 }
