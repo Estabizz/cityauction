@@ -52,12 +52,12 @@ export function Header() {
       <header className="estabizz-header">
         <div className="header-container header-row-custom">
           {/* Brand */}
-          <Link href="/" className="flex items-center" aria-label="CityAuction home">
-            <img src="/logo.png" alt="CityAuction Logo" className="h-16 sm:h-20 w-auto object-contain" />
+          <Link href="/" className="flex items-center shrink-0" aria-label="CityAuction home">
+            <img src="/cityauction-logo.png" alt="CityAuction" width={900} height={213} className="h-10 sm:h-12 w-auto object-contain" />
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="nav-links-custom hidden lg:flex" aria-label="Primary navigation">
+          <nav className="nav-links-custom hidden xl:flex" aria-label="Primary navigation">
             <Link
               href="/auctions"
               className={`transition-colors hover:text-[#84663c] ${
@@ -180,7 +180,7 @@ export function Header() {
           {/* Action CTAs */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <Link
-              className="btn-pill btn-dark hidden sm:inline-flex text-xs px-4 py-2"
+              className="btn-pill btn-dark header-liquidate text-xs px-4 py-2"
               href="/liquidate-an-asset"
             >
               Liquidate an Asset
@@ -197,7 +197,7 @@ export function Header() {
 
             {/* Mobile Hamburger Button */}
             <button
-              className="lg:hidden w-10 h-10 rounded-full border border-gray-300 bg-white flex flex-col items-center justify-center gap-1.5 transition-colors hover:bg-gray-50 cursor-pointer ml-1"
+              className="xl:hidden w-10 h-10 rounded-full border border-gray-300 bg-white flex flex-col items-center justify-center gap-1.5 transition-colors hover:bg-gray-50 cursor-pointer ml-1"
               onClick={() => setMobileOpen(!mobileOpen)}
               type="button"
               aria-label="Open navigation"
