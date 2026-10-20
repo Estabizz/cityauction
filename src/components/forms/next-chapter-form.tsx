@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function NextChapterForm() {
   const [opportunityType, setOpportunityType] = useState("");
@@ -14,34 +15,30 @@ export function NextChapterForm() {
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    try {
-      const res = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          phone: "Private Mandate",
-          subject: `[Next Chapter Private Mandate] ${opportunityType} - ${objective} (${location})`,
-          message: `Situation Type: ${opportunityType}\nPrimary Objective: ${objective}\nLocation: ${location}\nIndicative Asset / Project Value: ₹${value}\nContact Person: ${name}\nEmail: ${email}\n\nBrief Situation Context:\n${context}`,
-        }),
-      });
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "next-chapter",
+      name,
+      email,
+      subject: `Next Chapter: ${opportunityType} - ${objective} (${location})`,
+      message: context,
+      fields: {
+        "Situation type": opportunityType,
+        "Primary objective": objective,
+        Location: location,
+        "Indicative value": value,
+      },
+    });
 
-      if (!res.ok) {
-        throw new Error("Submission failed");
-      }
-      setSubmitted(true);
-    } catch {
-      // In offline/mock fallback mode
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -166,6 +163,9 @@ export function NextChapterForm() {
           />
         </div>
       </div>
+
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-6 flex items-center justify-center gap-2 cursor-pointer"

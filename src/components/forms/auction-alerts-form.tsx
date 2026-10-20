@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function AuctionAlertsForm() {
   const [location, setLocation] = useState("");
@@ -14,33 +15,30 @@ export function AuctionAlertsForm() {
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    try {
-      const res = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email: email || "alerts@estabizz.com",
-          phone: mobile,
-          subject: `[Personalised Alert Mandate] ${assetType} - ${location} (${budget})`,
-          message: `Mandate Details:\nLocation: ${location || "All India"}\nAsset Type: ${assetType}\nBudget Range: ${budget}\nOpportunity Type: ${channel}\nName: ${name}\nMobile/WhatsApp: ${mobile}\nEmail: ${email || "Not specified"}`,
-        }),
-      });
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "auction-alerts",
+      name,
+      email,
+      phone: mobile,
+      subject: `Auction alert: ${assetType} in ${location || "All India"} (${budget})`,
+      fields: {
+        Location: location || "All India",
+        "Asset type": assetType,
+        Budget: budget,
+        "Opportunity type": channel,
+      },
+    });
 
-      if (!res.ok) {
-        throw new Error("Failed to register alert");
-      }
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -175,6 +173,9 @@ export function AuctionAlertsForm() {
           />
         </div>
       </div>
+
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-6 flex items-center justify-center gap-2 cursor-pointer"

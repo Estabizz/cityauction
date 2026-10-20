@@ -2,39 +2,43 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function InstitutionalMandateForm() {
   const [entity, setEntity] = useState("");
   const [asset, setAsset] = useState("");
   const [location, setLocation] = useState("");
   const [contact, setContact] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [details, setDetails] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    try {
-      await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: contact,
-          email: "institutional@estabizz.com",
-          phone: "N/A",
-          subject: `[Institutional Mandate] ${entity} - ${asset} (${location || "N/A"})`,
-          message: `Institution Type: ${entity}\nAsset Type: ${asset}\nLocation: ${location}\nContact Person: ${contact}\n\nMandate Details / Sale Stage:\n${details}`,
-        }),
-      });
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "institutional-mandate",
+      name: contact,
+      email,
+      phone,
+      subject: `Institutional mandate: ${entity} - ${asset}${location ? ` (${location})` : ""}`,
+      message: details,
+      fields: {
+        "Institution type": entity,
+        "Asset type": asset,
+        Location: location,
+      },
+    });
+
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -54,6 +58,8 @@ export function InstitutionalMandateForm() {
             setAsset("");
             setLocation("");
             setContact("");
+            setEmail("");
+            setPhone("");
             setDetails("");
           }}
           className="btn-pill btn-dark text-xs py-2 px-5 mt-2"
@@ -123,6 +129,30 @@ export function InstitutionalMandateForm() {
           />
         </div>
 
+        <div className="field-custom">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="official@institution.com"
+            required
+          />
+        </div>
+
+        <div className="field-custom">
+          <label htmlFor="phone">Phone</label>
+          <input
+            id="phone"
+            type="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+91 Mobile number"
+          />
+        </div>
+
         <div className="field-custom col-span-1 sm:col-span-2">
           <label htmlFor="details">Mandate / Current Sale Stage</label>
           <textarea
@@ -133,6 +163,9 @@ export function InstitutionalMandateForm() {
           />
         </div>
       </div>
+
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"

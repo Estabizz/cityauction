@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function ContactForm() {
   const [name, setName] = useState("");
@@ -13,29 +14,26 @@ export function ContactForm() {
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    try {
-      await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email: email || "info@estabizz.com",
-          phone: mobile,
-          subject: subject || `[Enquiry: ${enquiry}] ${name}`,
-          message: `Category: ${enquiry}\nMobile: ${mobile}\nEmail: ${email}\n\nSituation / Message:\n${message}`,
-        }),
-      });
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "contact",
+      name,
+      email,
+      phone: mobile,
+      subject: subject || `${enquiry} - ${name}`,
+      message,
+      fields: { "Help with": enquiry },
+    });
+
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -152,6 +150,9 @@ export function ContactForm() {
           />
         </div>
       </div>
+
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"
