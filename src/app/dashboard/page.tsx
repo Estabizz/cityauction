@@ -1,274 +1,148 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  Gavel,
-  Heart,
-  FileCheck,
-  ShieldCheck,
-  Clock,
-  ArrowRight,
-  TrendingUp,
-  AlertCircle,
-  ExternalLink,
-  Building2,
-  Calendar,
-} from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { AuctionStatusBadge, Badge } from "@/components/ui/badge";
+import { ArrowRight, CircleCheck, Inbox, MessageSquareText, UserRound } from "lucide-react";
+import { db } from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { getAccount, profileCompleteness } from "@/components/account/dashboard-data";
+import { NewsletterToggle } from "@/components/account/newsletter-toggle";
+import { DbErrorNote, Panel } from "@/components/account/dashboard-ui";
 
 export const metadata: Metadata = {
-  title: "Bidder Dashboard Overview | CityAuction",
-  description: "User dashboard overview showing active bids, saved properties, and KYC status.",
+  title: "My Account",
 };
 
-const STATS = [
-  {
-    title: "Active Bids",
-    value: "2",
-    subtext: "Highest bidder on 1 property",
-    icon: <Gavel className="h-5 w-5 text-primary" />,
-    link: "/dashboard/bids",
-  },
-  {
-    title: "Saved Properties",
-    value: "5",
-    subtext: "3 auctions commencing this week",
-    icon: <Heart className="h-5 w-5 text-red-500" />,
-    link: "/dashboard/favourites",
-  },
-  {
-    title: "Auction Applications",
-    value: "3",
-    subtext: "2 Approved • 1 Under Review",
-    icon: <FileCheck className="h-5 w-5 text-amber-500" />,
-    link: "/dashboard/applications",
-  },
-  {
-    title: "KYC & Verification",
-    value: "Approved",
-    subtext: "Class 3 DSC Active (Valid 2027)",
-    icon: <ShieldCheck className="h-5 w-5 text-success" />,
-    link: "/dashboard/documents",
-  },
-];
+const SOURCE_LABELS: Record<string, string> = {
+  contact: "Contact form",
+  "auction-alerts": "Auction alerts",
+  career: "Careers",
+  "investor-desk": "Investor desk",
+  "liquidate-asset": "Liquidate an asset",
+  "institutional-mandate": "Institutional services",
+  "next-chapter": "Next Chapter",
+  homepage: "Homepage",
+  "password-reset": "Password reset",
+};
 
-const WATCHLIST_AUCTIONS = [
-  {
-    id: "auc-101",
-    auctionNumber: "CA-MH-2026-101",
-    title: "3 BHK Luxury Apartment in Lodha Bellissimo, Mahalaxmi",
-    city: "Mumbai, Maharashtra",
-    bank: "State Bank of India",
-    reservePrice: 48500000,
-    emd: 4850000,
-    date: "2026-10-04T11:00:00Z",
-    status: "UPCOMING",
-    daysLeft: "12 Days",
-  },
-  {
-    id: "auc-102",
-    auctionNumber: "CA-HR-2026-102",
-    title: "Grade-A Commercial Office in DLF Cyber City Phase II, Gurugram",
-    city: "Gurugram, Haryana",
-    bank: "Punjab National Bank",
-    reservePrice: 32000000,
-    emd: 3200000,
-    date: "2026-09-23T11:00:00Z",
-    status: "LIVE",
-    daysLeft: "Live Now",
-  },
-  {
-    id: "auc-108",
-    auctionNumber: "CA-KA-2026-108",
-    title: "Fertile Agricultural Farmland of 4.5 Acres near Devanahalli",
-    city: "Bangalore, Karnataka",
-    bank: "State Bank of India",
-    reservePrice: 38000000,
-    emd: 3800000,
-    date: "2026-09-24T11:00:00Z",
-    status: "CLOSING_SOON",
-    daysLeft: "24 Hours Left",
-  },
-];
+const STATUS_STYLES: Record<string, { label: string; className: string }> = {
+  NEW: { label: "Received", className: "bg-sky-50 text-sky-800 border-sky-200" },
+  IN_PROGRESS: { label: "In progress", className: "bg-amber-50 text-amber-800 border-amber-200" },
+  CONTACTED: { label: "Contacted", className: "bg-violet-50 text-violet-800 border-violet-200" },
+  RESOLVED: { label: "Resolved", className: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+};
 
-const RECENT_BIDS = [
-  {
-    id: "bid-1",
-    auctionTitle: "Grade-A Commercial Office in DLF Cyber City Phase II",
-    auctionNumber: "CA-HR-2026-102",
-    bidAmount: 32150000,
-    status: "WINNING",
-    timestamp: "10 mins ago",
-  },
-  {
-    id: "bid-2",
-    auctionTitle: "3 BHK Apartment in Goregaon East, Mumbai",
-    auctionNumber: "CA-MH-2026-088",
-    bidAmount: 21500000,
-    status: "OUTBID",
-    timestamp: "Yesterday, 4:20 PM",
-  },
-];
+function sourceLabel(source: string) {
+  return SOURCE_LABELS[source] || source.replace(/[-_]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+}
 
-export default function DashboardPage() {
+async function loadOverview(userId: string, email: string) {
+  try {
+    const [enquiries, subscriber] = await Promise.all([
+      db.enquiry.findMany({
+        where: { OR: [{ userId }, { email }] },
+        orderBy: { createdAt: "desc" },
+        take: 25,
+        select: { id: true, subject: true, source: true, status: true, createdAt: true },
+      }),
+      db.subscriber.findUnique({ where: { email }, select: { status: true } }),
+    ]);
+    return { enquiries, subscribed: subscriber?.status === "ACTIVE", failed: false };
+  } catch (error) {
+    console.error("[dashboard] overview", error);
+    return { enquiries: [], subscribed: false, failed: true };
+  }
+}
+
+export default async function DashboardPage() {
+  const { session, user, dbError } = await getAccount();
+  const name = user?.fullName || session.fullName;
+  const email = user?.email || session.email;
+  const { percent, missing } = profileCompleteness(user ?? { fullName: session.fullName, email: session.email });
+  const overview = await loadOverview(session.userId, email);
+  const firstName = name.split(/\s+/)[0];
+
   return (
-    <div className="space-y-8">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
-            <ShieldCheck className="h-4 w-4" />
-            Verified Bidder Account
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold">Welcome back, Vikramaditya</h1>
-          <p className="text-xs md:text-sm text-primary-200 mt-1 max-w-xl leading-relaxed">
-            Your KYC is fully verified. You are authorized to submit EMD and bid on active SARFAESI and DRT auctions.
-          </p>
-        </div>
+    <div className="space-y-6">
+      {(dbError || overview.failed) && <DbErrorNote />}
 
+      <section className="rounded-2xl bg-[#091118] text-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#b49361]">My Account</p>
+          <h1 className="font-serif-heading text-3xl md:text-4xl font-semibold mt-1">Welcome, {firstName}</h1>
+          <p className="text-sm text-[#aeb9c1] mt-1 break-all">{email}</p>
+        </div>
         <Link
           href="/auctions"
-          className="px-5 py-2.5 bg-accent text-primary-900 font-bold rounded-xl hover:bg-accent-300 transition-colors text-xs shrink-0 flex items-center gap-1.5"
+          className="inline-flex items-center gap-2 self-start md:self-auto h-10 px-5 rounded-full bg-[#b49361] text-[#081016] text-xs font-bold hover:bg-[#c4a46e] transition-colors shrink-0"
         >
-          <span>Find New Auctions</span>
-          <ArrowRight className="h-3.5 w-3.5" />
+          Explore auctions <ArrowRight className="h-3.5 w-3.5" />
         </Link>
-      </div>
+      </section>
 
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map((stat, idx) => (
-          <Link
-            key={idx}
-            href={stat.link}
-            className="bg-white rounded-2xl border border-border p-5 shadow-xs hover:shadow-card hover:border-primary/30 transition-all block"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                {stat.title}
-              </span>
-              <div className="p-2 rounded-xl bg-gray-50">{stat.icon}</div>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 font-mono">{stat.value}</div>
-            <p className="text-[11px] text-gray-500 mt-1">{stat.subtext}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Panel title="Profile" icon={<UserRound className="h-4 w-4" />}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-semibold text-[#091118]">{percent}%</span>
+            <span className="text-xs text-[#7e868b]">complete</span>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-[#efe9df] overflow-hidden" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="Profile completeness">
+            <div className="h-full rounded-full bg-[#b49361]" style={{ width: `${percent}%` }} />
+          </div>
+          {missing.length > 0 ? (
+            <p className="text-xs text-[#59636a] mt-3">Add your {missing.join(", ").toLowerCase()} so our team can help you faster.</p>
+          ) : (
+            <p className="text-xs text-emerald-700 mt-3 flex items-center gap-1.5">
+              <CircleCheck className="h-3.5 w-3.5" /> Your profile is complete.
+            </p>
+          )}
+          <Link href="/dashboard/profile" className="inline-flex items-center gap-1 mt-4 text-xs font-bold text-[#84663c] hover:underline">
+            Edit profile <ArrowRight className="h-3 w-3" />
           </Link>
-        ))}
-      </div>
+        </Panel>
 
-      {/* Main Grid: Watchlist & Active Bids */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Watchlist Auctions (2 Cols) */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Upcoming Watchlist Auctions</h2>
-            <Link
-              href="/dashboard/favourites"
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              View All (5)
+        <Panel title="Newsletter" icon={<Inbox className="h-4 w-4" />}>
+          <NewsletterToggle key={String(overview.subscribed)} initialSubscribed={overview.subscribed} email={email} />
+        </Panel>
+
+        <Panel title="Need help?" icon={<MessageSquareText className="h-4 w-4" />}>
+          <p className="text-sm text-[#59636a]">Questions about an auction, due diligence or selling an asset? Our team replies within one working day.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/contact" className="inline-flex items-center h-9 px-4 rounded-full bg-[#091118] text-white text-xs font-bold hover:bg-[#25333f]">
+              Contact us
+            </Link>
+            <Link href="/auction-alerts" className="inline-flex items-center h-9 px-4 rounded-full border border-[#dcd5ca] bg-white text-xs font-bold text-[#3b464e] hover:bg-[#f6f2ea]">
+              Set up alerts
             </Link>
           </div>
-
-          <div className="space-y-3">
-            {WATCHLIST_AUCTIONS.map((auc) => (
-              <div
-                key={auc.id}
-                className="bg-white rounded-2xl border border-border p-5 shadow-xs hover:border-primary/20 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div className="space-y-1 max-w-md">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-[11px] font-semibold px-2 py-0.5 bg-gray-100 text-gray-700 rounded">
-                      {auc.auctionNumber}
-                    </span>
-                    <AuctionStatusBadge status={auc.status} />
-                    <span className="text-xs text-gray-400">•</span>
-                    <span className="text-xs text-gray-600 font-medium">{auc.bank}</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-gray-900 line-clamp-1">{auc.title}</h3>
-                  <div className="flex items-center gap-4 text-xs text-gray-500 pt-1">
-                    <span>Reserve: <strong className="text-primary font-mono">{formatCurrency(auc.reservePrice)}</strong></span>
-                    <span>EMD: <strong className="text-gray-800 font-mono">{formatCurrency(auc.emd)}</strong></span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right hidden sm:block">
-                    <span className="block text-[11px] text-gray-400 uppercase">Starts in</span>
-                    <span className="text-xs font-bold text-gray-800 flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-primary" />
-                      {auc.daysLeft}
-                    </span>
-                  </div>
-                  <Link
-                    href={`/auctions/${auc.id}`}
-                    className="px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-700 transition-colors"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Live Bids Feed & Quick Actions (1 Col) */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Active Bids */}
-          <div className="bg-white rounded-2xl border border-border p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900">Active Bids</h3>
-              <Link href="/dashboard/bids" className="text-xs font-semibold text-primary hover:underline">
-                History
-              </Link>
-            </div>
-
-            <div className="space-y-3">
-              {RECENT_BIDS.map((bid) => (
-                <div key={bid.id} className="p-3.5 rounded-xl bg-gray-50 border border-border space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] text-gray-500">{bid.auctionNumber}</span>
-                    {bid.status === "WINNING" ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-100 text-success-700">
-                        Highest Bidder
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-error-100 text-error-700">
-                        Outbid
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs font-bold text-gray-900 line-clamp-1">{bid.auctionTitle}</p>
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-gray-200">
-                    <span className="text-gray-500">My Bid:</span>
-                    <span className="font-mono font-bold text-primary">{formatCurrency(bid.bidAmount)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* EMD & Verification Checklist */}
-          <div className="bg-primary-50 rounded-2xl border border-primary-100 p-5 space-y-3">
-            <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
-              Bidder Compliance Checklist
-            </span>
-            <ul className="space-y-2 text-xs text-gray-700">
-              <li className="flex items-center gap-2 text-success-700">
-                <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>Identity & PAN Card Verified</span>
-              </li>
-              <li className="flex items-center gap-2 text-success-700">
-                <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>Bank Account for EMD Refund Added</span>
-              </li>
-              <li className="flex items-center gap-2 text-success-700">
-                <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>Class 3 DSC Token Connected</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        </Panel>
       </div>
+
+      <Panel title="My enquiries" icon={<MessageSquareText className="h-4 w-4" />}>
+        {overview.enquiries.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm font-semibold text-[#182129]">No enquiries yet</p>
+            <p className="text-xs text-[#59636a] mt-1">Forms you send from this email (contact, alerts, investor desk…) will show up here with their status.</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-[#efe9df] -mx-1">
+            {overview.enquiries.map((e) => {
+              const status = STATUS_STYLES[e.status] || { label: e.status, className: "bg-gray-50 text-gray-700 border-gray-200" };
+              return (
+                <li key={e.id} className="px-1 py-3 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-[#182129] truncate">{e.subject}</p>
+                    <p className="text-xs text-[#7e868b]">
+                      {sourceLabel(e.source)} · {formatDate(e.createdAt)}
+                    </p>
+                  </div>
+                  <span className={`self-start sm:self-auto inline-flex items-center px-2.5 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ${status.className}`}>
+                    {status.label}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Panel>
     </div>
   );
 }

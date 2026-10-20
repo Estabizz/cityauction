@@ -4,12 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogIn, ChevronDown, Menu, X } from "lucide-react";
+import { AccountMenu, useHeaderSession } from "@/components/account/account-menu";
+import { logout } from "@/components/account/logout-button";
 
 export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const session = useHeaderSession();
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -22,11 +25,13 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile drawer on route change
-  useEffect(() => {
+  // Close mobile drawer on route change (adjusting state during render, not in an effect)
+  const [shownPath, setShownPath] = useState(pathname);
+  if (shownPath !== pathname) {
+    setShownPath(pathname);
     setMobileOpen(false);
     setServicesOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <>
@@ -178,22 +183,38 @@ export function Header() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <Link
-              className="btn-pill btn-dark header-liquidate text-xs px-4 py-2"
-              href="/liquidate-an-asset"
-            >
-              Liquidate an Asset
-            </Link>
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* From 1280 to 1535px the full nav leaves no room for this pill; the same
+                link is in the Services menu there. The wrapper does the hiding because
+                .btn-pill's own display rule (globals.css) beats Tailwind utilities. */}
+            <span className="contents xl:hidden 2xl:contents">
+              <Link
+                className="btn-pill btn-dark header-liquidate text-xs px-4 py-2"
+                href="/liquidate-an-asset"
+              >
+                Liquidate an Asset
+              </Link>
+            </span>
 
-            <Link
-              href="/investor-login"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#dcd5ca] bg-white text-xs font-semibold text-gray-800 hover:text-[#84663c] hover:border-[#b49361] transition-colors shadow-sm"
-              title="Investor Portal Login"
-            >
-              <LogIn className="h-3.5 w-3.5 text-[#84663c]" />
-              <span>Sign In</span>
-            </Link>
+            {session ? (
+              <AccountMenu session={session} />
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#dcd5ca] bg-white text-xs font-semibold text-gray-800 hover:text-[#84663c] hover:border-[#b49361] transition-colors shadow-sm"
+                >
+                  <LogIn className="h-3.5 w-3.5 text-[#84663c]" />
+                  <span>Sign In</span>
+                </Link>
+                <Link
+                  href="/register"
+                  className="hidden md:inline-flex items-center text-xs font-semibold text-[#84663c] hover:text-[#5e4a2b] hover:underline whitespace-nowrap"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
 
             {/* Mobile Hamburger Button */}
             <button
@@ -303,13 +324,50 @@ export function Header() {
           >
             Contact Us
           </Link>
-          <Link
-            href="/investor-login"
-            className="block py-3.5 border-b border-white/10 text-base font-semibold text-[#b49361]"
-            onClick={() => setMobileOpen(false)}
-          >
-            Investor Portal Login →
-          </Link>
+          {session ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="block py-3.5 border-b border-white/10 text-base font-semibold text-[#b49361]"
+                onClick={() => setMobileOpen(false)}
+              >
+                My Dashboard →
+              </Link>
+              {session.isAdmin && (
+                <Link
+                  href="/admin/dashboard"
+                  className="block py-3.5 border-b border-white/10 text-base font-semibold text-[#b49361]"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Admin Panel →
+                </Link>
+              )}
+              <button
+                type="button"
+                className="block w-full text-left py-3.5 border-b border-white/10 text-base cursor-pointer"
+                onClick={() => void logout()}
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="block py-3.5 border-b border-white/10 text-base font-semibold text-[#b49361]"
+                onClick={() => setMobileOpen(false)}
+              >
+                Sign In →
+              </Link>
+              <Link
+                href="/register"
+                className="block py-3.5 border-b border-white/10 text-base font-semibold text-[#b49361]"
+                onClick={() => setMobileOpen(false)}
+              >
+                Create a Free Account →
+              </Link>
+            </>
+          )}
           <Link
             href="/financial-institution-login"
             className="block py-3.5 text-base font-semibold text-[#d9c39c]"

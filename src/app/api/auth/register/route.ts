@@ -1,118 +1,87 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { hashPassword, signToken, COOKIE_NAME } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
+import { safeNextPath } from "@/components/account/safe-next";
+import {
+  DB_UNAVAILABLE,
+  emailSchema,
+  homeFor,
+  jsonError,
+  passwordSchema,
+  phoneSchema,
+  setSessionCookie,
+  toSessionPayload,
+  userWithRoles,
+  validationError,
+} from "../_lib";
 
-const registerSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  accountType: z.enum(["INDIVIDUAL", "ORGANIZATION"]).default("INDIVIDUAL"),
-  pan: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format (e.g. ABCDE1234F)").optional().or(z.literal("")),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  pincode: z.string().optional(),
-});
+const registerSchema = z
+  .object({
+    fullName: z.string().trim().min(2, "Please enter your full name.").max(120, "Name is too long."),
+    email: emailSchema,
+    phone: phoneSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().optional(),
+    next: z.string().optional(),
+  })
+  .refine((data) => data.confirmPassword === undefined || data.confirmPassword === data.password, {
+    message: "The two passwords don't match.",
+  });
+
+const EMAIL_TAKEN = "An account with this email already exists. Please sign in instead.";
 
 export async function POST(req: Request) {
+  let input: z.infer<typeof registerSchema>;
   try {
-    const body = await req.json();
-    const validated = registerSchema.parse(body);
+    input = registerSchema.parse(await req.json());
+  } catch (error) {
+    if (error instanceof z.ZodError) return validationError(error);
+    return jsonError("Please check the form and try again.", 400);
+  }
 
-    const passwordHash = await hashPassword(validated.password);
+  try {
+    const existing = await db.user.findUnique({ where: { email: input.email }, select: { id: true } });
+    if (existing) return jsonError(EMAIL_TAKEN, 409);
 
-    let user;
-    let roles = ["REGISTERED"];
-
-    try {
-      // Check existing email
-      const existing = await db.user.findUnique({
-        where: { email: validated.email.toLowerCase() },
-      });
-
-      if (existing) {
-        return NextResponse.json(
-          { success: false, error: "An account with this email address already exists." },
-          { status: 400 }
-        );
-      }
-
-      // Create user in PostgreSQL
-      user = await db.user.create({
-        data: {
-          fullName: validated.fullName,
-          email: validated.email.toLowerCase(),
-          phone: validated.phone,
-          passwordHash,
-          accountType: validated.accountType as any,
-          pan: validated.pan || null,
-          address: validated.address || null,
-          city: validated.city || null,
-          state: validated.state || null,
-          pincode: validated.pincode || null,
-          isEmailVerified: true,
-          isPhoneVerified: true,
-        },
-      });
-
-      // Assign REGISTERED role
-      const registeredRole = await db.role.findUnique({ where: { name: "REGISTERED" } });
-      if (registeredRole) {
-        await db.userRole.create({
-          data: {
-            userId: user.id,
-            roleId: registeredRole.id,
+    const user = await db.user.create({
+      data: {
+        fullName: input.fullName,
+        email: input.email,
+        phone: input.phone,
+        passwordHash: await hashPassword(input.password),
+        accountType: "INDIVIDUAL",
+        lastLoginAt: new Date(),
+        roles: {
+          create: {
+            role: {
+              connectOrCreate: {
+                where: { name: "REGISTERED" },
+                create: { name: "REGISTERED", description: "Signed-up user" },
+              },
+            },
           },
-        });
-      }
-    } catch (dbError) {
-      // Fallback when running without live Postgres connection
-      user = {
-        id: `usr-${Date.now()}`,
-        email: validated.email.toLowerCase(),
-        fullName: validated.fullName,
-        accountType: validated.accountType,
-      };
-    }
+        },
+      },
+      include: userWithRoles,
+    });
 
-    const payload = {
-      userId: user.id,
-      email: user.email,
-      fullName: user.fullName || validated.fullName,
-      accountType: user.accountType || validated.accountType,
-      roles,
-    };
-
-    const token = await signToken(payload);
-
+    const payload = toSessionPayload(user);
     const response = NextResponse.json({
       success: true,
-      message: "Registration successful! Welcome to CityAuction.",
+      message: "Welcome to CityAuction!",
       user: payload,
+      redirectTo: safeNextPath(input.next) || homeFor(payload),
     });
-
-    response.cookies.set(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: "/",
-    });
-
+    await setSessionCookie(response, payload);
     return response;
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0]?.message || "Validation failed" },
-        { status: 400 }
-      );
+    // Two sign-ups with the same email at the same moment.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return jsonError(EMAIL_TAKEN, 409);
     }
-
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("[auth/register]", error);
+    return jsonError(DB_UNAVAILABLE, 503);
   }
 }
