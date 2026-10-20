@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { SubscribeBox } from "@/components/subscribe/subscribe-box";
 
 export function Footer() {
   return (
     <footer className="estabizz-footer">
       <div className="estabizz-container">
+        <SubscribeBox variant="footer" source="footer" />
+
         <div className="footer-top-grid">
           {/* Brand Intro Column */}
           <div className="footer-intro space-y-3">

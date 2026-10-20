@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function LiquidateAssetForm() {
   const [sellerType, setSellerType] = useState("");
@@ -16,34 +17,28 @@ export function LiquidateAssetForm() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    try {
-      const res = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: contact,
-          email,
-          phone: "N/A",
-          subject: `[Institutional Liquidation Intake] ${sellerType} - ${assetType} (${location})`,
-          message: `Seller Type: ${sellerType}\nAsset Type: ${assetType}\nLocation: ${location}\nIndicative / Reserve Value: ₹${value}\nContact Person: ${contact}\nEmail: ${email}\n\nAsset Context / Details:\n${details}`,
-        }),
-      });
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "liquidate-asset",
+      name: contact,
+      email,
+      subject: `Liquidation intake: ${sellerType} - ${assetType} (${location})`,
+      message: details,
+      fields: {
+        "Seller type": sellerType,
+        "Asset type": assetType,
+        Location: location,
+        "Indicative / reserve value": value,
+      },
+    });
 
-      if (!res.ok) {
-        throw new Error("Failed to submit intake");
-      }
-      setSubmitted(true);
-    } catch {
-      // Still show successful intake in prototype if DB is in mock mode
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -176,7 +171,8 @@ export function LiquidateAssetForm() {
         </div>
       </div>
 
-      {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"

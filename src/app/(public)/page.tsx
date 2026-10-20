@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CITY_LIST } from "@/content/cities/list";
 import { cityPath } from "@/content/cities/paths";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "@/components/forms/lead-submit";
+import { SubscribeBox } from "@/components/subscribe/subscribe-box";
 import {
   Search,
   ArrowRight,
@@ -44,6 +46,7 @@ export default function HomePage() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
   const [contactStatus, setContactStatus] = useState<string | null>(null);
+  const [contactError, setContactError] = useState<string | null>(null);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,43 +100,34 @@ export default function HomePage() {
     router.push(`/auctions?${params.toString()}`);
   };
 
-  const handleContactSubmit = async (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setContactLoading(true);
     setContactStatus(null);
+    setContactError(null);
 
-    try {
-      const res = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: contactName,
-          phone: contactMobile,
-          email: contactEmail || "not-provided@cityauction.com",
-          subject: enquiryType || "General Auction & Asset Enquiry",
-          message: contactMessage || "No message provided",
-        }),
-      });
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "homepage",
+      name: contactName,
+      phone: contactMobile,
+      email: contactEmail,
+      subject: enquiryType || "General Auction & Asset Enquiry",
+      message: contactMessage,
+      fields: { "Help with": enquiryType },
+    });
 
-      const data = await res.json();
-      if (data.success) {
-        setContactStatus(
-          "Thank you. Your enquiry has been received and routed to the relevant CityAuction desk. An advisor will contact you within 1 business day."
-        );
-        setContactName("");
-        setContactMobile("");
-        setContactEmail("");
-        setEnquiryType("");
-        setContactMessage("");
-      } else {
-        setContactStatus(data.error || "Failed to submit enquiry. Please try again.");
-      }
-    } catch (err) {
+    setContactLoading(false);
+    if (result.ok) {
       setContactStatus(
-        "Enquiry captured successfully. Our team will contact you shortly."
+        "Thank you. Your enquiry has been received and routed to the relevant CityAuction desk. An advisor will contact you within 1 business day."
       );
-    } finally {
-      setContactLoading(false);
+      setContactName("");
+      setContactMobile("");
+      setContactEmail("");
+      setEnquiryType("");
+      setContactMessage("");
+    } else {
+      setContactError(result.error);
     }
   };
 
@@ -1013,7 +1007,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 14. CONTACT CITYAUCTION */}
+      {/* 14. STAY UPDATED */}
+      <section className="estabizz-section dark-bg" id="subscribe">
+        <div className="estabizz-container">
+          <SubscribeBox variant="section" source="homepage" />
+        </div>
+      </section>
+
+      {/* 15. CONTACT CITYAUCTION */}
       <section className="estabizz-section ivory-bg" id="contact">
         <div className="estabizz-container">
           <div className="section-head-grid">
@@ -1182,6 +1183,9 @@ export default function HomePage() {
                   />
                 </div>
               </div>
+
+              <Honeypot />
+              {contactError && <SubmitErrorNotice message={contactError} />}
 
               <button
                 className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"

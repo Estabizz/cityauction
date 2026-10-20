@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function InvestorDeskForm() {
   const [name, setName] = useState("");
@@ -15,29 +16,31 @@ export function InvestorDeskForm() {
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    try {
-      await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email: email || "info@estabizz.com",
-          phone: mobile,
-          subject: `[Investor Desk Review] ${assetType} (${location || "N/A"}) - ${name}`,
-          message: `Asset Type: ${assetType}\nLocation: ${location}\nAuction Date: ${auctionDate}\nAuction Link / Notice: ${auctionLink}\n\nKey Concerns / Due Diligence Requirements:\n${concern}`,
-        }),
-      });
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "investor-desk",
+      name,
+      email,
+      phone: mobile,
+      subject: `Investor desk review: ${assetType}${location ? ` in ${location}` : ""} - ${name}`,
+      message: concern,
+      fields: {
+        "Asset type": assetType,
+        "Asset location": location,
+        "Auction date": auctionDate,
+        "Auction link / notice": auctionLink,
+      },
+    });
+
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -170,6 +173,9 @@ export function InvestorDeskForm() {
           />
         </div>
       </div>
+
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"

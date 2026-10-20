@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
 export function CareerForm() {
   const [name, setName] = useState("");
@@ -15,29 +16,31 @@ export function CareerForm() {
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    try {
-      await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          phone: mobile,
-          subject: `[Career Application] ${name} - ${track}`,
-          message: `Career Track: ${track}\nExperience: ${experience}\nLocation: ${location}\nProfile/LinkedIn: ${profile}\n\nWhy CityAuction:\n${message}`,
-        }),
-      });
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+    const result = await submitEnquiry(e.currentTarget, {
+      source: "career",
+      name,
+      email,
+      phone: mobile,
+      subject: `Career application: ${track} - ${name}`,
+      message,
+      fields: {
+        "Career track": track,
+        Experience: experience,
+        "Current location": location,
+        "Profile / resume link": profile,
+      },
+    });
+
+    setLoading(false);
+    if (result.ok) setSubmitted(true);
+    else setError(result.error);
   };
 
   if (submitted) {
@@ -165,6 +168,9 @@ export function CareerForm() {
           />
         </div>
       </div>
+
+      <Honeypot />
+      {error && <SubmitErrorNotice message={error} />}
 
       <button
         className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"
