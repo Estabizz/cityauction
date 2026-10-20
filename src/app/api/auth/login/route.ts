@@ -1,89 +1,69 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { verifyPassword, signToken, COOKIE_NAME } from "@/lib/auth";
+import { verifyPassword } from "@/lib/auth";
+import { safeNextPath } from "@/components/account/safe-next";
+import {
+  DB_UNAVAILABLE,
+  homeFor,
+  jsonError,
+  setSessionCookie,
+  toSessionPayload,
+  userWithRoles,
+  validationError,
+} from "../_lib";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-  loginAs: z.enum(["bidder", "banker"]).default("bidder"),
+  email: z.string().trim().toLowerCase().email("Please enter a valid email address."),
+  password: z.string().min(1, "Please enter your password."),
+  next: z.string().optional(),
+  // Older forms (investor / financial institution login) still send this; it is ignored.
+  loginAs: z.string().optional(),
 });
 
+const INVALID = "Incorrect email or password.";
+
+// Compared against when the email is unknown, so both cases take about as long
+// and response timing doesn't reveal which emails have accounts.
+const DUMMY_HASH = "$2b$10$bCF0Ec2jVGTaHVyXhpnUx.aOcIMFwBqUj4Rxv4ifzFP2oY6EW061y";
+
 export async function POST(req: Request) {
+  let input: z.infer<typeof loginSchema>;
   try {
-    const body = await req.json();
-    const { email, password, loginAs } = loginSchema.parse(body);
-    const normalizedEmail = email.toLowerCase().trim();
-
-    let userSession: {
-      userId: string;
-      email: string;
-      fullName: string;
-      accountType: string;
-      roles: string[];
-    } | null = null;
-
-    try {
-      const dbUser = await db.user.findUnique({
-        where: { email: normalizedEmail },
-        include: {
-          roles: {
-            include: { role: true },
-          },
-        },
-      });
-
-      if (dbUser && dbUser.passwordHash) {
-        const isValid = await verifyPassword(password, dbUser.passwordHash);
-        if (isValid) {
-          userSession = {
-            userId: dbUser.id,
-            email: dbUser.email,
-            fullName: dbUser.fullName || "User",
-            accountType: dbUser.accountType || "INDIVIDUAL",
-            roles: dbUser.roles.map((r) => r.role.name),
-          };
-        }
-      }
-    } catch (dbError) {
-      // Database offline/not yet connected
-    }
-
-    if (!userSession) {
-      return NextResponse.json(
-        { success: false, error: "Invalid email or password. Please check your credentials." },
-        { status: 401 }
-      );
-    }
-
-    const token = await signToken(userSession);
-
-    const response = NextResponse.json({
-      success: true,
-      message: "Login successful!",
-      user: userSession,
-    });
-
-    response.cookies.set(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: "/",
-    });
-
-    return response;
+    input = loginSchema.parse(await req.json());
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0]?.message || "Validation failed" },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) return validationError(error);
+    return jsonError("Please check the form and try again.", 400);
   }
+
+  let user;
+  try {
+    user = await db.user.findUnique({ where: { email: input.email }, include: userWithRoles });
+  } catch (error) {
+    console.error("[auth/login]", error);
+    return jsonError(DB_UNAVAILABLE, 503);
+  }
+
+  const passwordOk = await verifyPassword(input.password, user?.passwordHash || DUMMY_HASH);
+  if (!user || !user.passwordHash || !passwordOk) return jsonError(INVALID, 401);
+  if (!user.isActive || user.deletedAt) {
+    return jsonError("This account has been disabled. Please contact info@estabizz.com.", 403);
+  }
+
+  try {
+    await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  } catch (error) {
+    // Not worth failing the sign-in over.
+    console.error("[auth/login] lastLoginAt", error);
+  }
+
+  const payload = toSessionPayload(user);
+  const response = NextResponse.json({
+    success: true,
+    message: "Signed in.",
+    user: payload,
+    redirectTo: safeNextPath(input.next) || homeFor(payload),
+  });
+  await setSessionCookie(response, payload);
+  return response;
 }

@@ -15,7 +15,8 @@ export async function GET() {
     });
     return NextResponse.json({ success: true, data: notifications });
   } catch (error) {
-    return NextResponse.json({ success: true, data: [] });
+    console.error("[api/user/notifications]", error);
+    return NextResponse.json({ success: false, error: "Database unavailable." }, { status: 503 });
   }
 }
 
@@ -44,6 +45,7 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ success: true });
+    console.error("[api/user/notifications]", error);
+    return NextResponse.json({ success: false, error: "Database unavailable." }, { status: 503 });
   }
 }

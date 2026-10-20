@@ -24,6 +24,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data: bids });
   } catch (error) {
-    return NextResponse.json({ success: true, data: [] });
+    console.error("[api/user/bids]", error);
+    return NextResponse.json({ success: false, error: "Database unavailable." }, { status: 503 });
   }
 }
