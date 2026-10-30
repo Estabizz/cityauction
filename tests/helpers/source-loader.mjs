@@ -29,7 +29,7 @@ export function loadSource(relativePath, mocks = {}, globals = {}) {
       if (/[/\\]services[/\\](bidding|payment)\.service$/.test(local) || local === path.join(root, "src/lib/db")) {
         throw new Error(`Unexpected infrastructure dependency: ${id}`);
       }
-      return load(`${local}.ts`);
+      return load(fs.existsSync(`${local}.ts`) ? `${local}.ts` : `${local}.tsx`);
     };
     vm.runInNewContext(compiled, {
       module: compiledModule, exports: compiledModule.exports, require: localRequire,

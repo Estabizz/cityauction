@@ -43,7 +43,7 @@ export function SetPasswordForm({ token, email }: { token: string; email?: strin
         </>
       )}
       <Field id="password" label="New password" type="password" autoComplete="new-password" placeholder="At least 8 characters" hint="At least 8 characters." value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} required />
-      <Field id="confirmPassword" label="Confirm new password" type="password" autoComplete="new-password" placeholder="Type it again" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} error={errors.confirmPassword} required />
+      <Field id="confirmPassword" label="Confirm new password" type="password" allowReveal={false} autoComplete="new-password" placeholder="Type it again" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} error={errors.confirmPassword} required />
       <SubmitButton loading={loading} loadingText="Saving…">
         <KeyRound className="h-4 w-4" />
         <span>Save password and sign in</span>

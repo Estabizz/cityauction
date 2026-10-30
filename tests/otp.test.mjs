@@ -108,7 +108,7 @@ test("SMTP sign-up verifies and signs in an existing account without creating an
   const sent = await state.loadRoute("otp/send").POST(request({ email: EMAIL, purpose: "register" }));
   assert.equal(sent.status, 200);
   const { challengeId } = await sent.json();
-  const response = await state.loadRoute("register").POST(request({ email: EMAIL, fullName: "Replacement name", buyerCategory: "BUSINESS_BUYER", acceptTerms: true, challengeId, otp: lastCode(state), onboarded: true }));
+  const response = await state.loadRoute("register").POST(request({ email: EMAIL, fullName: "Replacement name", password: "new-password", confirmPassword: "new-password", buyerCategory: "BUSINESS_BUYER", acceptTerms: true, challengeId, otp: lastCode(state), onboarded: true }));
   assert.equal(response.status, 200);
   assert.equal((await response.json()).existingAccount, true);
   assert.equal(state.user.fullName, "Buyer");
@@ -239,22 +239,36 @@ test("a login-purpose code cannot reset a password", async () => {
   assert.equal(state.user.passwordHash, "old-hash");
 });
 
-test("email/password login does not issue a session until the OTP is verified", async () => {
+test("verified email and password sign in directly without sending another OTP", async () => {
   const state = otpSetup();
-  const { POST } = state.loadRoute("login");
-  const start = await POST(request({ email: state.user.email, password: "correct-password" }));
-  assert.equal(start.status, 200);
-  const body = await start.json();
-  assert.equal(body.requiresOtp, true);
-  assert.equal(start.headers.get("set-cookie"), null);
-  assert.equal(state.issued.length, 0);
-  assert.equal(body.devCode, undefined);
-  assert.equal(state.rows.get(body.challengeId).purpose, "password-login:buyer-1:3");
-  const finish = state.loadRoute("login-password-otp");
-  const response = await finish.POST(request({ email: state.user.email, challengeId: body.challengeId, otp: lastCode(state), next: "/auctions/example" }));
+  const response = await state.loadRoute("login").POST(request({ email: EMAIL, password: "correct-password", next: "/auctions/example" }));
   assert.equal(response.status, 200);
   assert.equal((await response.json()).redirectTo, "/auctions/example");
+  assert.ok(response.headers.get("set-cookie"));
   assert.equal(state.issued.length, 1);
+  assert.equal(state.sent.length, 0);
+});
+
+for (const settings of [{ verified: false }, { active: false }]) {
+  test(`password login rejects an ineligible account: ${JSON.stringify(settings)}`, async () => {
+    const state = otpSetup(settings);
+    const response = await state.loadRoute("login").POST(request({ email: EMAIL, password: "correct-password" }));
+    assert.equal(response.status, 403);
+    assert.equal(state.issued.length, 0);
+  });
+}
+
+test("OTP-only existing accounts cannot sign in with an unset password", async () => {
+  const state = otpSetup(); state.user.passwordHash = null;
+  const response = await state.loadRoute("login").POST(request({ email: EMAIL, password: "correct-password" }));
+  assert.equal(response.status, 401); assert.equal(state.issued.length, 0);
+});
+
+test("a concurrent password reset cannot issue a session using the old password", async () => {
+  const state = otpSetup();
+  state.db.user.updateMany = async () => ({ count: 0 });
+  const response = await state.loadRoute("login").POST(request({ email: EMAIL, password: "correct-password" }));
+  assert.equal(response.status, 401); assert.equal(state.issued.length, 0);
 });
 
 test("incorrect passwords cannot send codes or issue sessions", async () => {
@@ -291,14 +305,12 @@ test("reset-code requests acknowledge unknown accounts without sending email", a
   assert.equal(state.sent.length, 0);
 });
 
-test("password changes invalidate unfinished password-login verification", async () => {
+test("password changes invalidate unfinished legacy password-login verification", async () => {
   const state = otpSetup();
-  const start = await state.loadRoute("login").POST(request({ email: state.user.email, password: "correct-password" }));
-  const body = await start.json();
+  const sent = await state.otp.sendOtp(EMAIL, `password-login:${state.user.id}:${state.user.sessionVersion}`, "127.0.0.1");
   state.user.sessionVersion++;
-  const response = await state.loadRoute("login-password-otp").POST(request({ email: state.user.email, challengeId: body.challengeId, otp: lastCode(state) }));
-  assert.equal(response.status, 400);
-  assert.equal(state.issued.length, 0);
+  const response = await state.loadRoute("login-password-otp").POST(request({ email: EMAIL, challengeId: sent.challengeId, otp: lastCode(state) }));
+  assert.equal(response.status, 400); assert.equal(state.issued.length, 0);
 });
 
 test("public login OTP delivery does not leak production codes", async () => {
@@ -311,17 +323,13 @@ test("public login OTP delivery does not leak production codes", async () => {
   assert.equal(response.headers.get("cache-control"), "no-store");
 });
 
-test("legacy unverified email needs password proof before email-only login or recovery", async () => {
+test("unverified legacy accounts cannot bypass email verification with a password", async () => {
   const state = otpSetup({ verified: false });
   const sender = state.loadRoute("otp/send");
   assert.equal((await sender.POST(request({ email: EMAIL, purpose: "login" }))).status, 403);
+  assert.equal((await state.loadRoute("login").POST(request({ email: EMAIL, password: "correct-password" }))).status, 403);
   assert.equal(state.sent.length, 0);
-  const start = await state.loadRoute("login").POST(request({ email: EMAIL, password: "correct-password" }));
-  assert.equal(start.status, 200);
-  const challenge = await start.json();
-  const finish = await state.loadRoute("login-password-otp").POST(request({ email: EMAIL, challengeId: challenge.challengeId, otp: lastCode(state) }));
-  assert.equal(finish.status, 200);
-  assert.equal(state.user.isEmailVerified, true);
+  assert.equal(state.issued.length, 0);
 });
 
 test("legacy mobile requests cannot issue or verify email challenges", async () => {
@@ -396,4 +404,24 @@ test("unconfigured local development can verify a test code without sending emai
   assert.match(challenge.devCode, /^\d{6}$/);
   assert.equal(state.sent.length, 0);
   await otp.verifyOtp(challenge.challengeId, EMAIL, "login", challenge.devCode);
+});
+
+test("SMTP recovery verifies the actual OTP before issuing a reset grant and accepts it once", async () => {
+  const state = otpSetup();
+  let browserCookie;
+  state.mocks["next/headers"] = { cookies: async () => ({ get: (name) => name === "cityauction_password_reset" && browserCookie ? { value: browserCookie } : undefined }) };
+  const sent = await issue(state);
+  const verify = state.loadRoute("reset-password/verify");
+  const startRequest = new Request("http://internal:3000/api/auth/reset-password/verify", { method: "POST", headers: { Origin: "https://cityauction.in", "Content-Type": "application/json" }, body: JSON.stringify({ email: EMAIL, challengeId: sent.challengeId, otp: lastCode(state) }) });
+  const response = await verify.POST(startRequest);
+  assert.equal(response.status, 200);
+  assert.ok(state.rows.get(sent.challengeId).consumedAt);
+  assert.equal(state.user.passwordHash, "old-hash");
+  browserCookie = response.cookies.get("cityauction_password_reset").value;
+  const { resetToken } = await response.json();
+  const reset = state.loadRoute("reset-password");
+  const input = { email: EMAIL, password: "my-new-password", confirmPassword: "my-new-password", resetToken };
+  assert.equal((await reset.POST(request(input))).status, 200);
+  assert.equal(state.user.passwordHash, "hashed:my-new-password");
+  assert.equal((await reset.POST(request(input))).status, 400);
 });

@@ -79,7 +79,7 @@ function setup({ payload = { user_email_id: EMAIL }, status = 200, providerFailu
     setCookie: (value) => { cookie = value; } };
 }
 
-function req(path, body, origin = "http://localhost") {
+function req(path, body, origin = "https://cityauction.in") {
   return new Request(`http://localhost${path}`, { method: "POST", headers: { "Content-Type": "application/json", Origin: origin }, body: JSON.stringify(body) });
 }
 
@@ -239,9 +239,10 @@ test("Phone.Email proof completes registration with consent and no SMTP code", a
   state.db.user.create = async ({ data }) => { created = data; return { ...state.account, ...data, roles: [] }; };
   state.db.consentEvent = { create: async ({ data }) => consents.push(data), createMany: async ({ data }) => consents.push(...data) };
   const route = state.source("src/app/api/auth/register/route.ts");
-  const response = await route.POST(req("/api/auth/register", { email: EMAIL, fullName: "Buyer", buyerCategory: "INDIVIDUAL_BUYER", acceptTerms: true, phoneEmailToken: proof.verificationToken, onboarded: true }));
+  const response = await route.POST(req("/api/auth/register", { email: EMAIL, fullName: "Buyer", password: "new-password", confirmPassword: "new-password", buyerCategory: "INDIVIDUAL_BUYER", acceptTerms: true, phoneEmailToken: proof.verificationToken, onboarded: true }));
   assert.equal(response.status, 200);
   assert.equal(created.isEmailVerified, true);
+  assert.equal(created.passwordHash, "new-password-hash");
   assert.equal(created.phone, null);
   assert.ok(consents.some((row) => row.kind === "TERMS_PRIVACY" && row.granted));
   assert.equal(state.issued.length, 1);
@@ -260,7 +261,7 @@ test("Phone.Email proof securely changes the sign-in email", async () => {
   assert.equal(state.issued.length, 1);
 });
 
-const registerInput = (proof) => ({ email: EMAIL, fullName: "Changed name", buyerCategory: "BUSINESS_BUYER", acceptTerms: true, marketingOptIn: true, phoneEmailToken: proof, onboarded: true, next: "/auctions/example" });
+const registerInput = (proof) => ({ email: EMAIL, fullName: "Changed name", password: "new-password", confirmPassword: "new-password", buyerCategory: "BUSINESS_BUYER", acceptTerms: true, marketingOptIn: true, phoneEmailToken: proof, onboarded: true, next: "/auctions/example" });
 
 test("an existing verified buyer entering sign-up signs in without replacing profile or consent", async () => {
   const state = setup();
@@ -312,7 +313,7 @@ test("a login proof cannot be reused as registration proof for an existing accou
   assert.equal(state.issued.length, 0);
 });
 
-test("account journey: sign-up, verified session, dashboard, logout, and fresh OTP login", async () => {
+test("account journey: password sign-up, email verification, dashboard, logout, and password login", async () => {
   const state = setup();
   let exists = false;
   let created = 0;
@@ -328,13 +329,15 @@ test("account journey: sign-up, verified session, dashboard, logout, and fresh O
     assert.equal(exists, false);
     created++;
     exists = true;
-    Object.assign(state.account, { fullName: data.fullName, email: data.email, isEmailVerified: data.isEmailVerified, onboardedAt: data.onboardedAt });
+    Object.assign(state.account, { fullName: data.fullName, passwordHash: data.passwordHash, email: data.email, isEmailVerified: data.isEmailVerified, onboardedAt: data.onboardedAt });
     return { ...state.account };
   };
   state.db.consentEvent = { create: async ({ data }) => consents.push(data), createMany: async ({ data }) => consents.push(...data) };
   const tokens = state.source("src/lib/session-token.ts");
   const realAuth = state.source("src/lib/auth.ts");
   state.mocks["@/lib/auth"].getCurrentUser = realAuth.getCurrentUser;
+  state.mocks["@/lib/auth"].hashPassword = realAuth.hashPassword;
+  state.mocks["@/lib/auth"].verifyPassword = realAuth.verifyPassword;
   state.mocks["@/lib/auth"].signToken = tokens.signToken;
   state.mocks["next/navigation"] = { redirect: (destination) => { throw Object.assign(new Error("redirect"), { destination }); } };
   const me = state.source("src/app/api/auth/me/route.ts");
@@ -361,9 +364,9 @@ test("account journey: sign-up, verified session, dashboard, logout, and fresh O
   state.setCookie(undefined);
   assert.equal((await me.GET()).status, 401);
   await assert.rejects(dashboard.getAccount(), (error) => error.destination.startsWith("/login"));
-  const loginIntent = await state.start();
-  const loginProof = await state.provider.exchangePhoneEmailResult("https://user.phone.email/user_newloginresult123.json", loginIntent.nonce);
-  const loggedIn = await state.source("src/app/api/auth/login-otp/route.ts").POST(req("/api/auth/login-otp", { email: EMAIL, phoneEmailToken: loginProof.verificationToken }));
+  const providerCallsBeforeLogin = state.requests.length;
+  const loggedIn = await state.source("src/app/api/auth/login/route.ts").POST(req("/api/auth/login", { email: EMAIL, password: "new-password" }));
+  assert.equal(state.requests.length, providerCallsBeforeLogin, "normal sign-in must not request an OTP");
   assert.equal(loggedIn.status, 200);
   sessionCookie = loggedIn.cookies.get("cityauction_auth_token").value;
   assert.equal((await me.GET()).status, 200);
@@ -423,7 +426,7 @@ for (const purpose of ["register", "login"]) {
 test("same-host requests from a different scheme are cross-origin", async () => {
   const state = setup();
   const route = state.source("src/app/api/auth/phone-email/start/route.ts");
-  const response = await route.POST(req("/api/auth/phone-email/start", { email: EMAIL, purpose: "login" }, "https://localhost"));
+  const response = await route.POST(req("/api/auth/phone-email/start", { email: EMAIL, purpose: "login" }, "http://cityauction.in"));
   assert.equal(response.status, 403);
 });
 

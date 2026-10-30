@@ -6,8 +6,8 @@ The active implementation is in `src/`, with a MySQL schema in `prisma/schema.pr
 ## Current implementation
 
 - Public marketing pages, auction discovery and location pages.
-- Database-backed enquiries, newsletter subscribers, OTP-protected login and admin tools.
-- Buyer portal work: email OTP registration/login, saved properties, requirements,
+- Database-backed enquiries, newsletter subscribers, verified email/password login and admin tools.
+- Buyer portal work: email OTP registration/recovery, saved properties, requirements,
   suggested matches, inspection/support requests and marketing preferences.
 - The buyer portal requires the corresponding working Prisma schema in the database.
   A generated Prisma client does not establish that the database has been updated.
@@ -82,12 +82,22 @@ table. Review the target database and apply it through your normal database chan
 process before enabling email verification. Client generation alone does not
 create this table. The legacy mobile OTP table is retained and unused.
 
-New sign-ups require a verified email; phone is optional contact information.
-Login and password recovery send codes to email only. Email/password login also
-requires an email OTP. Direct OTP login/recovery require a previously verified
-email; legacy accounts can verify an existing email using their password, or
-request assisted account recovery. Mobile-only legacy accounts need assisted
-email linking; their previous mobile codes cannot authenticate.
+New sign-ups enter a password and matching confirmation, then verify their email
+with an OTP. The password is stored as a bcrypt hash only after verification.
+Verified accounts subsequently sign in with email and password without another
+OTP. Login remains rate-limited and rejects disabled, deleted or unverified accounts.
+Phone is optional contact information. Existing verified OTP-only accounts can
+use Forgot password to set their first password; unverified or mobile-only legacy
+accounts require assisted recovery. Old OTP endpoints are retained for compatibility
+but are no longer offered as the normal sign-in interface.
+
+Forgot password uses three steps: email, OTP verification, then new password and
+matching confirmation. `/api/auth/reset-password/verify` exchanges the email proof
+for a five-minute, single-use reset grant in `email_otp_challenges`, bound to an
+HttpOnly browser cookie and the current account/session version. No database
+schema change is needed. Resetting a password consumes the grant and revokes
+older sessions/codes atomically. Password confirmation fields stay masked and
+never show an eye toggle; primary password fields provide the toggle.
 
 Changing a sign-in email requires OTP verification of the new address and signs
 out other devices. Profile edits cannot silently change the sign-in email.

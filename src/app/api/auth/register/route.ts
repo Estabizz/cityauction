@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { hashPassword } from "@/lib/auth";
 import { ATTRIBUTION_COOKIE, parseAttribution } from "@/lib/attribution";
 import { BUYER_CATEGORIES } from "@/lib/buyer";
 import { recordMarketingChoices, recordTermsAcceptance } from "@/lib/consent";
@@ -16,6 +17,7 @@ import {
   emailSchema,
   homeFor,
   jsonError,
+  passwordSchema,
   setSessionCookie,
   toSessionPayload,
   userWithRoles,
@@ -29,6 +31,8 @@ const registerSchema = z.object({
   countryCode: z.string().trim().default("91"),
   mobile: z.string().trim().max(25).optional().default(""),
   email: emailSchema,
+  password: passwordSchema,
+  confirmPassword: z.string(),
   buyerCategory: z.enum(BUYER_CATEGORIES.map((c) => c.value) as [string, ...string[]], {
     error: "Please choose what best describes you.",
   }),
@@ -41,6 +45,8 @@ const registerSchema = z.object({
   // preferences step was shown (even if skipped), so don't show it again.
   preferences: requirementSchema.optional(),
   onboarded: z.boolean().optional(),
+}).refine((value) => value.password === value.confirmPassword, {
+  message: "The two passwords don't match.", path: ["confirmPassword"],
 });
 
 const EMAIL_TAKEN = "An account with this email already exists. Please sign in instead.";
@@ -86,10 +92,12 @@ export async function POST(req: Request) {
     };
 
     let user: Prisma.UserGetPayload<{ include: typeof userWithRoles }> | undefined;
+    const passwordHash = await hashPassword(input.password);
     await verifyEmailChallenge(input, input.email, "register", async (tx) => {
       const created = await tx.user.create({
         data: {
           fullName: input.fullName,
+          passwordHash,
           phone: mobile ? formatMobile(mobile) : null,
           isPhoneVerified: false,
           isEmailVerified: true,

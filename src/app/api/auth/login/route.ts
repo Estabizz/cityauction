@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
-import { OTP_RESEND_SECONDS, OtpError, passwordLoginPurpose, sendOtp } from "@/lib/otp";
+import { safeNextPath } from "@/components/account/safe-next";
 import { tooManyRequests } from "@/lib/rate-limit";
 import {
   DB_UNAVAILABLE,
@@ -10,6 +10,9 @@ import {
   jsonError,
   userWithRoles,
   validationError,
+  homeFor,
+  setSessionCookie,
+  toSessionPayload,
 } from "../_lib";
 
 const loginSchema = z.object({
@@ -54,21 +57,22 @@ export async function POST(req: Request) {
   if (!user.isActive || user.deletedAt) {
     return jsonError("This account has been disabled. Please contact info@estabizz.com.", 403);
   }
+  if (!user.isEmailVerified) return jsonError("This account needs email verification. Please contact support to recover access.", 403);
 
   try {
-    const { challengeId, devCode } = await sendOtp(user.email!, passwordLoginPurpose(user), clientIp(req));
-    return NextResponse.json({
-      success: true, requiresOtp: true, challengeId, email: user.email,
-      resendIn: OTP_RESEND_SECONDS, devCode,
-      message: "Enter the verification code sent to your email address to finish signing in.",
-    }, { headers: { "Cache-Control": "no-store" } });
+    // Re-check eligibility and password/version so a concurrent password reset
+    // or account suspension cannot issue a session from stale credentials.
+    const { count } = await db.user.updateMany({
+      where: { id: user.id, email: input.email, passwordHash: user.passwordHash, sessionVersion: user.sessionVersion, isActive: true, deletedAt: null, isEmailVerified: true },
+      data: { lastLoginAt: new Date() },
+    });
+    if (count !== 1) return jsonError("Your account changed. Please sign in again.", 401);
+    const payload = toSessionPayload(user);
+    const response = NextResponse.json({ success: true, user: payload, redirectTo: safeNextPath(input.next) || homeFor(payload) }, { headers: { "Cache-Control": "no-store" } });
+    await setSessionCookie(response, payload);
+    return response;
   } catch (error) {
-    if (error instanceof OtpError) {
-      const response = jsonError(error.message, error.status);
-      if (error.retryAfter) response.headers.set("Retry-After", String(error.retryAfter));
-      return response;
-    }
-    console.error("[auth/login] OTP", error);
+    console.error("[auth/login]", error);
     return jsonError(DB_UNAVAILABLE, 503);
   }
 }

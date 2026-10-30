@@ -52,6 +52,7 @@ export function Field({
   id,
   type = "text",
   labelAside,
+  allowReveal = true,
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -59,6 +60,7 @@ export function Field({
   error?: string;
   id: string;
   labelAside?: React.ReactNode;
+  allowReveal?: boolean;
 }) {
   const [show, setShow] = useState(false);
   const isPassword = type === "password";
@@ -75,18 +77,20 @@ export function Field({
         <input
           id={id}
           name={id}
-          type={isPassword && show ? "text" : type}
+          type={isPassword && allowReveal && show ? "text" : type}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
-          className={`${inputClass} ${isPassword ? "pr-11" : ""} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}
+          className={`${inputClass} ${isPassword && allowReveal ? "pr-11" : ""} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}
           {...props}
         />
-        {isPassword && (
+        {isPassword && allowReveal && (
           <button
             type="button"
             onClick={() => setShow((s) => !s)}
             className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-[#7e868b] hover:text-[#182129] cursor-pointer"
             aria-label={show ? "Hide password" : "Show password"}
+            aria-controls={id}
+            aria-pressed={show}
           >
             {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>

@@ -221,7 +221,7 @@ export function ChangePasswordForm() {
       {result && <FormAlert kind={result.ok ? "success" : "error"}>{result.message}</FormAlert>}
       <Field id="currentPassword" label="Current password" type="password" autoComplete="current-password" value={form.currentPassword} onChange={set("currentPassword")} error={errors.currentPassword} required />
       <Field id="newPassword" label="New password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={form.newPassword} onChange={set("newPassword")} error={errors.newPassword} required />
-      <Field id="confirmPassword" label="Confirm new password" type="password" autoComplete="new-password" value={form.confirmPassword} onChange={set("confirmPassword")} error={errors.confirmPassword} required />
+      <Field id="confirmPassword" label="Confirm new password" type="password" allowReveal={false} autoComplete="new-password" value={form.confirmPassword} onChange={set("confirmPassword")} error={errors.confirmPassword} required />
       <div className="sm:max-w-xs">
         <SubmitButton loading={loading} loadingText="Changing…">
           <KeyRound className="h-4 w-4" />

@@ -299,9 +299,9 @@ test("registration preserves the listing return path and records buyer consent",
   const verified = [];
   state.mocks["next/headers"] = { cookies: async () => ({ get: () => undefined }) };
   state.mocks["@/lib/otp"] = { OtpError: class extends Error {}, verifyOtp: async (...args) => { verified.push(args); if (args[4]) await state.db.$transaction(args[4]); } };
-  state.mocks["@/lib/auth"] = { COOKIE_NAME: "cityauction_auth_token", signToken: async () => "registered-session", isAdmin: () => false };
+  state.mocks["@/lib/auth"] = { hashPassword: async () => "registration-hash", COOKIE_NAME: "cityauction_auth_token", signToken: async () => "registered-session", isAdmin: () => false };
   const { POST } = loadSource("src/app/api/auth/register/route.ts", state.mocks);
-  const response = await POST(request({ fullName: "New Buyer", email: "buyer@example.test", buyerCategory: "INDIVIDUAL_BUYER", acceptTerms: true, challengeId: "challenge-1", otp: "123456", onboarded: true, next: "/auctions/published" }));
+  const response = await POST(request({ fullName: "New Buyer", email: "buyer@example.test", password: "new-password", confirmPassword: "new-password", buyerCategory: "INDIVIDUAL_BUYER", acceptTerms: true, challengeId: "challenge-1", otp: "123456", onboarded: true, next: "/auctions/published" }));
   assert.equal(response.status, 200);
   assert.equal((await response.json()).redirectTo, "/auctions/published");
   assert.equal(verified[0][2], "register");
