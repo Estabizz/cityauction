@@ -24,7 +24,7 @@ const MAIN_PAGES: { href: string; label: string; form?: string }[] = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/resources", label: "Resources" },
   { href: "/resources/faqs", label: "FAQs" },
-  { href: "/register", label: "Sign up" },
+  { href: "/buyer/access", label: "Buyer & Investor Access (sign up, callback, login)" },
   { href: "/login", label: "Log in" },
 ];
 

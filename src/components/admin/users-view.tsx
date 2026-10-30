@@ -5,6 +5,8 @@ import { PAGE_SIZE, type ManagedRole } from "@/lib/admin/constants";
 import { fmtDate, fmtDateTime, sendJson, timeAgo, useAdminJson, useQueryState } from "./hooks";
 import { useLive } from "./live";
 import { PasswordLinkTool } from "./password-link";
+import { BuyerProfile } from "./buyer-profile";
+import { BUYER_CATEGORIES, labelFor } from "@/lib/buyer";
 import {
   Badge,
   Button,
@@ -25,9 +27,14 @@ import {
 
 interface UserRow {
   id: string;
-  email: string;
+  email: string | null;
   fullName: string | null;
   phone: string | null;
+  mobile: string | null;
+  buyerCategory: string | null;
+  onboardedAt: string | null;
+  requirementCount: number;
+  savedCount: number;
   city: string | null;
   state: string | null;
   accountType: string | null;
@@ -69,7 +76,7 @@ function RoleBadges({ roles }: { roles: string[] }) {
   );
 }
 
-const FILTER_KEYS = ["q", "active", "role"] as const;
+const FILTER_KEYS = ["q", "active", "role", "buyers", "category"] as const;
 
 export function UsersView() {
   const { params, get, set } = useQueryState();
@@ -81,11 +88,11 @@ export function UsersView() {
   const page = Number(get("page")) || 1;
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const liveTotal = live.data?.counts.signups.total;
-  const [seenTotal, setSeenTotal] = useState(liveTotal);
-  if (liveTotal !== seenTotal) {
-    setSeenTotal(liveTotal);
-    if (seenTotal !== undefined && page === 1) reload();
+  // Reload when anything changes: new rows, or edits by another admin.
+  const [seenVersion, setSeenVersion] = useState(live.version);
+  if (live.version !== seenVersion) {
+    setSeenVersion(live.version);
+    if (seenVersion) reload();
   }
 
   const hasFilters = FILTER_KEYS.some((k) => get(k));
@@ -114,6 +121,21 @@ export function UsersView() {
               ]}
             />
             <SelectBox
+              label="Buyers"
+              value={get("buyers")}
+              onChange={(buyers) => set({ buyers })}
+              options={[
+                { value: "", label: "All accounts" },
+                { value: "1", label: "Buyer portal (email verified)" },
+              ]}
+            />
+            <SelectBox
+              label="Category"
+              value={get("category")}
+              onChange={(category) => set({ category })}
+              options={[{ value: "", label: "Any category" }, ...BUYER_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))]}
+            />
+            <SelectBox
               label="Role"
               value={get("role")}
               onChange={(role) => set({ role })}
@@ -123,7 +145,7 @@ export function UsersView() {
               ]}
             />
             {hasFilters && (
-              <Button variant="ghost" onClick={() => set({ q: null, active: null, role: null })}>
+              <Button variant="ghost" onClick={() => set({ q: null, active: null, role: null, buyers: null, category: null })}>
                 Clear filters
               </Button>
             )}
@@ -145,7 +167,7 @@ export function UsersView() {
                   <tr>
                     <th className={t.th}>User</th>
                     <th className={`${t.th} hidden lg:table-cell`}>Phone</th>
-                    <th className={`${t.th} hidden md:table-cell`}>City</th>
+                    <th className={`${t.th} hidden md:table-cell`}>Buyer</th>
                     <th className={`${t.th} hidden md:table-cell`}>Roles</th>
                     <th className={`${t.th} hidden sm:table-cell`}>Joined</th>
                     <th className={`${t.th} hidden lg:table-cell`}>Last login</th>
@@ -160,13 +182,24 @@ export function UsersView() {
                         <td className={t.td}>
                           {isNew && <span className="block text-[11px] font-bold uppercase tracking-wider text-[#9a7b4a]">New</span>}
                           <span className="block font-semibold text-[#182129]">{user.fullName || "—"}</span>
-                          <span className="block break-all text-xs text-[#6f777d]">{user.email}</span>
+                          <span className="block break-all text-xs text-[#6f777d]">{user.email || "No email (assisted recovery needed)"}</span>
                           <span className="mt-1 block md:hidden">
                             <RoleBadges roles={user.roles} />
                           </span>
                         </td>
                         <td className={`${t.td} hidden whitespace-nowrap text-xs lg:table-cell`}>{user.phone || "—"}</td>
-                        <td className={`${t.td} hidden text-xs md:table-cell`}>{[user.city, user.state].filter(Boolean).join(", ") || "—"}</td>
+                        <td className={`${t.td} hidden text-xs md:table-cell`}>
+                          {user.buyerCategory ? (
+                            <>
+                              <span className="block font-semibold text-[#182129]">{labelFor(BUYER_CATEGORIES, user.buyerCategory)}</span>
+                              <span className="text-[#6f777d]">
+                                {user.requirementCount} requirement{user.requirementCount === 1 ? "" : "s"} · {user.savedCount} saved
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-[#6f777d]">{[user.city, user.state].filter(Boolean).join(", ") || "—"}</span>
+                          )}
+                        </td>
                         <td className={`${t.td} hidden md:table-cell`}>
                           <RoleBadges roles={user.roles} />
                         </td>
@@ -240,20 +273,23 @@ function UserDrawer({
       "POST",
       { role, grant: !has },
       has
-        ? `Remove ${label} access from ${user.email}?`
-        : `Give ${user.email} ${label} access? They will be able to see every lead, subscriber and user.`
+        ? `Remove ${label} access from ${user.email || user.fullName || user.phone}?`
+        : `Give ${user.email || user.fullName || user.phone} ${label} access? They will be able to see every lead, subscriber and user.`
     );
   };
 
   return (
-    <Drawer open onClose={onClose} title={user.fullName || user.email}>
+    <Drawer open onClose={onClose} title={user.fullName || user.email || user.phone || "User"}>
       <div className="space-y-6">
         <section className="rounded-2xl border border-[#e6dfd4] bg-white p-4">
           <dl className="divide-y divide-[#f3efe8]">
             <Field label="Email">
               {user.email} {user.isEmailVerified && <Badge tone="green">Verified</Badge>}
             </Field>
-            <Field label="Phone">{user.phone}</Field>
+            <Field label="Phone">
+              {user.phone}
+            </Field>
+            <Field label="Buyer category">{user.buyerCategory ? labelFor(BUYER_CATEGORIES, user.buyerCategory) : null}</Field>
             <Field label="City">{[user.city, user.state].filter(Boolean).join(", ") || null}</Field>
             <Field label="Account type">{user.accountType}</Field>
             <Field label="Roles">
@@ -262,12 +298,12 @@ function UserDrawer({
             <Field label="Joined">{fmtDateTime(user.createdAt)}</Field>
             <Field label="Last login">{user.lastLoginAt ? fmtDateTime(user.lastLoginAt) : "Never"}</Field>
             <Field label="Password">
-              {user.hasPassword ? "Set" : "Not set yet"}
+              {user.hasPassword ? "Set" : user.email ? "Not needed (signs in with email OTP)" : "Not set yet"}
               {user.pendingLinkExpires && ` · a set-password link is open until ${fmtDateTime(user.pendingLinkExpires)}`}
             </Field>
             <Field label="Leads">
               {user.leadCount > 0 ? (
-                <TextLink href={`/admin/leads?q=${encodeURIComponent(user.email)}`}>
+                <TextLink href={`/admin/leads?q=${encodeURIComponent(user.email || user.phone || "")}`}>
                   {user.leadCount} submitted while signed in
                 </TextLink>
               ) : (
@@ -276,6 +312,8 @@ function UserDrawer({
             </Field>
           </dl>
         </section>
+
+        <BuyerProfile userId={user.id} />
 
         {!canManage && (
           <p className="rounded-xl border border-[#e6dfd4] bg-white p-3 text-xs text-[#6f777d]">
@@ -293,7 +331,7 @@ function UserDrawer({
                 busy={busy === "active"}
                 disabled={!canManage || isSelf}
                 onClick={() =>
-                  run("active", `/api/admin/users/${user.id}`, "PATCH", { isActive: false }, `Deactivate ${user.email}? They will not be able to use their account.`)
+                  run("active", `/api/admin/users/${user.id}`, "PATCH", { isActive: false }, `Deactivate ${user.email || user.fullName || user.phone}? They will not be able to use their account.`)
                 }
               >
                 Deactivate

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { publicAuctionWhere } from "@/lib/public-auctions";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
@@ -115,7 +116,19 @@ export async function POST(req: Request) {
   };
 
   try {
-    const enquiry = await createEnquiry(record);
+    if (data.auctionId) {
+      const auction = await db.auction.findFirst({
+        where: { AND: [publicAuctionWhere(), { id: data.auctionId }] },
+        select: { id: true, auctionNumber: true, propertyId: true, property: { select: { title: true } } },
+      });
+      if (!auction) {
+        return NextResponse.json({ success: false, error: "This listing is no longer available. Please send a general enquiry instead." }, { status: 404 });
+      }
+      record.auctionId = auction.id;
+      record.propertyId = auction.propertyId;
+      record.metadata = { ...fields, "Auction number": auction.auctionNumber, Property: auction.property.title };
+    }
+    const enquiry = await db.enquiry.create({ data: record, select: { id: true } });
     return NextResponse.json({
       success: true,
       message: "Enquiry received. The CityAuction team will contact you shortly.",
@@ -124,24 +137,5 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("[enquiries] could not save enquiry", { source: data.source, error });
     return NextResponse.json({ success: false, error: SAVE_FAILED_MESSAGE }, { status: 503 });
-  }
-}
-
-async function createEnquiry(record: Prisma.EnquiryUncheckedCreateInput) {
-  try {
-    return await db.enquiry.create({ data: record, select: { id: true } });
-  } catch (error) {
-    // A stale session or unknown auction id breaks a foreign key; keep the lead without the link.
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2003" &&
-      (record.userId || record.auctionId)
-    ) {
-      return db.enquiry.create({
-        data: { ...record, userId: null, auctionId: null },
-        select: { id: true },
-      });
-    }
-    throw error;
   }
 }

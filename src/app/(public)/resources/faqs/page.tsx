@@ -50,11 +50,11 @@ export default function FaqsPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <a
-                  href="tel:+911244302020"
+                  href="tel:+919825669668"
                   className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-xs"
                 >
                   <Phone className="h-3.5 w-3.5" />
-                  Call: +91-124-4302020
+                  Call: +91 98256 69668
                 </a>
               </div>
             </div>

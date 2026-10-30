@@ -1,3 +1,4 @@
+import { cache } from "react";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { db } from "./db";
@@ -23,17 +24,36 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 // 4. Get Current User Session from Cookies (Server Components & Route Handlers)
-export async function getCurrentUser(): Promise<UserSessionPayload | null> {
+// Also rejects sessions ended by "log out everywhere" (User.sessionVersion) and
+// disabled accounts. proxy.ts only checks the signature, so this is the real gate.
+export const getCurrentUser = cache(async (): Promise<UserSessionPayload | null> => {
+  let session: UserSessionPayload | null;
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
 
     if (!token) return null;
-    return await verifyToken(token);
-  } catch (error) {
+    session = await verifyToken(token);
+  } catch {
     return null;
   }
-}
+  if (!session) return null;
+
+  try {
+    const user = await db.user.findUnique({
+      where: { id: session.userId },
+      select: { sessionVersion: true, isActive: true, deletedAt: true },
+    });
+    if (!user || !user.isActive || user.deletedAt) return null;
+    if ((session.sv ?? 0) !== user.sessionVersion) return null;
+  } catch (error) {
+    // A signature alone cannot establish whether the account or session is
+    // still valid. Deny access when those checks cannot be completed.
+    console.error("[auth] session check", error);
+    return null;
+  }
+  return session;
+});
 
 // 5. Require Auth Helper
 export async function requireAuth(): Promise<UserSessionPayload> {

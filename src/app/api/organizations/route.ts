@@ -8,10 +8,10 @@ export async function GET() {
       success: true,
       data,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Failed to fetch organizations" },
-      { status: 500 }
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     );
   }
 }

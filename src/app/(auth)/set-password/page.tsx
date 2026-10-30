@@ -23,7 +23,7 @@ async function checkToken(token: string): Promise<LinkState> {
     if (!user || !user.isActive || user.deletedAt || !user.passwordSetExpires || user.passwordSetExpires <= new Date()) {
       return { status: "invalid" };
     }
-    return { status: "ok", email: user.email };
+    return { status: "ok", email: user.email ?? "" };
   } catch (error) {
     // Database unreachable: still show the form; the save step reports the problem.
     console.error("[set-password page]", error);

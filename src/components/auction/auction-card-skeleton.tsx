@@ -1,6 +1,5 @@
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import type { ViewMode } from "@/types";
 
 interface AuctionCardSkeletonProps {
@@ -12,7 +11,7 @@ export function AuctionCardSkeleton({ view = 'grid' }: AuctionCardSkeletonProps)
 
   if (isGrid) {
     return (
-      <div className="w-full max-w-[360px] h-full bg-white border border-neutral-200 rounded-xl overflow-hidden flex flex-col">
+      <div className="w-full h-full bg-white border border-[#e4e8ec] rounded-3xl overflow-hidden flex flex-col">
         {/* Image Skeleton */}
         <div className="relative aspect-[4/3] w-full shrink-0">
           <Skeleton className="w-full h-full rounded-none" />

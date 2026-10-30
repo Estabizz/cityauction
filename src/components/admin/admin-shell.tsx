@@ -41,7 +41,7 @@ const SECTIONS: { heading: string; links: { href: string; label: string; icon: t
     ],
   },
   {
-    heading: "Marketplace (not live yet)",
+    heading: "Marketplace records",
     links: [
       { href: "/admin/auctions", label: "Auctions", icon: Gavel },
       { href: "/admin/properties", label: "Properties", icon: Building },
@@ -184,7 +184,7 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
         <div className="space-y-2 border-t border-white/10 p-4">
           <div className="flex items-center gap-2 px-1 text-[11px] text-white/50">
             <span className={`h-2 w-2 rounded-full ${live.error ? "bg-red-400" : live.data ? "animate-pulse bg-emerald-400" : "bg-white/30"}`} />
-            {live.error ? "Live updates paused" : live.data ? "Live · refreshes every 15 s" : "Connecting…"}
+            {live.error ? "Live updates paused" : live.data ? "Live · updates within seconds" : "Connecting…"}
           </div>
           <Link
             href="/"

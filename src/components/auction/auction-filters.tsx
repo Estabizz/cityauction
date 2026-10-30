@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useId } from "react";
 import { CITY_LIST } from "@/content/cities/list";
 import {
   RotateCcw,
@@ -33,13 +33,16 @@ interface FilterSectionProps {
 
 function FilterSection({ title, icon, children, defaultOpen = true }: FilterSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const sectionId = useId();
 
   return (
     <div className="border-b border-border py-4 last:border-b-0">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-left font-semibold text-sm text-gray-900 group cursor-pointer"
+        aria-expanded={isOpen}
+        aria-controls={sectionId}
+        className="flex items-center justify-between min-h-11 w-full text-left font-semibold text-sm text-gray-900 group cursor-pointer"
       >
         <span className="flex items-center gap-2">
           <span className="text-gray-400 group-hover:text-primary transition-colors">
@@ -53,25 +56,26 @@ function FilterSection({ title, icon, children, defaultOpen = true }: FilterSect
           <ChevronDown className="h-4 w-4 text-gray-400" />
         )}
       </button>
-      {isOpen && <div className="mt-3 space-y-2">{children}</div>}
+      {isOpen && <div id={sectionId} className="mt-3 space-y-2">{children}</div>}
     </div>
   );
 }
 
 export function AuctionFilters() {
   const router = useRouter();
+  const citySuggestionsId = useId();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const currentState = searchParams.get("state") || "";
   const currentCity = searchParams.get("city") || "";
-  const currentCategory = searchParams.get("category") || "";
-  const currentAuctionType = searchParams.get("type") || "";
-  const currentStatus = searchParams.get("status") || "";
-  const currentPossession = searchParams.get("possession") || "";
+  const currentCategory = (searchParams.get("category") || "").toUpperCase();
+  const currentAuctionType = (searchParams.get("type") || searchParams.get("auctionType") || "").toUpperCase();
+  const currentStatus = (searchParams.get("status") || "").toUpperCase();
+  const currentPossession = (searchParams.get("possession") || "").toUpperCase();
   const currentMinPrice = searchParams.get("minPrice") || "";
   const currentMaxPrice = searchParams.get("maxPrice") || "";
-  const currentKeyword = searchParams.get("keyword") || "";
+  const currentKeyword = searchParams.get("keyword") || searchParams.get("q") || "";
 
   const updateFilter = useCallback(
     (name: string, value: string | null) => {
@@ -81,14 +85,17 @@ export function AuctionFilters() {
       } else {
         params.delete(name);
       }
+      if (name === "type") params.delete("auctionType");
+      if (name === "keyword") params.delete("q");
+      if (name === "state") { params.delete("city"); params.delete("district"); }
       params.set("page", "1"); // Reset page on filter change
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [router, pathname, searchParams]
   );
 
   const clearAllFilters = useCallback(() => {
-    router.push(pathname);
+    router.push(pathname, { scroll: false });
   }, [router, pathname]);
 
   const hasActiveFilters =
@@ -123,12 +130,14 @@ export function AuctionFilters() {
 
       {/* Keyword Search */}
       <div className="py-4 border-b border-border">
-        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+        <label htmlFor={`${citySuggestionsId}-keyword`} className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
           Keyword / Auction ID
         </label>
         <input
           type="text"
+          id={`${citySuggestionsId}-keyword`}
           placeholder="e.g. Bandra, SARB, 3 BHK..."
+          key={currentKeyword}
           defaultValue={currentKeyword}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -148,8 +157,9 @@ export function AuctionFilters() {
       >
         <div className="space-y-2">
           <div>
-            <label className="block text-[11px] text-gray-500 mb-1">State</label>
+            <label htmlFor={`${citySuggestionsId}-state`} className="block text-[11px] text-gray-500 mb-1">State</label>
             <select
+              id={`${citySuggestionsId}-state`}
               value={currentState}
               onChange={(e) => updateFilter("state", e.target.value)}
               className="w-full h-9 rounded-lg border border-border bg-gray-50 px-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -164,12 +174,14 @@ export function AuctionFilters() {
           </div>
 
           <div>
-            <label className="block text-[11px] text-gray-500 mb-1">City / District</label>
+            <label htmlFor={`${citySuggestionsId}-city`} className="block text-[11px] text-gray-500 mb-1">City / District</label>
             <input
               type="text"
               placeholder="e.g. Surat, Ahmedabad..."
-              list="city-suggestions"
-              defaultValue={currentCity}
+              id={`${citySuggestionsId}-city`}
+              list={citySuggestionsId}
+              key={currentCity}
+          defaultValue={currentCity}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   updateFilter("city", e.currentTarget.value);
@@ -178,7 +190,7 @@ export function AuctionFilters() {
               onBlur={(e) => updateFilter("city", e.target.value)}
               className="w-full h-9 rounded-lg border border-border bg-gray-50 px-3 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
-            <datalist id="city-suggestions">
+            <datalist id={citySuggestionsId}>
               {CITY_LIST.map((c) => (
                 <option key={c.slug} value={c.city} />
               ))}
@@ -194,7 +206,7 @@ export function AuctionFilters() {
         defaultOpen={true}
       >
         <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-          <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
+          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
             <input
               type="radio"
               name="category"
@@ -207,7 +219,7 @@ export function AuctionFilters() {
           {PROPERTY_CATEGORIES.map((cat) => (
             <label
               key={cat.value}
-              className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
+              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
             >
               <input
                 type="radio"
@@ -244,9 +256,9 @@ export function AuctionFilters() {
                   if (max) params.set("maxPrice", max);
                   else params.delete("maxPrice");
                   params.set("page", "1");
-                  router.push(`${pathname}?${params.toString()}`);
+                  router.push(`${pathname}?${params.toString()}`, { scroll: false });
                 }}
-                className="px-2 py-1 text-[10px] bg-gray-100 hover:bg-primary-50 hover:text-primary rounded text-gray-700 font-medium transition-colors cursor-pointer"
+                className="min-h-11 sm:min-h-0 px-2 py-1 text-[10px] bg-gray-100 hover:bg-primary-50 hover:text-primary rounded text-gray-700 font-medium transition-colors cursor-pointer"
               >
                 {r.label}
               </button>
@@ -255,21 +267,25 @@ export function AuctionFilters() {
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1">Min (₹)</label>
+              <label htmlFor={`${citySuggestionsId}-min`} className="block text-[10px] text-gray-500 mb-1">Min (₹)</label>
               <input
                 type="number"
                 placeholder="0"
-                defaultValue={currentMinPrice}
+                id={`${citySuggestionsId}-min`}
+                key={currentMinPrice}
+          defaultValue={currentMinPrice}
                 onBlur={(e) => updateFilter("minPrice", e.target.value)}
                 className="w-full h-8 rounded border border-border bg-gray-50 px-2 text-xs tabular-nums"
               />
             </div>
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1">Max (₹)</label>
+              <label htmlFor={`${citySuggestionsId}-max`} className="block text-[10px] text-gray-500 mb-1">Max (₹)</label>
               <input
                 type="number"
                 placeholder="Any"
-                defaultValue={currentMaxPrice}
+                id={`${citySuggestionsId}-max`}
+                key={currentMaxPrice}
+          defaultValue={currentMaxPrice}
                 onBlur={(e) => updateFilter("maxPrice", e.target.value)}
                 className="w-full h-8 rounded border border-border bg-gray-50 px-2 text-xs tabular-nums"
               />
@@ -285,7 +301,7 @@ export function AuctionFilters() {
         defaultOpen={false}
       >
         <div className="space-y-1.5">
-          <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
+          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
             <input
               type="radio"
               name="status"
@@ -298,7 +314,7 @@ export function AuctionFilters() {
           {AUCTION_STATUSES.map((st) => (
             <label
               key={st.value}
-              className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
+              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
             >
               <input
                 type="radio"
@@ -321,7 +337,7 @@ export function AuctionFilters() {
         defaultOpen={false}
       >
         <div className="space-y-1.5">
-          <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
+          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
             <input
               type="radio"
               name="auctionType"
@@ -334,7 +350,7 @@ export function AuctionFilters() {
           {AUCTION_TYPES.map((t) => (
             <label
               key={t.value}
-              className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
+              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
             >
               <input
                 type="radio"
@@ -357,7 +373,7 @@ export function AuctionFilters() {
         defaultOpen={false}
       >
         <div className="space-y-1.5">
-          <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
+          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
             <input
               type="radio"
               name="possession"
@@ -370,7 +386,7 @@ export function AuctionFilters() {
           {POSSESSION_STATUSES.map((pos) => (
             <label
               key={pos.value}
-              className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
+              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
             >
               <input
                 type="radio"

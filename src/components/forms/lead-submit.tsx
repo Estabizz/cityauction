@@ -25,6 +25,7 @@ type EnquiryPayload = {
   email?: string;
   phone?: string;
   subject?: string;
+  auctionId?: string;
   message?: string;
   fields?: Record<string, string>;
 };

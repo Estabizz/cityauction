@@ -1,3 +1,4 @@
+import { AuctionDataUnavailable } from "@/lib/public-auctions";
 import { NextResponse } from "next/server";
 import { getAuctionById } from "@/services/auction.service";
 
@@ -20,11 +21,11 @@ export async function GET(req: Request, { params }: RouteParams) {
     return NextResponse.json({
       success: true,
       data: auction,
-    });
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Failed to fetch auction details" },
-      { status: 500 }
+      { status: error instanceof AuctionDataUnavailable ? 503 : 500, headers: { "Cache-Control": "no-store" } }
     );
   }
 }

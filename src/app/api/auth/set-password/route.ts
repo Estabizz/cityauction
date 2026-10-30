@@ -52,7 +52,13 @@ export async function POST(req: Request) {
     // Conditional update so the same link can't be used twice, even at once.
     const { count } = await db.user.updateMany({
       where: { id: user.id, passwordSetToken: input.token, passwordSetExpires: { gt: now } },
-      data: { passwordHash, passwordSetToken: null, passwordSetExpires: null, lastLoginAt: now },
+      data: {
+        passwordHash,
+        passwordSetToken: null,
+        passwordSetExpires: null,
+        lastLoginAt: now,
+        sessionVersion: { increment: 1 },
+      },
     });
     if (count !== 1) return jsonError(EXPIRED, 400);
 

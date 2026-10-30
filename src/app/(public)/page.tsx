@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AUCTION_TYPES } from "@/lib/constants";
 import { CITY_LIST } from "@/content/cities/list";
 import { cityPath } from "@/content/cities/paths";
 import { Honeypot, SubmitErrorNotice, submitEnquiry } from "@/components/forms/lead-submit";
@@ -69,17 +70,7 @@ export default function HomePage() {
       };
       params.set("category", typeMap[assetType] || assetType.toUpperCase());
     }
-    if (channel) {
-      const channelMap: Record<string, string> = {
-        SARFAESI: "SARFAESI",
-        DRT: "DRT",
-        ARC: "NPA",
-        "IBC / Liquidation": "NPA",
-        Customs: "OTHER",
-        "Government / Court": "OTHER",
-      };
-      params.set("auctionType", channelMap[channel] || "SARFAESI");
-    }
+    if (channel) params.set("auctionType", channel);
     if (budget) {
       if (budget === "Below ₹25 Lakh") params.set("maxPrice", "2500000");
       if (budget === "₹25–50 Lakh") {
@@ -253,12 +244,7 @@ export default function HomePage() {
                   onChange={(e) => setChannel(e.target.value)}
                 >
                   <option value="">All channels</option>
-                  <option value="SARFAESI">SARFAESI</option>
-                  <option value="DRT">DRT</option>
-                  <option value="ARC">ARC</option>
-                  <option value="IBC / Liquidation">IBC / Liquidation</option>
-                  <option value="Customs">Customs</option>
-                  <option value="Government / Court">Government / Court</option>
+                  {AUCTION_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
                 </select>
               </div>
             </div>
@@ -354,7 +340,7 @@ export default function HomePage() {
                 <h3>I Don&apos;t Want to Keep Searching Every Day</h3>
                 <p>
                   Create a mandate around location, asset class, institution, budget or auction
-                  type and receive matched opportunities through supported channels.
+                  type. Send your preferences to our team, or see matching published properties in your dashboard.
                 </p>
               </div>
               <a href="#alerts">Create Your Mandate →</a>
@@ -879,15 +865,15 @@ export default function HomePage() {
             <div className="alerts-copy-box">
               <div className="eyebrow-text">Personalised auction alerts</div>
               <h3 className="font-serif-heading text-2xl sm:text-4xl font-semibold text-white mt-3">
-                Define the Opportunity Once. Let CityAuction Keep Looking.
+                Share What You Are Looking For.
               </h3>
               <p className="text-xs text-[#b7c1c8] leading-relaxed mt-3">
                 Property. Industrial asset. Customs lot. Business. Project. Tell us the mandate—not
-                just the search terms. When matching opportunities are identified through supported
-                inventory and workflows, CityAuction can surface them through enabled channels.
+                just the search terms. Our team can review your enquiry. Automatic WhatsApp and email
+                opportunity alerts are not available yet.
               </p>
               <div className="quote-block text-sm">
-                “Create the mandate once. Spend your time evaluating—not repeatedly searching.”
+                “Clear preferences help our team understand the opportunities you need.”
               </div>
             </div>
 
@@ -907,7 +893,7 @@ export default function HomePage() {
               </div>
               <div className="actions-row mt-6">
                 <a className="btn-pill btn-dark text-xs" href="#contact">
-                  Create an Opportunity Alert
+                  Send buying preferences
                 </a>
               </div>
             </div>
