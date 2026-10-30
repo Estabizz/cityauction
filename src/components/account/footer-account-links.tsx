@@ -7,5 +7,5 @@ export function FooterAccountLink({ institutional = false }: { institutional?: b
   const session = useHeaderSession();
   if (session === undefined) return null;
   if (!session) return <Link href="/login">Sign in to CityAuction</Link>;
-  return <Link href={institutional && session.isAdmin ? "/admin/dashboard" : "/dashboard"}>{institutional && session.isAdmin ? "Admin panel" : "My dashboard"}</Link>;
+  return <Link href={institutional && session.isAdmin ? "/admin/dashboard" : "/dashboard"}>{institutional && session.isAdmin ? "Admin dashboard" : "My dashboard"}</Link>;
 }

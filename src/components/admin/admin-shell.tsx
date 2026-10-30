@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
   Building,
@@ -10,7 +10,6 @@ import {
   Globe2,
   Inbox,
   LayoutDashboard,
-  LogOut,
   Mail,
   Menu,
   ShieldCheck,
@@ -19,6 +18,8 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
+import { AccountMenu } from "@/components/account/account-menu";
+import { LogoutButton } from "@/components/account/logout-button";
 import { LiveProvider, useLive } from "./live";
 
 type BadgeKey = "all" | "leads" | "signups" | "subscribers";
@@ -67,7 +68,7 @@ export function AdminShell({ admin, children }: { admin: ShellAdmin; children: R
 
 function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const account = { fullName: admin.name, email: admin.email, isAdmin: true };
   const [open, setOpen] = useState(false);
   const live = useLive();
 
@@ -75,12 +76,6 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
     const s = live.data?.newSince;
     if (!key || !s) return 0;
     return key === "all" ? s.total : s[key];
-  };
-
-  const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
-    router.push("/login");
-    router.refresh();
   };
 
   const initials =
@@ -100,6 +95,7 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b49361]">Admin</span>
         </Link>
         <div className="flex items-center gap-2">
+          <AccountMenu session={account} roleLabel={admin.roleLabel} onOpen={() => setOpen(false)} />
           {live.newCount > 0 && (
             <Link href="/admin/dashboard" className="rounded-full bg-[#b49361] px-2 py-0.5 text-[11px] font-bold text-[#091118]">
               {live.newCount} new
@@ -193,18 +189,15 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to the site
           </Link>
-          <button
-            type="button"
-            onClick={logout}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/10"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            Sign out
-          </button>
+          <LogoutButton className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/10" />
         </div>
       </aside>
 
       <main className="min-w-0 flex-1">
+        <div className="sticky top-0 z-40 hidden h-[76px] items-center justify-between border-b border-[#e4e8ec] bg-white px-6 md:flex lg:px-8">
+          <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm text-[#687480] hover:text-[#182129]"><ArrowLeft className="h-4 w-4" /> Back to the site</Link>
+          <AccountMenu session={account} roleLabel={admin.roleLabel} />
+        </div>
         <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
     </div>

@@ -48,7 +48,7 @@ for (const [admin, next, expected] of [[false, undefined, "/dashboard"], [true, 
   });
 }
 
-for (const [session, expected, forbidden] of [[null, "Sign in to CityAuction", "My dashboard"], [member, "My dashboard", "Sign in"], [{ ...member, isAdmin: true }, "Admin panel", "Sign in"]]) {
+for (const [session, expected, forbidden] of [[null, "Sign in to CityAuction", "My dashboard"], [member, "My dashboard", "Sign in"], [{ ...member, isAdmin: true }, "Admin dashboard", "Sign in"]]) {
   test(`footer account entry matches session: ${expected}`, () => {
     const { FooterAccountLink } = loadSource("src/components/account/footer-account-links.tsx", {
       "next/link": Link,
@@ -59,3 +59,35 @@ for (const [session, expected, forbidden] of [[null, "Sign in to CityAuction", "
     assert.doesNotMatch(html, new RegExp(forbidden));
   });
 }
+
+for (const admin of [false, true]) {
+  test(`open account menu exposes profile and role-appropriate dashboard links (admin: ${admin})`, () => {
+    const { AccountMenu } = loadSource("src/components/account/account-menu.tsx", {
+      react: { ...React, useState: () => [true, () => {}] },
+      "next/link": Link,
+      "./logout-button": { LogoutButton: () => React.createElement("button", null, "Log out") },
+    });
+    const html = renderToStaticMarkup(React.createElement(AccountMenu, {
+      session: { ...member, isAdmin: admin }, roleLabel: admin ? "Super admin" : undefined,
+    }));
+    assert.match(html, /My profile/);
+    assert.match(html, /href="\/dashboard\/profile"/);
+    assert.match(html, /My dashboard/);
+    assert.match(html, /Log out/);
+    assert.match(html, /aria-expanded="true"/);
+    assert.equal(html.includes('href="/admin/dashboard"'), admin);
+    assert.equal(html.includes("Admin dashboard"), admin);
+    if (admin) assert.match(html, /Super admin/);
+  });
+}
+
+test("admin workspace has the same account access on desktop and mobile", () => {
+  const { AdminShell } = loadSource("src/components/admin/admin-shell.tsx", {
+    "next/link": Link,
+    "next/navigation": { usePathname: () => "/admin/dashboard" },
+    "./live": { LiveProvider: ({ children }) => children, useLive: () => ({ newCount: 0, data: null, error: null }) },
+    "@/components/account/logout-button": { LogoutButton: () => React.createElement("button", null, "Log out") },
+  });
+  const html = renderToStaticMarkup(React.createElement(AdminShell, { admin: { name: "Company Admin", email: "accounts@estabizz.com", roleLabel: "Admin" } }, "Workspace"));
+  assert.equal((html.match(/Account menu for Company Admin/g) || []).length, 2);
+});

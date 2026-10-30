@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { activateDialog } from "@/lib/dialog-focus";
+import { AccountMenu } from "./account-menu";
 import { LogoutButton } from "./logout-button";
 
 // Bidding, EMD payments and KYC uploads are left out on purpose: bidding happens
@@ -40,6 +41,7 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const account = { fullName: name, email, isAdmin: admin };
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -68,6 +70,8 @@ export function DashboardShell({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/cityauction-logo.png" alt="CityAuction" width={900} height={213} className="h-8 w-auto" />
         </Link>
+        <div className="flex items-center gap-2">
+        <AccountMenu session={account} onOpen={() => setOpen(false)} />
         <button
           ref={menuButton}
           type="button"
@@ -79,6 +83,7 @@ export function DashboardShell({
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
+        </div>
       </div>
 
       {open && <div className="md:hidden fixed inset-0 top-14 z-20 bg-black/30" onClick={() => setOpen(false)} aria-hidden />}
@@ -112,6 +117,15 @@ export function DashboardShell({
         </div>
 
         <nav className="min-h-0 px-3 space-y-0.5 flex-1 overflow-y-auto" aria-label="Account">
+          {admin && (
+            <Link
+              href="/admin/dashboard"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold bg-[#f5edd3] text-[#5e4a2b] hover:bg-[#eee1bd]"
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span>Admin dashboard</span>
+            </Link>
+          )}
           {LINKS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || (href === "/dashboard/matches" && pathname.startsWith("/dashboard/requirements"));
             return (
@@ -128,19 +142,11 @@ export function DashboardShell({
               </Link>
             );
           })}
-          {admin && (
-            <Link
-              href="/admin/dashboard"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[#84663c] hover:bg-[#fbf9f5]"
-            >
-              <ShieldCheck className="h-4 w-4 shrink-0" />
-              <span>Admin panel</span>
-            </Link>
-          )}
+
         </nav>
 
         <div className="shrink-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-[#efe9df] space-y-2">
-          <Link href="/dashboard/profile" aria-current={pathname === "/dashboard/profile" ? "page" : undefined} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#687480] hover:bg-[#f4f6f8]"><User className="h-4 w-4" />Profile &amp; security</Link>
+          <Link href="/dashboard/profile" aria-current={pathname === "/dashboard/profile" ? "page" : undefined} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#687480] hover:bg-[#f4f6f8]"><User className="h-4 w-4" />My profile</Link>
           <Link
             href="/auctions"
             className="w-full flex items-center justify-center gap-2 min-h-11 py-2.5 px-3 rounded-xl bg-[#091118] text-white text-xs font-bold hover:bg-[#25333f] transition-colors"
@@ -153,6 +159,9 @@ export function DashboardShell({
       </aside>
 
       <main className="flex-1 min-w-0 md:ml-64">
+        <div className="sticky top-0 z-40 hidden h-[76px] items-center justify-end border-b border-[#e4e8ec] bg-white px-6 md:flex lg:px-8">
+          <AccountMenu session={account} />
+        </div>
         <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">{children}</div>
       </main>
     </div>
