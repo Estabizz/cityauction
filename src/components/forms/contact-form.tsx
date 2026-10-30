@@ -4,12 +4,16 @@ import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { Honeypot, SubmitErrorNotice, submitEnquiry } from "./lead-submit";
 
-export function ContactForm() {
+export function ContactForm({ listing, listingUnavailable = false, initialSubject = "" }: {
+  listing?: { id: string; auctionNumber: string; title: string };
+  listingUnavailable?: boolean;
+  initialSubject?: string;
+}) {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
-  const [enquiry, setEnquiry] = useState("");
-  const [subject, setSubject] = useState("");
+  const [enquiry, setEnquiry] = useState(listing ? "Buying / Investing in Auction Asset" : "");
+  const [subject, setSubject] = useState(listing ? `Enquiry: ${listing.auctionNumber}` : initialSubject);
   const [message, setMessage] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -28,6 +32,7 @@ export function ContactForm() {
       phone: mobile,
       subject: subject || `${enquiry} - ${name}`,
       message,
+      auctionId: listing?.id,
       fields: { "Help with": enquiry },
     });
 
@@ -38,10 +43,10 @@ export function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="bg-[#fcfaf6] border border-[#e6dfd4] rounded-2xl p-8 text-center space-y-4">
+      <div className="bg-white border border-[#e4e8ec] rounded-2xl p-8 text-center space-y-4">
         <CheckCircle2 className="h-12 w-12 text-[#3f6b57] mx-auto" />
-        <h4 className="font-serif-heading text-2xl font-bold text-[#182129]">
-          Enquiry Received
+        <h4 className="text-2xl font-semibold tracking-tight text-[#182129]">
+          Message sent
         </h4>
         <p className="text-sm text-[#6f777d] max-w-md mx-auto leading-relaxed">
           Thank you, <strong>{name}</strong>. Your enquiry regarding <strong>{enquiry}</strong> has been logged. The relevant CityAuction desk at Estabizz Fintech will respond shortly.
@@ -52,13 +57,13 @@ export function ContactForm() {
             setName("");
             setMobile("");
             setEmail("");
-            setEnquiry("");
-            setSubject("");
+            setEnquiry(listing ? "Buying / Investing in Auction Asset" : "");
+            setSubject(listing ? `Enquiry: ${listing.auctionNumber}` : initialSubject);
             setMessage("");
           }}
           className="btn-pill btn-dark text-xs py-2 px-5 mt-2"
         >
-          Send Another Enquiry
+          Send another message
         </button>
       </div>
     );
@@ -67,10 +72,20 @@ export function ContactForm() {
   return (
     <form className="contact-form" id="contactForm" onSubmit={handleSubmit}>
       <div className="eyebrow-text">Send an enquiry</div>
-      <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
-        How Can CityAuction Help?
+      <h3 className="text-2xl font-semibold tracking-tight text-[#182129] mt-2">
+        How can we help?
       </h3>
 
+      {listing && (
+        <p className="mt-4 rounded-xl border border-[#e4e8ec] bg-[#f8fafb] p-3 text-sm">
+          Enquiring about <strong>{listing.title}</strong> · {listing.auctionNumber}
+        </p>
+      )}
+      {listingUnavailable && (
+        <p role="status" className="mt-4 text-sm text-amber-800">
+          We could not load the selected listing. You can still send a general enquiry; include the property details in your message.
+        </p>
+      )}
       <div className="search-form-grid mt-4">
         <div className="field-custom">
           <label htmlFor="name">Name</label>
@@ -162,10 +177,10 @@ export function ContactForm() {
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Sending Enquiry...
+            Sending message…
           </>
         ) : (
-          "Send Enquiry"
+          "Send message"
         )}
       </button>
 

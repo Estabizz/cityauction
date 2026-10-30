@@ -50,7 +50,7 @@ export default async function AdminParticipantsPage() {
               {result[1].map((p) => (
                 <tr key={p.id} className={t.row}>
                   <td className={t.td}>
-                    <TextLink href={`/admin/users?q=${encodeURIComponent(p.user.email)}`}>{p.user.fullName || p.user.email}</TextLink>
+                    <TextLink href={`/admin/users?q=${encodeURIComponent(p.user.email ?? p.user.fullName ?? "")}`}>{p.user.fullName || p.user.email}</TextLink>
                     <span className="block text-xs text-[#6f777d]">{p.user.email}</span>
                   </td>
                   <td className={`${t.td} hidden md:table-cell`}>

@@ -7,6 +7,52 @@ import { AdminRuleError, canManage, loadTarget, otherActiveSuperAdmins } from "@
 
 type Ctx = { params: Promise<{ id: string }> };
 
+// Buyer profile for the user drawer: requirements, saved listings, requests,
+// consent history and first-touch attribution.
+export async function GET(_req: Request, ctx: Ctx) {
+  const { error } = await requireAdminApi();
+  if (error) return error;
+
+  try {
+    const { id } = await ctx.params;
+    const user = await db.user.findFirst({
+      where: { id, deletedAt: null },
+      select: {
+        id: true,
+        mobile: true,
+        isPhoneVerified: true,
+        buyerCategory: true,
+        onboardedAt: true,
+        marketingEmail: true,
+        marketingSms: true,
+        marketingWhatsapp: true,
+        attribution: true,
+        requirements: { orderBy: { createdAt: "desc" } },
+        favourites: {
+          where: { auctionId: { not: null } },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          select: {
+            createdAt: true,
+            auction: { select: { id: true, auctionNumber: true, status: true, reservePrice: true, property: { select: { title: true } } } },
+          },
+        },
+        enquiries: {
+          orderBy: { createdAt: "desc" },
+          take: 30,
+          select: { id: true, subject: true, source: true, status: true, createdAt: true, preferredDate: true },
+        },
+        consentEvents: { orderBy: { createdAt: "desc" }, take: 50 },
+      },
+    });
+    if (!user) return jsonError("User not found.", 404);
+    return NextResponse.json({ success: true, data: user }, { headers: { "Cache-Control": "no-store" } });
+  } catch (err) {
+    console.error("[admin] user detail failed", err);
+    return jsonError("Could not load this user.", 500);
+  }
+}
+
 const patchSchema = z.object({ isActive: z.boolean() });
 
 // Activate or deactivate an account. A deactivated account cannot use the

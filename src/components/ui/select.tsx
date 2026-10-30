@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { inputClass } from './styles';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 
@@ -11,15 +12,16 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, error, options, placeholder, ...props }, ref) => {
     return (
-      <div className="relative w-full">
+      <div className="w-full">
+        <div className="relative">
         <select
           className={cn(
-            'flex h-10 w-full appearance-none rounded-lg border bg-white px-3 py-2 pr-8 text-sm',
-            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
-            'disabled:cursor-not-allowed disabled:opacity-50',
+            inputClass, 'appearance-none pr-9',
             error ? 'border-error' : 'border-border',
             className
           )}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error && props.id ? `${props.id}-error` : undefined}
           ref={ref}
           {...props}
         >
@@ -35,7 +37,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ))}
         </select>
         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        {error && <p className="mt-1 text-xs text-error">{error}</p>}
+        </div>
+        {error && <p id={props.id ? `${props.id}-error` : undefined} className="mt-1.5 break-words text-xs text-red-700">{error}</p>}
       </div>
     );
   }

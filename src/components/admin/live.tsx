@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { POLL_INTERVAL_MS } from "@/lib/admin/constants";
+import { POLL_INTERVAL_MS, PULSE_INTERVAL_MS } from "@/lib/admin/constants";
 import type { OverviewData } from "@/lib/admin/overview";
 
 interface LiveState {
@@ -13,6 +13,8 @@ interface LiveState {
   // Anything created after it counts as new.
   baseline: string | null;
   newCount: number;
+  // Changes whenever anything the panel shows changes; lists reload on it.
+  version: string | null;
   markSeen: () => void;
   refresh: () => void;
 }
@@ -32,6 +34,8 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [baseline, setBaseline] = useState<string | null>(null);
+  const [version, setVersion] = useState<string | null>(null);
+  const versionRef = useRef<string | null>(null);
   const baselineRef = useRef<string | null>(null);
   const inFlight = useRef(false);
   const router = useRouter();
@@ -65,17 +69,46 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     }
   }, [router]);
 
+  // Near-real-time: a tiny fingerprint request every few seconds; the full
+  // overview only reloads when it changes (or once a minute regardless).
+  const pulse = useCallback(async () => {
+    if (document.visibilityState !== "visible") return;
+    try {
+      const res = await fetch("/api/admin/pulse", { cache: "no-store" });
+      if (!res.ok) return;
+      const body = await res.json().catch(() => null);
+      const next = typeof body?.version === "string" ? body.version : null;
+      if (next && next !== versionRef.current) {
+        const first = versionRef.current === null;
+        versionRef.current = next;
+        setVersion(next);
+        if (!first) void poll();
+      }
+    } catch {
+      // Offline for a moment; the next tick tries again.
+    }
+  }, [poll]);
+
   useEffect(() => {
-    const first = setTimeout(poll, 0);
+    const first = setTimeout(() => {
+      void poll();
+      void pulse();
+    }, 0);
+    const pulseTimer = setInterval(pulse, PULSE_INTERVAL_MS);
     const timer = setInterval(poll, POLL_INTERVAL_MS);
-    const onVisible = () => document.visibilityState === "visible" && poll();
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      void poll();
+      void pulse();
+    };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       clearTimeout(first);
+      clearInterval(pulseTimer);
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [poll]);
+  }, [poll, pulse]);
 
   const markSeen = useCallback(() => {
     if (!data) return;
@@ -89,7 +122,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   useTabTitleCount(newCount);
 
   return (
-    <LiveContext.Provider value={{ data, error, lastUpdated, baseline, newCount, markSeen, refresh: poll }}>
+    <LiveContext.Provider value={{ data, error, lastUpdated, baseline, newCount, version, markSeen, refresh: poll }}>
       {children}
     </LiveContext.Provider>
   );

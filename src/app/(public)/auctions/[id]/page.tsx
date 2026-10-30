@@ -52,7 +52,7 @@ export default async function AuctionDetailPage({ params }: PageProps) {
                 Similar Bank Auctions
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Other bank auction properties in {auction.city} and across {auction.state}
+                Other published auctions in the same property category.
               </p>
             </div>
 

@@ -77,6 +77,8 @@ export interface AuctionCardData {
   possessionStatus: string;
   primaryImage: string | null;
   isFavourited?: boolean;
+  sourceListingId?: string | null;
+  sourceVerifiedAt?: string | null;
 }
 
 export interface OrganizationCardData {
@@ -94,4 +96,33 @@ export interface CategoryCardData {
   type: string;
   icon: string;
   auctionCount: number;
+}
+
+export interface DetailedAuction extends AuctionCardData {
+  address: string;
+  description: string;
+  area: number;
+  areaUnit: string;
+  inspectionDate: string;
+  contactOfficerName: string;
+  contactOfficerPhone: string;
+  contactOfficerEmail: string;
+  terms: string;
+  bidIncrement: string;
+  images: string[];
+  documents: {
+    name: string;
+    type: string;
+    size: string;
+    url: string;
+  }[];
+  organization: {
+    name: string;
+    slug: string;
+    type: string;
+    logo: string | null;
+    phone: string;
+    email: string;
+    website: string;
+  };
 }
