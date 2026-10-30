@@ -4,52 +4,41 @@ import type { Metadata } from "next";
 import { getAuctions } from "@/services/auction.service";
 import { AuctionFilters } from "@/components/auction/auction-filters";
 import { AuctionResultsClient } from "@/components/auction/auction-results-client";
-import type { AuctionFilters as FilterType } from "@/types";
+import { z } from "zod";
+import { parseAuctionSearchParams } from "@/lib/auction-search";
 import { cityPath, findCityByName } from "@/content/cities/paths";
 
 export const metadata: Metadata = {
   title: "Bank Auction Properties Search",
   description:
-    "Search verified Indian bank auction properties. Filter by state, city, property type, reserve price, and SARFAESI / DRT auction dates.",
+    "Search published Indian bank auction notices. Filter by state, city, property type, reserve price, and SARFAESI / DRT auction dates.",
 };
 
 interface PageProps {
-  searchParams: Promise<{
-    state?: string;
-    city?: string;
-    district?: string;
-    category?: string;
-    type?: string;
-    auctionType?: string;
-    status?: string;
-    possession?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    keyword?: string;
-    sort?: string;
-    page?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function AuctionsPage({ searchParams }: PageProps) {
-  const resolvedParams = await searchParams;
-
-  const filters: FilterType = {
-    state: resolvedParams.state,
-    city: resolvedParams.city,
-    district: resolvedParams.district,
-    category: resolvedParams.category,
-    // Links use either ?type= or ?auctionType= (homepage search, footer).
-    auctionType: resolvedParams.type || resolvedParams.auctionType,
-    status: resolvedParams.status,
-    possession: resolvedParams.possession,
-    minPrice: resolvedParams.minPrice ? Number(resolvedParams.minPrice) : undefined,
-    maxPrice: resolvedParams.maxPrice ? Number(resolvedParams.maxPrice) : undefined,
-    keyword: resolvedParams.keyword,
-    sort: resolvedParams.sort || "date_asc",
-    page: resolvedParams.page ? Number(resolvedParams.page) : 1,
-    limit: 12,
-  };
+  const raw = await searchParams;
+  const resolvedParams = Object.fromEntries(
+    Object.entries(raw).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value])
+  );
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(resolvedParams)) if (value) query.set(key, value);
+  let filters;
+  try {
+    filters = parseAuctionSearchParams(query);
+    filters.limit = 12;
+  } catch (error) {
+    if (!(error instanceof z.ZodError)) throw error;
+    return (
+      <div className="container-wide py-12">
+        <h1 className="text-2xl font-bold text-primary">Check your search filters</h1>
+        <p role="alert" className="my-4 text-sm text-gray-700">{error.issues[0]?.message}</p>
+        <Link href="/auctions" className="font-semibold text-primary underline">Clear filters and search again</Link>
+      </div>
+    );
+  }
 
   const { data: auctions, pagination } = await getAuctions(filters);
   // When the city filter matches a published city page, link to it.
@@ -83,7 +72,7 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
             Bank Auction Properties
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Browse verified SARFAESI, DRT, and NPA properties on public auction
+            Browse published SARFAESI, DRT, and NPA auction notices. Confirm details with the auctioning authority.
           </p>
           {cityPage && (
             <Link
@@ -114,7 +103,7 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
               <AuctionResultsClient
                 auctions={auctions}
                 pagination={pagination}
-                activeFilters={resolvedParams}
+                activeFilters={Object.fromEntries(Object.entries(filters).map(([key, value]) => [key, value?.toString()]))}
               />
             </Suspense>
           </div>

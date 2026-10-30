@@ -25,6 +25,9 @@ export async function GET(req: Request) {
           email: true,
           fullName: true,
           phone: true,
+          mobile: true,
+          buyerCategory: true,
+          onboardedAt: true,
           city: true,
           state: true,
           accountType: true,
@@ -35,7 +38,7 @@ export async function GET(req: Request) {
           passwordHash: true,
           passwordSetExpires: true,
           roles: { select: { role: { select: { name: true } } } },
-          _count: { select: { enquiries: true } },
+          _count: { select: { enquiries: true, requirements: true, favourites: true } },
         },
       }),
     ]);
@@ -47,6 +50,8 @@ export async function GET(req: Request) {
       hasPassword: !!passwordHash,
       pendingLinkExpires: passwordSetExpires && passwordSetExpires.getTime() > now ? passwordSetExpires : null,
       leadCount: _count.enquiries,
+      requirementCount: _count.requirements,
+      savedCount: _count.favourites,
     }));
 
     return NextResponse.json(

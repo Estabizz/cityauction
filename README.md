@@ -1,119 +1,140 @@
-# CityAuction — Indian Bank Auction & Distressed Asset Platform
+# CityAuction
 
-A production-grade, full-stack digital platform engineered for discovering, evaluating, and bidding on Indian bank auctions, NPA properties, SARFAESI assets, DRT sales, and distressed real estate.
+CityAuction is an Indian auction discovery and buyer assistance application.
+The active implementation is in `src/`, with a MySQL schema in `prisma/schema.prisma`.
 
-Built with an original, institutional fintech design system inspired by the operational workflows of public and private sector lending institutions across India.
+## Current implementation
 
----
+- Public marketing pages, auction discovery and location pages.
+- Database-backed enquiries, newsletter subscribers, OTP-protected login and admin tools.
+- Buyer portal work: email OTP registration/login, saved properties, requirements,
+  suggested matches, inspection/support requests and marketing preferences.
+- The buyer portal requires the corresponding working Prisma schema in the database.
+  A generated Prisma client does not establish that the database has been updated.
 
-## 🏛️ Platform Highlights
+Online bidding, EMD/payment collection, KYC submission/review and document uploads
+are **not available**. Their legacy API routes return HTTP 503 with
+`FEATURE_NOT_AVAILABLE`. The bidding page and auction detail controls explain this
+and direct visitors to the team. Legacy demo services/components remain in the
+repository for reference; do not reconnect them to live routes.
 
-- **Public Discovery & Filter Engine**:
-  - Pan-India search across 36 States & Union Territories.
-  - Multi-parameter filtering by Reserve Price presets, Property Category (Residential, Commercial, Industrial, Agricultural, Land), Possession Type (Physical, Symbolic), and Legal Framework (SARFAESI, DRT, Forward).
-  - High-performance grid and list views with real-time statutory status badges.
+Public discovery and the sitemap use database records only. Listings must have a
+publication date, a source reference and a recorded source check. Drafts, deleted
+records and inactive institutions are excluded. Sample seed records have no source
+check and are not published by these queries. An empty search stays empty; a database
+outage is reported as an error, never replaced by sample listings. Source checks do
+not certify legal title or suitability.
+Auction publishing from the admin panel is not implemented.
 
-- **Live Online Bidding Room (`/bidding/[id]`)**:
-  - **Server-Authoritative Clock**: Real-time IST clock and countdown synchronization.
-  - **SARFAESI Rule 9 Auto-Extension Engine**: Automatically triggers a 5-minute extension if a qualifying bid is submitted within the final 5 minutes of bidding, preventing predatory last-second bid sniping.
-  - **H1 Showcase & Outbid Alerts**: Real-time leading bid display with synthesized Web Audio API chime alerts for bids and outbid events.
-  - **Incremental Bidding Deck**: Quick increment presets (+1x, +2x, +5x, +10x) and custom bid validation with a 2-step legally binding offer confirmation modal.
-  - **Spectator / Observer Mode**: Clear admission gating for guest/unadmitted users with instant EMD checkout activation.
+## Stack
 
-- **Payment Gateway & Statutory Escrow Integration**:
-  - **Dual Remittance Channels**: Instant online gateway (Razorpay enterprise simulation) and Public Sector Bank RTGS/NEFT Virtual Escrow Challan generator.
-  - **Automatic Live Room Admission**: Instant clearance and Class-3 participant admission upon payment verification.
-  - **RBI 72-Hour Refund Guarantee Ledger**: Complete dashboard tracking EMD deposits, live auction holds, and statutory 100% refunds to source accounts within 72 banking hours.
+- Next.js 16.3.6 App Router and React 19.2.8
+- TypeScript and Tailwind CSS 4
+- Prisma 6.19.3 with MySQL
+- `jose` JWT sessions in HTTP-only cookies, bcrypt password hashing, Zod validation
+- Nodemailer SMTP transport for email-only OTP delivery
 
-- **Bidder Dashboard (`/dashboard`)**:
-  - Centralized portfolio management: Watchlist, Active Bids, Saved Search Alerts, and Application tracking.
-  - **KYC & Document Vault**: Multi-document uploader supporting PAN Card (Section 139A validation), Aadhaar, Cancelled Cheques, and Class 3 Digital Signature Certificate (DSC) indicators.
+Read `AGENTS.md` and the relevant installed Next.js guides in
+`node_modules/next/dist/docs/` before modifying framework code.
 
-- **Bank Recovery Officer & Admin Console (`/admin`)**:
-  - 7 Institutional Modules:
-    1. **Executive Recovery Overview**: Live auctions, portfolio valuation (₹485+ Cr), and CVC compliance metrics.
-    2. **Statutory Publishing Wizard**: 4-step wizard with automatic 10% EMD calculation and Form IV Sale Notice PDF attachment.
-    3. **Collateral Asset Inventory**: Catalog of secured assets with open market valuations.
-    4. **KYC Review Queue**: Document inspection modal with one-click approval and customized officer remarks.
-    5. **Participant Admission Console**: Real-time reconciliation of bank RTGS UTR numbers.
-    6. **Enquiries & Investor Leads Console**: Lead tracking and assignment.
-    7. **Statutory CVC & RBI Audit Trail**: Immutable event ledger capturing millisecond timestamps and source IPs.
+## Local setup
 
----
+Use Node.js 20.9 or newer and npm. Install the locked dependencies with `npm ci`.
+Copy `.env.example` to `.env`, then configure a development MySQL database,
+a random `AUTH_SECRET` of at least 32 characters, and `NEXT_PUBLIC_APP_URL`.
+Never commit real environment credentials.
 
-## 🛠️ Technology Stack
+Generate the Prisma client with `npx prisma generate`. Before running database
+schema commands, review the schema against the target database. There is currently
+no committed migration history; do not run schema push, reset or seed commands
+against production as a setup shortcut.
 
-- **Framework**: Next.js 16.3.5 (App Router, Turbopack, React 19)
-- **Language**: TypeScript (Strict Mode)
-- **Styling**: Tailwind CSS v4 with custom institutional Navy & Gold color tokens
-- **Database & ORM**: PostgreSQL with Prisma ORM 6.19.3
-- **Authentication**: JWT session tokens signed via `jose` (HS256) stored in HTTP-only secure cookies
-- **Validation**: Zod schema validation
-- **Security**: Password hashing with `bcryptjs`, Section 139A PAN validation, pre-signed upload size/MIME verification
-- **Icons**: Lucide React
+Run `npm run dev` and open http://localhost:3000.
 
----
+Email verification defaults to Phone.Email with public client ID
+`11716953482701480507`. The widget loads only on verification forms and passes
+`user_json_url` to CityAuction's backend. The backend fetches the provider's JSON
+and reads `user_email_id`; it never trusts an email supplied by the browser callback.
+No SMTP or MSG91 credentials are needed for this default flow.
 
-## 🚀 Getting Started
+Set `NEXT_PUBLIC_PHONE_EMAIL_CLIENT_ID` to change the public client ID. The SMTP
+implementation remains an optional fallback selected by
+`NEXT_PUBLIC_EMAIL_OTP_PROVIDER=smtp`, using the company mailbox configuration
+below. Provider prices/quotas are outside the application's control.
 
-### 1. Prerequisites
-- Node.js 18.x or higher
-- npm or yarn
+Phone.Email result URLs are bearer credentials under the provider's documented
+JSON flow. CityAuction allows only HTTPS `user.phone.email/user_*.json`, refuses
+redirects and oversized responses, checks the intended email, and exchanges each
+URL once into a short-lived, browser- and action-bound receipt. An HttpOnly signed
+intent cookie and same-origin checks protect the exchange. The documented email
+JSON format does not promise a signed expiry or mandatory client-ID claim, so
+CityAuction cannot independently attest the age or client binding of a previously
+unseen provider URL. If the response includes `client_id`, it must match. Never
+log result URLs or provider JSON bodies.
 
-### 2. Installation
+The local receipt expires after five minutes and is consumed once. It uses the
+same email OTP table described below. Recovery/email changes consume the receipt
+and update the account in a transaction. Live widget behavior and result payloads
+must be verified against the configured Phone.Email account before deployment.
+
+The additive SQL in `scripts/sql/20261030-email-otp.sql` creates the new email OTP
+table. Review the target database and apply it through your normal database change
+process before enabling email verification. Client generation alone does not
+create this table. The legacy mobile OTP table is retained and unused.
+
+New sign-ups require a verified email; phone is optional contact information.
+Login and password recovery send codes to email only. Email/password login also
+requires an email OTP. Direct OTP login/recovery require a previously verified
+email; legacy accounts can verify an existing email using their password, or
+request assisted account recovery. Mobile-only legacy accounts need assisted
+email linking; their previous mobile codes cannot authenticate.
+
+Changing a sign-in email requires OTP verification of the new address and signs
+out other devices. Profile edits cannot silently change the sign-in email.
+Password recovery resets the password and invalidates older sessions and codes.
+
+Without any SMTP settings, local development shows a test code on screen and
+sends no email. Production and partial SMTP configurations fail closed; no code
+is exposed when delivery is unavailable. No SMTP credentials are included here.
+Newsletter/requirement preferences are stored, but scheduled opportunity delivery
+is not implemented.
+
+## Validation
+
 ```bash
-git clone https://github.com/Estabizz/cityauction.git
-cd cityauction
-npm install
+npm test
+npx tsc --noEmit --incremental false
+npm run lint
+npm run build
 ```
 
-### 3. Environment Setup
-Create a `.env.local` file in the root directory (refer to `.env.example`):
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/cityauction"
-AUTH_SECRET="cityauction-super-secure-production-jwt-secret-min-32-chars"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
+The security tests run the actual handlers with isolated infrastructure mocks;
+they do not access a database or send messages. They cover disabled transaction
+routes, session validation, password-change/reset session revocation, public listing
+visibility, search filters, pagination and property-linked buyer requests.
+They do not replace staging tests or payment-provider certification.
 
-### 4. Database Setup & Seeding (Optional)
-```bash
-npx prisma generate
-npx prisma db push
-npm run prisma:seed
-```
-*(Note: In standalone or offline development mode, the application includes a resilient service layer that gracefully falls back to high-fidelity seed datasets without crashing).*
+ESLint excludes nested Claude worktrees. Existing lint errors in legacy components
+and content remain to be resolved. The build generates Prisma and runs Next.js
+with webpack; Google font fetching may require network access.
 
-### 5. Run the Development Server
-```bash
-npm run dev
-```
+## Administration and deployment
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+`scripts/bootstrap-admin.ts` provisions an administrator and issues a private,
+one-time password link. Running it changes the selected database; review the
+target environment before use. `prisma/seed.ts` creates demo users with known
+passwords and sample data and is not a production provisioning procedure.
 
----
+Production authentication requires `AUTH_SECRET`; no production fallback secret
+is accepted. Database-backed session validation denies access when the database
+cannot be checked. Password changes/reset invalidate older session versions.
 
-## 🔑 Demo Access Credentials
+Before deployment, establish reviewed migrations, verify real data and filtering,
+resolve lint failures, configure secrets/SMTP and validate workflows in staging.
+No current deployment target, deployed commit or live database state is established
+by the repository alone. The worker limit in `next.config.ts` reflects an earlier
+Hostinger build constraint.
 
-| Role | Email | Password | Access Rights |
-|---|---|---|---|
-| **Registered Bidder** | `bidder@cityauction.com` | `CityAuction@2026` | Live bidding room, EMD checkout, bids ledger, KYC vault |
-| **Bank Recovery Officer** | `admin@cityauction.com` | `CityAuction@2026` | Statutory publishing wizard, KYC queue, RTGS reconciliation |
+## License
 
-*(Note: The login page includes 1-click **"Fill Demo Bidder"** and **"Fill Demo Banker"** buttons for quick testing).*
-
----
-
-## ⚖️ Legal & Compliance Framework
-
-All auction listings, terms, and bidding processes conform to:
-- **SARFAESI Act, 2002** (Securitisation and Reconstruction of Financial Assets and Enforcement of Security Interest Act)
-- **Security Interest (Enforcement) Rules, 2002** (Rule 8 & 9)
-- **Recovery of Debts and Bankruptcy Act, 1993 (DRT Guidelines)**
-- **Central Vigilance Commission (CVC)** directives for transparent electronic public auctions
-- **RBI Master Directions** on distressed asset resolution and EMD refund timelines
-
----
-
-## 📄 License
-
-Proprietary & Confidential. All rights reserved.
+Proprietary and confidential. All rights reserved.

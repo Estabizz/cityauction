@@ -2,8 +2,7 @@ import type { ReactNode } from "react";
 import { EmptyState, PageHeader, Panel } from "./ui";
 
 // Frame for the marketplace pages (auctions, properties, KYC, participants).
-// Those features are not open to the public yet, so the pages read straight
-// from the database and say plainly when there is nothing there.
+// These pages show stored records; unavailable management actions stay disabled.
 export function MarketplacePage({
   title,
   description,
@@ -17,7 +16,7 @@ export function MarketplacePage({
 }) {
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Marketplace · not live yet" title={title} description={description} />
+      <PageHeader eyebrow="Marketplace records" title={title} description={description} />
       <Panel title={count === null ? undefined : `${count.toLocaleString("en-IN")} in the database`}>{children}</Panel>
     </div>
   );

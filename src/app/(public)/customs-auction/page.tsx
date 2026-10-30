@@ -37,8 +37,8 @@ export default function CustomsAuctionPage() {
               “A Customs lot can look attractive on paper. The real question is what you know about the goods, the compliance and the lifting obligation before you bid.”
             </div>
             <div className="actions-row">
-              <Link className="btn-pill btn-gold" href="/auctions?type=OTHER">
-                Explore Customs Opportunities
+              <Link className="btn-pill btn-gold" href="/contact?subject=Customs%20auction%20enquiry">
+                Contact the Customs desk
               </Link>
               <a className="btn-pill btn-ghost" href="#process">
                 Understand the Process
@@ -48,63 +48,12 @@ export default function CustomsAuctionPage() {
 
           <aside className="about-hero-card" id="searchCustoms">
             <div className="eyebrow-text">Customs auction discovery</div>
-            <h3 className="text-2xl font-serif-heading font-semibold text-[#182129] mt-2">
-              Search by Goods, Port and Auction Stage.
-            </h3>
-            <p className="text-sm text-[#6f777d] mt-1">
-              Filter available Customs inventory and setup alert workflows.
-            </p>
-
-            <form action="/auctions" method="GET" className="search-form-grid mt-4">
-              <input type="hidden" name="type" value="OTHER" />
-              <div className="field-custom">
-                <label htmlFor="port">Port / Custom House</label>
-                <select id="port" name="city">
-                  <option value="">All Locations</option>
-                  <option value="Nhava Sheva">JNCH / Nhava Sheva</option>
-                  <option value="Chennai">Chennai</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Mundra">Mundra</option>
-                  <option value="Kandla">Kandla / Deendayal</option>
-                </select>
-              </div>
-
-              <div className="field-custom">
-                <label htmlFor="category">Goods Category</label>
-                <select id="category" name="category">
-                  <option value="">All Goods</option>
-                  <option value="INDUSTRIAL">Metal / Scrap</option>
-                  <option value="COMMERCIAL">Machinery / Equipment</option>
-                  <option value="OTHER">Vehicles</option>
-                  <option value="COMMERCIAL">Electronics</option>
-                  <option value="AGRICULTURAL">Food / Agri</option>
-                </select>
-              </div>
-
-              <div className="field-custom">
-                <label htmlFor="auctionType">Auction Type</label>
-                <select id="auctionType" name="auctionType">
-                  <option value="">All</option>
-                  <option value="FORWARD">E-Auction</option>
-                  <option value="SARFAESI">E-Tender</option>
-                </select>
-              </div>
-
-              <div className="field-custom">
-                <label htmlFor="status">Stage</label>
-                <select id="status" name="status">
-                  <option value="UPCOMING">Upcoming</option>
-                  <option value="LIVE">Live / Bidding</option>
-                  <option value="CLOSED">Result / Post-Bid</option>
-                </select>
-              </div>
-
-              <div className="col-span-1 sm:col-span-2">
-                <button className="btn-pill btn-dark w-full mt-2" type="submit">
-                  Search Customs Auctions
-                </button>
-              </div>
-            </form>
+            <h3 className="text-2xl font-semibold text-[#182129] mt-2">Looking for Customs auction goods?</h3>
+            <p className="mt-3 text-sm leading-relaxed text-[#687480]">Goods and port filters are not available on CityAuction yet. Tell our team which goods and locations you need, or check the official auction portal.</p>
+            <div className="mt-5 flex flex-col gap-3">
+              <Link href="/contact?subject=Customs%20auction%20enquiry" className="btn-pill btn-dark">Contact the Customs desk</Link>
+              <a href="https://www.mstcecommerce.com/auctionhome/customs/index.jsp" target="_blank" rel="noopener noreferrer" className="btn-pill btn-light">Open the official auction portal</a>
+            </div>
           </aside>
         </div>
       </section>
@@ -632,7 +581,7 @@ export default function CustomsAuctionPage() {
               </p>
             </div>
             <div className="actions-row mt-0">
-              <Link href="/auctions?type=OTHER" className="btn-pill btn-gold">
+              <Link href="/contact?subject=Customs%20auction%20enquiry" className="btn-pill btn-gold">
                 Explore Customs Auctions
               </Link>
               <Link href="/#alerts" className="btn-pill btn-ghost">

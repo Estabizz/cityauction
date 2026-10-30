@@ -29,19 +29,23 @@ export const userWithRoles = { roles: { include: { role: true } } } as const;
 
 type UserForSession = {
   id: string;
-  email: string;
+  email: string | null;
+  mobile: string | null;
   fullName: string | null;
   accountType: string | null;
+  sessionVersion: number;
   roles: { role: { name: string } }[];
 };
 
 export function toSessionPayload(user: UserForSession): UserSessionPayload {
   return {
     userId: user.id,
-    email: user.email,
-    fullName: user.fullName || user.email.split("@")[0],
+    email: user.email || "",
+    mobile: user.mobile || undefined,
+    fullName: user.fullName || user.email?.split("@")[0] || "Member",
     accountType: user.accountType || "INDIVIDUAL",
     roles: user.roles.map((r) => r.role.name),
+    sv: user.sessionVersion,
   };
 }
 
@@ -68,6 +72,10 @@ export function clearSessionCookie(response: NextResponse) {
 // Where to land after signing in: a safe ?next= path, else the right home.
 export function homeFor(payload: UserSessionPayload) {
   return isAdmin(payload) ? "/admin/dashboard" : "/dashboard";
+}
+
+export function clientIp(req: Request) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || null;
 }
 
 export function jsonError(error: string, status: number) {

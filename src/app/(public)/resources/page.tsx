@@ -4,11 +4,8 @@ import {
   BookOpen,
   HelpCircle,
   FileText,
-  Download,
   ArrowRight,
   ShieldAlert,
-  Award,
-  ExternalLink,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -18,34 +15,10 @@ export const metadata: Metadata = {
 };
 
 const RESOURCE_SECTIONS = [
-  {
-    icon: <HelpCircle className="h-8 w-8 text-primary" />,
-    title: "Frequently Asked Questions",
-    desc: "Answers to common queries regarding EMD deposit, Live Bidding, KYC requirements, and property possession rights.",
-    link: "/resources/faqs",
-    cta: "Browse 40+ FAQs",
-  },
-  {
-    icon: <BookOpen className="h-8 w-8 text-primary" />,
-    title: "Bidder Educational Guides",
-    desc: "In-depth articles explaining SARFAESI Rule 8 & 9, DRT court processes, physical vs symbolic possession, and due diligence.",
-    link: "/resources/guides",
-    cta: "Read Guides",
-  },
-  {
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    title: "Auction Insights & Market Trends",
-    desc: "Market analysis on distressed real estate valuations, residential yield opportunities, and banking NPA volume reports.",
-    link: "/resources/blog",
-    cta: "Read Blog Posts",
-  },
-  {
-    icon: <Download className="h-8 w-8 text-primary" />,
-    title: "Bidder Manuals & Downloads",
-    desc: "Download official tender templates, KYC checklists, RTGS payment challan formats, and bidder registration instructions.",
-    link: "/resources/downloads",
-    cta: "View Downloads",
-  },
+  { icon: <HelpCircle className="h-8 w-8 text-primary" />, title: "Frequently Asked Questions", desc: "Answers to common questions about auction discovery, documents, inspections and participation.", link: "/resources/faqs", cta: "Read FAQs" },
+  { icon: <BookOpen className="h-8 w-8 text-primary" />, title: "How auctions work", desc: "Understand the buyer journey, from finding a property to preparing for the official auction process.", link: "/how-it-works", cta: "Explore the process" },
+  { icon: <FileText className="h-8 w-8 text-primary" />, title: "Understanding verified information", desc: "See what source verification covers and which checks remain your responsibility.", link: "/verified-information-policy", cta: "Read the verification policy" },
+  { icon: <ShieldAlert className="h-8 w-8 text-primary" />, title: "Buyer due diligence support", desc: "Learn how the Investor Desk can help you evaluate a property and prepare questions before participating.", link: "/investor-desk", cta: "Explore buyer support" },
 ];
 
 export default function ResourcesPage() {

@@ -3,29 +3,25 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Calendar,
   Clock,
   MapPin,
-  Building2,
   Download,
   Share2,
-  Heart,
   FileText,
   ShieldAlert,
   Phone,
   Mail,
   CheckCircle2,
   AlertTriangle,
-  ArrowRight,
   Maximize2,
-  Gavel,
-  ShieldCheck,
 } from "lucide-react";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { AuctionStatusBadge, Badge } from "@/components/ui/badge";
 import type { DetailedAuction } from "@/services/mock-data";
-import { EmdCheckoutModal } from "@/components/payments/emd-checkout-modal";
 import { cityPath, findCityByName } from "@/content/cities/paths";
+import { PropertyRequest } from "@/components/account/property-request";
+import { InspectionRequest } from "@/components/account/inspection-request";
+import { SaveListingButton } from "@/components/account/save-listing-button";
 
 interface AuctionDetailClientProps {
   auction: DetailedAuction;
@@ -35,9 +31,7 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const cityPage = findCityByName(auction.city);
   const [activeTab, setActiveTab] = useState<"description" | "location" | "terms" | "documents" | "officer">("description");
-  const [isFavourited, setIsFavourited] = useState(auction.isFavourited || false);
   const [shareCopied, setShareCopied] = useState(false);
-  const [emdModalOpen, setEmdModalOpen] = useState(false);
 
   // Live countdown timer state
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
@@ -79,6 +73,10 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
 
   return (
     <div>
+      <div className="container-wide py-3 text-xs text-gray-600">
+        <p>Source reference: <strong>{auction.sourceListingId}</strong> · Source checked {auction.sourceVerifiedAt ? formatDate(auction.sourceVerifiedAt) : "date not recorded"}.
+          Confirm current dates, availability and terms with the auctioning authority.</p>
+      </div>
       {/* Top Header */}
       <div className="bg-white border-b border-border py-6">
         <div className="container-wide">
@@ -121,7 +119,7 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div id="property-save" className="scroll-mt-24 flex flex-wrap items-start gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleShare}
@@ -130,18 +128,7 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
                 <Share2 className="h-4 w-4" />
                 <span>{shareCopied ? "Copied!" : "Share"}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setIsFavourited(!isFavourited)}
-                className={`p-2 rounded-lg border transition-colors cursor-pointer ${
-                  isFavourited
-                    ? "bg-red-50 border-red-200 text-red-600"
-                    : "bg-white border-border text-gray-600 hover:bg-gray-50"
-                }`}
-                aria-label="Toggle favourite"
-              >
-                <Heart className={`h-5 w-5 ${isFavourited ? "fill-red-600" : ""}`} />
-              </button>
+              <SaveListingButton auctionId={auction.id} variant="button" />
             </div>
           </div>
         </div>
@@ -403,13 +390,7 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
                           </p>
                         </div>
                       </div>
-                      <Link
-                        href={`/contact?subject=Auction%20Inquiry%20${auction.auctionNumber}`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-700 transition-colors whitespace-nowrap self-start sm:self-auto"
-                      >
-                        Send Direct Enquiry
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
+
                     </div>
                   </div>
                 )}
@@ -461,44 +442,13 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
                 </span>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-border">
-                {auction.status === "LIVE" ? (
-                  <Link
-                    href={`/bidding/${auction.id}`}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-md text-sm"
-                  >
-                    <Gavel className="h-4 w-4" />
-                    Enter Live Bidding Room
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setEmdModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md text-sm cursor-pointer"
-                  >
-                    <ShieldCheck className="h-4 w-4" />
-                    Deposit EMD & Register to Bid
-                  </button>
-                )}
+              <div id="property-actions" className="scroll-mt-24 space-y-3 pt-4 border-t border-border">
+                <p className="text-sm text-gray-600">
+                  Online bidding and EMD payments are coming soon. Contact our team for help with participation.
+                </p>
+                <PropertyRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} kind="contact" />
 
-                {auction.status === "LIVE" && (
-                  <button
-                    type="button"
-                    onClick={() => setEmdModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-50 text-amber-900 border border-amber-200 font-semibold rounded-xl hover:bg-amber-100 transition-colors text-xs cursor-pointer"
-                  >
-                    <ShieldCheck className="h-3.5 w-3.5 text-amber-700" />
-                    Deposit Statutory EMD ({formatCurrency(auction.emd)})
-                  </button>
-                )}
-
-                <Link
-                  href={`/contact?subject=Auction%20${auction.auctionNumber}`}
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-xs"
-                >
-                  Request Property Inspection
-                </Link>
+                <InspectionRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} />
               </div>
 
               {/* Institution badge */}
@@ -517,18 +467,18 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
               </div>
             </div>
 
-            {/* Security Guarantee Box */}
+            {/* Participation guidance */}
             <div className="bg-gray-50 rounded-2xl border border-border p-5 space-y-3 text-xs text-gray-600">
               <div className="flex items-start gap-2.5">
                 <ShieldAlert className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <span>
-                  <strong>100% Verified SARFAESI Notice:</strong> Auction conducted by authorized bank officers under judicial oversight.
+                  <strong>Check the auction notice:</strong> Confirm the source, dates and participation requirements with the auctioning authority.
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
                 <span>
-                  <strong>Automatic EMD Refund:</strong> 100% EMD refund directly to source account if you do not win the auction.
+                  <strong>EMD and refunds:</strong> Follow the payment instructions and refund terms in the official auction notice.
                 </span>
               </div>
             </div>
@@ -536,19 +486,6 @@ export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
         </div>
       </div>
 
-      {/* Statutory EMD Checkout Modal */}
-      <EmdCheckoutModal
-        isOpen={emdModalOpen}
-        onClose={() => setEmdModalOpen(false)}
-        auction={{
-          id: auction.id,
-          auctionNumber: auction.auctionNumber,
-          title: auction.title,
-          emd: auction.emd,
-          reservePrice: auction.reservePrice,
-          bankName: auction.organization.name,
-        }}
-      />
     </div>
   );
 }

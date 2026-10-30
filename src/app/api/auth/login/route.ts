@@ -2,20 +2,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
-import { safeNextPath } from "@/components/account/safe-next";
+import { OTP_RESEND_SECONDS, OtpError, passwordLoginPurpose, sendOtp } from "@/lib/otp";
+import { tooManyRequests } from "@/lib/rate-limit";
 import {
   DB_UNAVAILABLE,
-  homeFor,
+  clientIp,
   jsonError,
-  setSessionCookie,
-  toSessionPayload,
   userWithRoles,
   validationError,
 } from "../_lib";
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Please enter a valid email address."),
-  password: z.string().min(1, "Please enter your password."),
+  password: z.string().min(1, "Please enter your password.").max(128),
   next: z.string().optional(),
   // Older forms (investor / financial institution login) still send this; it is ignored.
   loginAs: z.string().optional(),
@@ -36,6 +35,12 @@ export async function POST(req: Request) {
     return jsonError("Please check the form and try again.", 400);
   }
 
+  const ip = clientIp(req) || "unknown";
+  if (tooManyRequests(`password-login:ip:${ip}`, 30, 15 * 60 * 1000) ||
+      tooManyRequests(`password-login:account:${input.email}`, 10, 15 * 60 * 1000)) {
+    return jsonError("Too many sign-in attempts. Please try again in 15 minutes.", 429);
+  }
+
   let user;
   try {
     user = await db.user.findUnique({ where: { email: input.email }, include: userWithRoles });
@@ -51,19 +56,19 @@ export async function POST(req: Request) {
   }
 
   try {
-    await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    const { challengeId, devCode } = await sendOtp(user.email!, passwordLoginPurpose(user), clientIp(req));
+    return NextResponse.json({
+      success: true, requiresOtp: true, challengeId, email: user.email,
+      resendIn: OTP_RESEND_SECONDS, devCode,
+      message: "Enter the verification code sent to your email address to finish signing in.",
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    // Not worth failing the sign-in over.
-    console.error("[auth/login] lastLoginAt", error);
+    if (error instanceof OtpError) {
+      const response = jsonError(error.message, error.status);
+      if (error.retryAfter) response.headers.set("Retry-After", String(error.retryAfter));
+      return response;
+    }
+    console.error("[auth/login] OTP", error);
+    return jsonError(DB_UNAVAILABLE, 503);
   }
-
-  const payload = toSessionPayload(user);
-  const response = NextResponse.json({
-    success: true,
-    message: "Signed in.",
-    user: payload,
-    redirectTo: safeNextPath(input.next) || homeFor(payload),
-  });
-  await setSessionCookie(response, payload);
-  return response;
 }

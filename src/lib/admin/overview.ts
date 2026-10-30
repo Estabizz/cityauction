@@ -23,6 +23,7 @@ export interface CountSet {
 export interface OverviewData {
   now: string;
   counts: { signups: CountSet; leads: CountSet; subscribers: CountSet; openLeads: number };
+  buyerPortal: { openCallbacks: number; openInspections: number; activeRequirements: number; savedListings: number; buyers: number };
   newSince: { signups: number; leads: number; subscribers: number; total: number } | null;
   leadsBySource: { source: string; label: string; total: number; week: number }[];
   activity: ActivityItem[];
@@ -57,6 +58,15 @@ export async function getOverview(since?: Date): Promise<OverviewData> {
   await db.$queryRaw`SELECT 1`;
   const latencyMs = Date.now() - pingStart;
 
+  const open = { in: ["NEW", "IN_PROGRESS"] as ("NEW" | "IN_PROGRESS")[] };
+  const buyerPortalCounts = Promise.all([
+    db.enquiry.count({ where: { source: "callback-request", status: open } }),
+    db.enquiry.count({ where: { source: "inspection-request", status: open } }),
+    db.buyerRequirement.count({ where: { alertsEnabled: true, user: { deletedAt: null } } }),
+    db.favourite.count({ where: { auctionId: { not: null } } }),
+    db.user.count({ where: { deletedAt: null, email: { not: null }, isEmailVerified: true, buyerCategory: { not: null } } }),
+  ]);
+
   const [signups, leads, subscribers, openLeads, bySourceAll, bySourceWeek, users, enquiries, subs, newSince] =
     await Promise.all([
       countSet((d) => db.user.count({ where: { deletedAt: null, ...created(d) } }), today, week),
@@ -69,7 +79,7 @@ export async function getOverview(since?: Date): Promise<OverviewData> {
         where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
         take: FEED_PER_KIND,
-        select: { id: true, email: true, fullName: true, city: true, createdAt: true },
+        select: { id: true, email: true, mobile: true, fullName: true, city: true, createdAt: true },
       }),
       db.enquiry.findMany({
         orderBy: { createdAt: "desc" },
@@ -90,6 +100,8 @@ export async function getOverview(since?: Date): Promise<OverviewData> {
         : null,
     ]);
 
+  const [openCallbacks, openInspections, activeRequirements, savedListings, buyers] = await buyerPortalCounts;
+
   const weekBySource = new Map(bySourceWeek.map((row) => [row.source, row._count._all]));
   const totalBySource = new Map(bySourceAll.map((row) => [row.source, row._count._all]));
   const sources = [...new Set([...LEAD_SOURCES.map((s) => s.value), ...totalBySource.keys()])];
@@ -107,9 +119,9 @@ export async function getOverview(since?: Date): Promise<OverviewData> {
       kind: "signup" as const,
       id: u.id,
       at: u.createdAt.toISOString(),
-      title: u.fullName || u.email,
-      subtitle: [u.email, u.city].filter(Boolean).join(" · "),
-      href: `/admin/users?q=${encodeURIComponent(u.email)}`,
+      title: u.fullName || u.email || u.mobile || "New user",
+      subtitle: [u.email || u.mobile, u.city].filter(Boolean).join(" · "),
+      href: `/admin/users?q=${encodeURIComponent(u.email || u.mobile || u.id)}`,
     })),
     ...enquiries.map((e) => ({
       kind: "lead" as const,
@@ -136,6 +148,7 @@ export async function getOverview(since?: Date): Promise<OverviewData> {
   return {
     now: now.toISOString(),
     counts: { signups, leads, subscribers, openLeads },
+    buyerPortal: { openCallbacks, openInspections, activeRequirements, savedListings, buyers },
     newSince: newSince
       ? {
           signups: newSince[0],

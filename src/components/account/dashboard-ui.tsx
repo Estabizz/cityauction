@@ -1,12 +1,13 @@
 import Link from "next/link";
+import { cardClass } from "@/components/ui/styles";
 import { AlertTriangle, ArrowRight, Clock } from "lucide-react";
 
 // Server-safe building blocks for dashboard pages.
 
 export function Panel({ title, icon, children, className = "" }: { title: string; icon?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`bg-white rounded-2xl border border-[#e6dfd4] p-5 sm:p-6 ${className}`}>
-      <h2 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[#84663c] mb-4">
+    <section className={`${cardClass} p-5 sm:p-6 ${className}`}>
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-[#182129] mb-4">
         {icon}
         {title}
       </h2>
@@ -18,7 +19,7 @@ export function Panel({ title, icon, children, className = "" }: { title: string
 export function PageHeading({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-6">
-      <h1 className="font-serif-heading text-3xl sm:text-4xl font-semibold text-[#091118]">{title}</h1>
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#091118]">{title}</h1>
       {subtitle && <p className="text-sm text-[#59636a] mt-1">{subtitle}</p>}
     </div>
   );
@@ -52,7 +53,7 @@ export function ComingSoon({
       <PageHeading title={title} subtitle={subtitle} />
       <div className="bg-white rounded-2xl border border-[#e6dfd4] px-6 py-12 sm:py-16 text-center">
         <div className="w-14 h-14 rounded-full bg-[#f5edd3] text-[#84663c] flex items-center justify-center mx-auto">{icon}</div>
-        <p className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#84663c]">
+        <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#182129]">
           <Clock className="h-3.5 w-3.5" /> Coming soon
         </p>
         <h2 className="font-serif-heading text-2xl font-semibold text-[#091118] mt-1">Nothing here yet</h2>
