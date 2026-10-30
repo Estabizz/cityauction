@@ -46,10 +46,10 @@ export function AuctionAlertsForm() {
       <div className="text-center space-y-4">
         <CheckCircle2 className="h-12 w-12 text-[#3f6b57] mx-auto" />
         <h3 className="font-serif-heading text-2xl font-bold text-[#182129]">
-          Personalised Alert Activated
+          Preferences received
         </h3>
         <p className="text-sm text-[#6f777d] max-w-sm mx-auto leading-relaxed">
-          Thank you, <strong>{name}</strong>. Your mandate preferences for <strong>{assetType}</strong> in <strong>{location || "All India"}</strong> ({budget}) have been recorded. You will receive direct updates on <strong>{mobile}</strong>.
+          Thank you, <strong>{name}</strong>. Your mandate preferences for <strong>{assetType}</strong> in <strong>{location || "All India"}</strong> ({budget}) have been recorded. Our team can review your enquiry. Automatic WhatsApp and email opportunity alerts are not available yet.
         </p>
         <button
           onClick={() => {
@@ -61,7 +61,7 @@ export function AuctionAlertsForm() {
           }}
           className="btn-pill btn-dark text-xs py-2 px-5 mt-2"
         >
-          Create Another Alert
+          Send another enquiry
         </button>
       </div>
     );
@@ -71,9 +71,9 @@ export function AuctionAlertsForm() {
     <form id="alert-form" onSubmit={handleSubmit}>
       <div className="eyebrow-text">Build your mandate</div>
       <h3 className="font-serif-heading text-2xl font-bold text-[#182129] mt-2">
-        What Should CityAuction Watch For?
+        What are you looking for?
       </h3>
-      <p className="text-xs text-[#6f777d] mt-2">Keep the alert broad or make it very specific.</p>
+      <p className="text-xs text-[#6f777d] mt-2">Share your preferences with our team. Automatic opportunity alerts are not available yet.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <div className="field-custom">
@@ -183,11 +183,11 @@ export function AuctionAlertsForm() {
         disabled={loading}
       >
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-        {loading ? "Activating Alert..." : "Create Personalised Alert"}
+        {loading ? "Sending preferences…" : "Send preferences"}
       </button>
 
       <div className="micro text-[11px] text-[#8a9195] mt-3 leading-relaxed">
-        Personalised alerts are delivered over WhatsApp and email when matched inventory is discovered.
+        This form sends an enquiry to our team. For matching properties in your account, save your match preferences in the dashboard.
       </div>
     </form>
   );

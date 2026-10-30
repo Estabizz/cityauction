@@ -1,33 +1,7 @@
 import type { AuctionCardData, OrganizationCardData, CategoryCardData } from '@/types';
 
-export interface DetailedAuction extends AuctionCardData {
-  address: string;
-  description: string;
-  area: number;
-  areaUnit: string;
-  inspectionDate: string;
-  contactOfficerName: string;
-  contactOfficerPhone: string;
-  contactOfficerEmail: string;
-  terms: string;
-  bidIncrement: string;
-  images: string[];
-  documents: {
-    name: string;
-    type: string;
-    size: string;
-    url: string;
-  }[];
-  organization: {
-    name: string;
-    slug: string;
-    type: string;
-    logo: string | null;
-    phone: string;
-    email: string;
-    website: string;
-  };
-}
+import type { DetailedAuction } from "@/types";
+export type { DetailedAuction } from "@/types";
 
 export const MOCK_ORGANIZATIONS: OrganizationCardData[] = [
   {

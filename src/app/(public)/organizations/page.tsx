@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Building2, ArrowRight, ShieldCheck } from "lucide-react";
 import { getOrganizations } from "@/services/organization.service";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Participating Banks & Financial Institutions | CityAuction",
   description:
@@ -57,7 +59,7 @@ export default async function OrganizationsPage() {
 
                 <h2 className="text-lg font-bold text-gray-900 mb-2">{org.name}</h2>
                 <p className="text-xs text-gray-500 line-clamp-2 mb-4">
-                  Authorized lender/institution conducting SARFAESI Act, DRT, and NPA e-auctions.
+                  Institution named in the auction notices listed on CityAuction.
                 </p>
               </div>
 
@@ -88,7 +90,7 @@ export default async function OrganizationsPage() {
             </div>
             <h3 className="text-xl font-bold">Are you a Bank, ARC, or Financial Institution?</h3>
             <p className="text-sm text-primary-200 mt-2 leading-relaxed">
-              List your SARFAESI and DRT auctions on CityAuction to reach over 50,000+ verified bidders across India.
+              Contact CityAuction about publishing your auction notices and reaching interested buyers.
             </p>
           </div>
           <Link

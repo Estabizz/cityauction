@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Forgot your password?"
-      subtitle="Enter your email and our team will send you a link to set a new one."
+      subtitle="Verify your registered email address with an OTP, then choose a new password."
       footer={
         <>
           Remembered it?{" "}

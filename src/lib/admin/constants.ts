@@ -12,6 +12,10 @@ export const LEAD_SOURCES: { value: string; label: string }[] = [
   { value: "next-chapter", label: "Next chapter" },
   { value: "homepage", label: "Homepage" },
   { value: "password-reset", label: "Password reset" },
+  { value: "callback-request", label: "Callback request" },
+  { value: "inspection-request", label: "Inspection request" },
+  { value: "support-request", label: "Buyer support request" },
+  { value: "data-request", label: "Data access / deletion" },
 ];
 
 export function sourceLabel(source: string): string {
@@ -37,4 +41,8 @@ export type ManagedRole = (typeof MANAGED_ROLES)[number];
 
 export const PAGE_SIZE = 25;
 
-export const POLL_INTERVAL_MS = 15000;
+// The panel checks a cheap change fingerprint this often, and reloads the
+// overview (and any open list) only when it moves.
+export const PULSE_INTERVAL_MS = 4000;
+// Full overview refresh even when nothing changed (clock, "x min ago", status).
+export const POLL_INTERVAL_MS = 60000;

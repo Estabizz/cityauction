@@ -5,7 +5,7 @@ import { AuctionAlertsForm } from "@/components/forms/auction-alerts-form";
 export const metadata: Metadata = {
   title: "Personalised Auction Alerts | CityAuction",
   description:
-    "Create personalised CityAuction alerts for auction properties, institutional assets, Customs lots and strategic opportunities based on your location, category and budget preferences.",
+    "Share your property, location and budget preferences with the CityAuction team. Automatic opportunity alerts are not available yet.",
   alternates: {
     canonical: "/auction-alerts",
   },
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     type: "website",
     title: "Personalised Auction Alerts | Define the Opportunity Once",
     description:
-      "Tell CityAuction what you are looking for and receive relevant auction opportunities through supported alert channels.",
+      "Share your buying preferences with CityAuction and explore matching properties in your dashboard.",
     url: "/auction-alerts",
     siteName: "CityAuction",
   },
@@ -29,20 +29,20 @@ export default function AuctionAlertsPage() {
             <div className="eyebrow-text !text-[#d9c39c]">Personalised Auction Alerts</div>
             <h1 className="font-serif-heading mt-4 leading-tight text-white" style={{ fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 600 }}>
               Define the Opportunity Once.<br />
-              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Let CityAuction Keep Looking.</em>
+              <em className="not-italic" style={{ color: "#d9c39c", fontWeight: 400 }}>Share Your Buying Preferences.</em>
             </h1>
 
             <p className="about-hero-copy">
-              Tell us the location, asset type, budget and auction category that matter to you. CityAuction Alerts is designed to surface relevant opportunities through supported alert channels when matching inventory is identified.
+              Tell our team the location, asset type, budget and auction category that matter to you. This form sends an enquiry; automatic WhatsApp and email opportunity alerts are not available yet.
             </p>
 
             <div className="quote-block mt-6 text-[#d9c39c]">
-              “Spend your time evaluating opportunities—not repeatedly searching for them.”
+              “Start with a clear idea of the property and location you need.”
             </div>
 
             <div className="actions-row mt-6">
               <a className="btn-pill btn-gold" href="#alert-form">
-                Create My Alert
+                Send My Preferences
               </a>
               <Link className="btn-pill btn-ghost" href="/auctions">
                 Explore Auctions
@@ -68,7 +68,7 @@ export default function AuctionAlertsPage() {
                 Simple by Design.
               </h2>
               <p className="lead-text mt-4 text-[#59636a]">
-                CityAuction Alerts should make opportunity discovery easier without flooding users with irrelevant notifications.
+                Share your preferences with our team, or save match preferences in your account to see matching published listings.
               </p>
             </div>
           </div>
@@ -82,8 +82,8 @@ export default function AuctionAlertsPage() {
 
             <article className="p-8 border border-[#e6dfd4] rounded-2xl bg-[#fbf9f5] shadow-sm">
               <small className="text-[#b49361] font-bold tracking-wider text-xs uppercase">02</small>
-              <h3 className="font-serif-heading mt-4 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>CityAuction Matches Opportunities</h3>
-              <p className="mt-3 text-[#59636a] text-sm leading-relaxed">Relevant opportunities can be matched against supported inventory and alert logic.</p>
+              <h3 className="font-serif-heading mt-4 text-[#182129]" style={{ fontSize: "1.75rem", fontWeight: 600, lineHeight: 1.2 }}>Our Team Receives Your Enquiry</h3>
+              <p className="mt-3 text-[#59636a] text-sm leading-relaxed">Your preferences are recorded as an enquiry for our team to review.</p>
             </article>
 
             <article className="p-8 border border-[#e6dfd4] rounded-2xl bg-[#fbf9f5] shadow-sm">
@@ -107,13 +107,13 @@ export default function AuctionAlertsPage() {
                 Relevant Discovery. No Promise of Suitability.
               </h2>
               <p className="lead-text mt-4 text-[#aeb9c1]">
-                An alert means an opportunity matches the preferences you provided. It does not mean CityAuction has certified title, possession, market value, legal safety or investment suitability. The relevant auction notice and independent due diligence still matter.
+                A suggested match is based on the preferences you provided. It does not mean CityAuction has certified title, possession, market value, legal safety or investment suitability. The relevant auction notice and independent due diligence still matter.
               </p>
             </div>
           </div>
           <div className="actions-row mt-8">
             <a className="btn-pill btn-gold" href="#alert-form">
-              Create Alert
+              Send preferences
             </a>
             <Link className="btn-pill btn-ghost" href="/investor-desk">
               Investor Desk
