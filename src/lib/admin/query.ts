@@ -1,7 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { ENQUIRY_STATUSES, PAGE_SIZE, SUBSCRIBER_STATUSES } from "./constants";
 import { dateRangeFilter } from "./time";
-import { BUYER_CATEGORIES } from "@/lib/buyer";
 
 export function pageParams(params: URLSearchParams) {
   const page = Math.max(1, Math.floor(Number(params.get("page")) || 1));
@@ -54,15 +53,8 @@ export function userWhere(params: URLSearchParams): Prisma.UserWhereInput {
       { fullName: { contains: q } },
       { email: { contains: q } },
       { phone: { contains: q } },
-      { mobile: { contains: q.replace(/[\s-]/g, "") } },
       { city: { contains: q } },
     ];
-  }
-  // Buyer portal accounts (signed up with a verified email).
-  if (params.get("buyers") === "1") { where.email = { not: null }; where.isEmailVerified = true; where.buyerCategory = { not: null }; }
-  const category = params.get("category");
-  if (category && (BUYER_CATEGORIES as readonly { value: string }[]).some((c) => c.value === category)) {
-    where.buyerCategory = category as Prisma.EnumBuyerCategoryNullableFilter["equals"];
   }
   const active = params.get("active");
   if (active === "true") where.isActive = true;

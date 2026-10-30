@@ -1,9 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Home, Building2, Factory, Tractor, Map, Package, ArrowRight } from "lucide-react";
+import { PROPERTY_CATEGORIES } from "@/lib/constants";
 import { getCategories } from "@/services/property.service";
-
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Property Categories",
@@ -57,7 +56,7 @@ export default async function PropertiesOverviewPage() {
                 </h2>
 
                 <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                  Explore published {cat.name.toLowerCase()} auction notices under SARFAESI and DRT recovery proceedings.
+                  Discover verified {cat.name.toLowerCase()} assets under SARFAESI and DRT recovery proceedings.
                 </p>
               </div>
 

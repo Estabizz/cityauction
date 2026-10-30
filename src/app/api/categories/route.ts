@@ -8,10 +8,10 @@ export async function GET() {
       success: true,
       data,
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { success: false, error: "Failed to fetch categories" },
-      { status: 503, headers: { "Cache-Control": "no-store" } }
+      { status: 500 }
     );
   }
 }

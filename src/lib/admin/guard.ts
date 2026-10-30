@@ -36,7 +36,7 @@ export async function getAdminActor(): Promise<AdminActor | null> {
 
   return {
     id: user.id,
-    email: user.email ?? "",
+    email: user.email,
     fullName: user.fullName,
     roles,
     isSuperAdmin: roles.includes("SUPER_ADMIN"),

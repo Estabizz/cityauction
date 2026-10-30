@@ -1,19 +1,30 @@
-import { db } from "@/lib/db";
-import type { CategoryCardData } from "@/types";
-import { publicAuctionWhere } from "@/lib/public-auctions";
+import { db } from '@/lib/db';
+import type { CategoryCardData } from '@/types';
+import { MOCK_CATEGORIES } from './mock-data';
 
 export async function getCategories(): Promise<CategoryCardData[]> {
-  const cats = await db.propertyCategory.findMany({
-    include: { properties: {
-      where: { deletedAt: null },
-      select: { _count: { select: { auctions: { where: { AND: [
-        publicAuctionWhere(), { status: { in: ["UPCOMING", "LIVE", "CLOSING_SOON"] } },
-      ] } } } } },
-    } },
-    orderBy: { sortOrder: "asc" },
-  });
-  return cats.map((c) => ({
-    name: c.name, slug: c.slug, type: c.type, icon: c.icon || "Package",
-    auctionCount: c.properties.reduce((total, p) => total + p._count.auctions, 0),
-  }));
+  try {
+    const cats = await db.propertyCategory.findMany({
+      include: {
+        _count: {
+          select: { properties: true },
+        },
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    if (cats.length > 0) {
+      return cats.map((c) => ({
+        name: c.name,
+        slug: c.slug,
+        type: c.type,
+        icon: c.icon || 'Package',
+        auctionCount: c._count.properties,
+      }));
+    }
+  } catch (error) {
+    // Fallback
+  }
+
+  return MOCK_CATEGORIES;
 }

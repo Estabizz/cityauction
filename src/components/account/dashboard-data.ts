@@ -12,29 +12,19 @@ export const getAccount = cache(async () => {
   if (!session) redirect("/login?next=/dashboard");
 
   try {
-    const row = await db.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.userId },
       select: {
         id: true,
         email: true,
-        isEmailVerified: true,
-        mobile: true,
         fullName: true,
         phone: true,
         city: true,
         state: true,
-        buyerCategory: true,
-        onboardedAt: true,
-        marketingEmail: true,
-        marketingSms: true,
-        marketingWhatsapp: true,
-        passwordHash: true,
         createdAt: true,
         lastLoginAt: true,
       },
     });
-    // Never pass the hash on; pages only need to know whether there is one.
-    const user = row && (({ passwordHash, ...rest }) => ({ ...rest, hasPassword: !!passwordHash }))(row);
     return { session, user, admin: isAdmin(session), dbError: false };
   } catch (error) {
     console.error("[dashboard] load account", error);
@@ -45,6 +35,7 @@ export const getAccount = cache(async () => {
 export const PROFILE_FIELDS = [
   { key: "fullName", label: "Full name" },
   { key: "email", label: "Email" },
+  { key: "phone", label: "Mobile number" },
   { key: "city", label: "City" },
   { key: "state", label: "State" },
 ] as const;

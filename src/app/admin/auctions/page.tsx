@@ -30,7 +30,7 @@ export default async function AdminAuctionsPage() {
   return (
     <MarketplacePage
       title="Auctions"
-      description="Stored auction notices. Public listings include only published, source-checked notices. Publishing from this panel is not available yet."
+      description="Auction notices stored in the database. The public auction pages still show sample listings until real auction data is loaded; publishing from this panel is not built yet."
       count={result ? result[0] : null}
     >
       {!result ? (

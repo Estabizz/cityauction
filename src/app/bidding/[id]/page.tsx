@@ -1,26 +1,44 @@
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
+import { getAuctionBiddingState } from "@/services/bidding.service";
+import { BiddingRoomClient } from "@/components/bidding/bidding-room-client";
 
-export const metadata: Metadata = {
-  title: "Online bidding coming soon | CityAuction",
-  description: "Contact CityAuction for help with auction participation.",
-  robots: { index: false, follow: false },
-};
+export const dynamic = "force-dynamic";
 
-export default function BiddingPage() {
-  return (
-    <main className="min-h-screen bg-surface px-6 py-20">
-      <div className="mx-auto max-w-xl rounded-2xl border border-border bg-white p-8 text-center">
-        <h1 className="text-2xl font-bold text-primary">Online bidding is coming soon</h1>
-        <p className="mt-4 text-sm leading-relaxed text-gray-600">
-          CityAuction does not currently accept online bids or EMD payments.
-          Our team can help you find the auction notice and understand the participation process.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-4">
-          <Link href="/contact" className="font-semibold text-primary underline">Contact our team</Link>
-          <Link href="/auctions" className="font-semibold text-primary underline">Explore auctions</Link>
-        </div>
-      </div>
-    </main>
+interface BiddingPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: BiddingPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const state = await getAuctionBiddingState(id);
+
+  if (!state) {
+    return {
+      title: "Auction Not Found | CityAuction",
+    };
+  }
+
+  return {
+    title: `Live Bidding Room - ${state.auction.auctionNumber} | CityAuction`,
+    description: `Official live electronic bidding room for ${state.auction.title}. Conducted under SARFAESI Act Rules.`,
+  };
+}
+
+export default async function BiddingPage({ params }: BiddingPageProps) {
+  const { id } = await params;
+  const user = await getCurrentUser();
+
+  const state = await getAuctionBiddingState(
+    id,
+    user?.userId || null,
+    user?.roles?.[0] || null
   );
+
+  if (!state) {
+    notFound();
+  }
+
+  return <BiddingRoomClient initialState={state} />;
 }

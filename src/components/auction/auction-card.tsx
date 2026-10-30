@@ -1,20 +1,30 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, Building2, Clock, ArrowRight } from 'lucide-react';
-import { SaveListingButton } from '@/components/account/save-listing-button';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { Heart, Calendar, MapPin, Building2, Clock, ArrowRight } from 'lucide-react';
+import { cn, formatCurrency, formatDate, truncate } from '@/lib/utils';
 import { Badge, AuctionStatusBadge } from '@/components/ui/badge';
 import type { AuctionCardData, ViewMode } from '@/types';
+import { Button } from '@/components/ui/button';
 
 interface AuctionCardProps {
   auction: AuctionCardData;
   view?: ViewMode;
+  onFavouriteToggle?: (id: string) => void;
 }
 
-export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
+export function AuctionCard({ auction, view = 'grid', onFavouriteToggle }: AuctionCardProps) {
   const isGrid = view === 'grid';
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleFavouriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onFavouriteToggle) {
+      onFavouriteToggle(auction.id);
+    }
+  };
 
   const CardContent = (
     <>
@@ -32,18 +42,24 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
         )}
         
         {/* Top Overlay Badges */}
-        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10 pointer-events-none">
+        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
           <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-xs font-medium text-neutral-800 shadow-sm border-0">
             {auction.auctionType || 'General'}
           </Badge>
           <AuctionStatusBadge status={auction.status} className="shadow-sm border-0" />
         </div>
 
-        {/* Save to account */}
-        <SaveListingButton auctionId={auction.id} className="absolute bottom-3 right-3 z-20" />
+        {/* Favourite Button */}
+        <button
+          onClick={handleFavouriteClick}
+          className="absolute bottom-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white text-neutral-500 hover:text-red-500 transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+          aria-label={auction.isFavourited ? "Remove from favourites" : "Add to favourites"}
+        >
+          <Heart className={cn("w-4 h-4", auction.isFavourited && "fill-red-500 text-red-500")} />
+        </button>
       </div>
 
-      <div className={cn("flex flex-col flex-grow", isGrid ? "p-5 space-y-4" : "p-4 sm:p-5 flex-grow space-y-4")}>
+      <div className={cn("flex flex-col flex-grow", isGrid ? "p-4 space-y-4" : "p-4 sm:p-5 flex-grow space-y-4")}>
         {/* Header Info */}
         <div className="space-y-1.5">
           <div className="flex items-center space-x-2 text-xs text-neutral-500 mb-1">
@@ -58,7 +74,7 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
             </span>
           </div>
           
-          <h3 className={cn("font-semibold tracking-tight text-[#182129] group-hover/card:text-[#84663c] transition-colors line-clamp-2", isGrid ? "text-base" : "text-lg")}>
+          <h3 className={cn("font-semibold text-neutral-900 group-hover/card:text-primary transition-colors line-clamp-2", isGrid ? "text-base" : "text-lg")}>
             {auction.title}
           </h3>
         </div>
@@ -66,14 +82,14 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
         {/* Pricing */}
         <div className={cn("grid", isGrid ? "grid-cols-2 gap-3" : "grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6")}>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-[#7a8590]">Reserve price</p>
-            <p className="font-semibold text-xl text-[#182129] tabular-nums tracking-tight price-highlight">
+            <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Reserve Price</p>
+            <p className="font-semibold text-lg text-primary tabular-nums tracking-tight font-mono price-highlight">
               {formatCurrency(auction.reservePrice)}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-[#7a8590]">EMD amount</p>
-            <p className="font-medium text-sm text-neutral-700 tabular-nums">
+            <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">EMD Amount</p>
+            <p className="font-medium text-sm text-neutral-700 tabular-nums font-mono">
               {formatCurrency(auction.emd)}
             </p>
           </div>
@@ -81,14 +97,14 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
           {!isGrid && (
             <>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-[#7a8590]">Auction date</p>
+                <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Auction Date</p>
                 <div className="flex items-center text-sm font-medium text-neutral-900 tabular-nums">
                   <Calendar className="w-3.5 h-3.5 mr-1.5 text-neutral-400" />
                   {formatDate(auction.startDateTime)}
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-[#7a8590]">Possession</p>
+                <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Possession</p>
                 <div className="flex items-center text-sm font-medium text-neutral-900">
                   <span className="truncate">{auction.possessionStatus}</span>
                 </div>
@@ -103,7 +119,7 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
             <div className="flex justify-between items-center text-sm">
               <span className="text-neutral-500 flex items-center">
                 <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                Auction date
+                Auction Date
               </span>
               <span className="font-medium text-neutral-900 tabular-nums">{formatDate(auction.startDateTime)}</span>
             </div>
@@ -114,7 +130,6 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
               </span>
               <span className="font-medium text-neutral-900 tabular-nums">{formatDate(auction.submissionDeadline)}</span>
             </div>
-            <p className="flex items-center gap-1.5 pt-2 text-xs font-semibold text-[#84663c]">View property<ArrowRight className="h-3.5 w-3.5" /></p>
           </div>
         )}
       </div>
@@ -122,8 +137,8 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
       {/* List View Actions */}
       {!isGrid && (
         <div className="hidden sm:flex flex-col justify-center pr-5 pl-4 border-l border-neutral-100 min-w-[160px] shrink-0">
-          <span className="inline-flex items-center justify-center gap-2 h-11 px-4 text-sm font-semibold rounded-xl bg-[#132330] text-white hover:bg-[#253b4b] transition-colors w-full">
-            View property
+          <span className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary-700 transition-colors w-full">
+            View Details
             <ArrowRight className="w-4 h-4" />
           </span>
         </div>
@@ -132,15 +147,17 @@ export function AuctionCard({ auction, view = 'grid' }: AuctionCardProps) {
   );
 
   return (
-    <article
+    <Link 
+      href={`/auctions/${auction.id}`}
       className={cn(
-        "group/card relative block bg-white border border-[#e4e8ec] rounded-3xl overflow-hidden transition-all duration-200 cursor-pointer",
-        "hover:shadow-[0_8px_40px_-20px_rgba(24,33,41,0.18)] hover:border-[#cbd4dc]",
-        isGrid ? "flex flex-col h-full w-full" : "flex flex-col md:flex-row w-full h-auto md:min-h-[200px]"
+        "group/card block bg-white border border-neutral-200 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer",
+        "hover:shadow-card hover:border-primary/20",
+        isGrid ? "flex flex-col h-full w-full max-w-[360px]" : "flex flex-col md:flex-row w-full h-auto md:min-h-[200px]"
       )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/auctions/${auction.id}`} aria-label={`View property: ${auction.title}`} className="absolute inset-0 z-10 rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#84663c]" />
       {CardContent}
-    </article>
+    </Link>
   );
 }

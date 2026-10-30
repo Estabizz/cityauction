@@ -1,7 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAuctionById } from "@/services/auction.service";
-import { AuctionDataUnavailable } from "@/lib/public-auctions";
 import { ContactForm } from "@/components/forms/contact-form";
 
 export const metadata: Metadata = {
@@ -21,24 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ContactPage({ searchParams }: {
-  searchParams: Promise<{ auctionId?: string | string[]; subject?: string | string[] }>;
-}) {
-  const params = await searchParams;
-  const auctionId = typeof params.auctionId === "string" ? params.auctionId : undefined;
-  const initialSubject = typeof params.subject === "string" ? params.subject.slice(0, 190) : "";
-  let listing: { id: string; auctionNumber: string; title: string } | undefined;
-  let listingUnavailable = false;
-  if (auctionId) {
-    try {
-      const auction = auctionId.length <= 64 ? await getAuctionById(auctionId) : null;
-      if (auction) listing = { id: auction.id, auctionNumber: auction.auctionNumber, title: auction.title };
-      else listingUnavailable = true;
-    } catch (error) {
-      if (!(error instanceof AuctionDataUnavailable)) throw error;
-      listingUnavailable = true;
-    }
-  }
+export default function ContactPage() {
   return (
     <div className="bg-[#fbf9f5] text-[#182129] font-sans antialiased">
       {/* Hero */}
@@ -246,7 +227,7 @@ export default async function ContactPage({ searchParams }: {
             </div>
 
             <div>
-              <ContactForm key={listing?.id || initialSubject} listing={listing} listingUnavailable={listingUnavailable} initialSubject={initialSubject} />
+              <ContactForm />
             </div>
           </div>
 

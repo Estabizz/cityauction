@@ -34,7 +34,7 @@ export function AuctionSortBar({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col sm:flex-row flex-wrap items-center justify-between gap-3 mb-6">
+    <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
       {/* Result stats */}
       <div className="text-sm text-gray-600 flex items-center gap-2">
         <span>
@@ -44,25 +44,25 @@ export function AuctionSortBar({
       </div>
 
       {/* Controls */}
-      <div className="flex min-w-0 flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
         {/* Mobile Filter Button */}
         <button
           onClick={onOpenMobileFilters}
-          className="lg:hidden flex min-h-11 shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+          className="lg:hidden flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
         >
           <SlidersHorizontal className="h-4 w-4" />
           Filters
         </button>
 
-        <div className="flex min-w-0 flex-1 sm:flex-none items-center gap-2">
+        <div className="flex items-center gap-2">
           {/* Sort Select */}
-          <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-gray-500">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <span className="hidden md:inline">Sort by:</span>
             <select
               value={currentSort}
               onChange={(e) => handleSortChange(e.target.value)}
               aria-label="Sort auctions"
-              className="h-11 min-w-0 w-full sm:w-auto max-w-full rounded-lg border border-border bg-gray-50 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
+              className="h-9 rounded-lg border border-border bg-gray-50 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -77,8 +77,7 @@ export function AuctionSortBar({
             <button
               type="button"
               onClick={() => onViewModeChange("grid")}
-              aria-pressed={viewMode === "grid"}
-              className={`h-11 w-11 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 viewMode === "grid"
                   ? "bg-white text-primary shadow-xs"
                   : "text-gray-500 hover:text-gray-900"
@@ -91,8 +90,7 @@ export function AuctionSortBar({
             <button
               type="button"
               onClick={() => onViewModeChange("list")}
-              aria-pressed={viewMode === "list"}
-              className={`h-11 w-11 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 viewMode === "list"
                   ? "bg-white text-primary shadow-xs"
                   : "text-gray-500 hover:text-gray-900"
