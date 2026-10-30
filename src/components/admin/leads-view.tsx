@@ -29,7 +29,7 @@ import {
 
 interface UserRef {
   id: string;
-  email: string | null;
+  email: string;
   fullName: string | null;
   phone?: string | null;
   isActive?: boolean;
@@ -50,7 +50,6 @@ interface Lead {
   userId: string | null;
   auctionId: string | null;
   propertyId: string | null;
-  preferredDate?: string | null;
   createdAt: string;
   updatedAt: string;
   user: UserRef | null;
@@ -78,11 +77,12 @@ export function LeadsView() {
   const page = Number(get("page")) || 1;
   const openId = get("id");
 
-  // Reload when anything changes: new rows, or edits by another admin.
-  const [seenVersion, setSeenVersion] = useState(live.version);
-  if (live.version !== seenVersion) {
-    setSeenVersion(live.version);
-    if (seenVersion) reload();
+  // Pull in new leads as they arrive (page 1 only, so rows don't shift under you).
+  const liveTotal = live.data?.counts.leads.total;
+  const [seenTotal, setSeenTotal] = useState(liveTotal);
+  if (liveTotal !== seenTotal) {
+    setSeenTotal(liveTotal);
+    if (seenTotal !== undefined && page === 1) reload();
   }
 
   const hasFilters = FILTER_KEYS.some((k) => get(k));
@@ -156,7 +156,7 @@ export function LeadsView() {
                         </td>
                         <td className={t.td}>
                           <span className="block font-semibold text-[#182129]">{lead.name || "—"}</span>
-                          {lead.email && <span className="block text-xs text-[#6f777d]">{lead.email}</span>}
+                          <span className="block text-xs text-[#6f777d]">{lead.email}</span>
                           <span className="block text-xs text-[#6f777d]">{lead.phone}</span>
                           <span className="mt-1 block md:hidden">
                             <Badge>{sourceLabel(lead.source)}</Badge>
@@ -223,13 +223,6 @@ const HISTORY_LABELS: Record<string, string> = {
 
 function LeadDrawer({ id, onClose, onChanged }: { id: string; onClose: () => void; onChanged: () => void }) {
   const { data, error, loading, reload } = useAdminJson<Detail>(id ? `/api/admin/leads/${id}` : null);
-  const live = useLive();
-  // Another admin changed this lead (status, note): show it.
-  const [seenVersion, setSeenVersion] = useState(live.version);
-  if (live.version !== seenVersion) {
-    setSeenVersion(live.version);
-    if (seenVersion) reload();
-  }
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -267,11 +260,9 @@ function LeadDrawer({ id, onClose, onChanged }: { id: string; onClose: () => voi
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {lead.email && (
-              <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1.5 rounded-xl border border-[#e6dfd4] bg-white px-3 py-2 text-xs font-semibold hover:border-[#b49361]">
-                <Mail className="h-3.5 w-3.5" /> Email
-              </a>
-            )}
+            <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1.5 rounded-xl border border-[#e6dfd4] bg-white px-3 py-2 text-xs font-semibold hover:border-[#b49361]">
+              <Mail className="h-3.5 w-3.5" /> Email
+            </a>
             {lead.phone && (
               <a href={`tel:${lead.phone}`} className="inline-flex items-center gap-1.5 rounded-xl border border-[#e6dfd4] bg-white px-3 py-2 text-xs font-semibold hover:border-[#b49361]">
                 <Phone className="h-3.5 w-3.5" /> Call
@@ -295,14 +286,6 @@ function LeadDrawer({ id, onClose, onChanged }: { id: string; onClose: () => voi
               <Field label="Email">{lead.email}</Field>
               <Field label="Phone">{lead.phone}</Field>
               <Field label="Subject">{lead.subject}</Field>
-              {lead.auctionId && (
-                <Field label="Listing">
-                  <a href={`/auctions/${lead.auctionId}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#7a5f33] hover:underline">
-                    Open listing <ExternalLink className="h-3 w-3" />
-                  </a>
-                </Field>
-              )}
-              {lead.preferredDate && <Field label="Preferred date">{fmtDateTime(lead.preferredDate).split(",")[0]}</Field>}
               <Field label="Page">
                 {isSitePath(lead.pagePath) ? (
                   <a href={lead.pagePath} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#7a5f33] hover:underline">
@@ -314,13 +297,13 @@ function LeadDrawer({ id, onClose, onChanged }: { id: string; onClose: () => voi
               </Field>
               <Field label="Account">
                 {lead.user ? (
-                  <TextLink href={`/admin/users?q=${encodeURIComponent(lead.user.email || lead.user.phone || lead.user.fullName || "")}`}>
-                    Buyer account: {lead.user.fullName || lead.user.email || lead.user.phone}
+                  <TextLink href={`/admin/users?q=${encodeURIComponent(lead.user.email)}`}>
+                    Signed in as {lead.user.fullName || lead.user.email}
                   </TextLink>
                 ) : matchedUser ? (
                   <>
                     Not signed in, but an account uses this email:{" "}
-                    <TextLink href={`/admin/users?q=${encodeURIComponent(matchedUser.email || "")}`}>{matchedUser.fullName || matchedUser.email}</TextLink>
+                    <TextLink href={`/admin/users?q=${encodeURIComponent(matchedUser.email)}`}>{matchedUser.fullName || matchedUser.email}</TextLink>
                   </>
                 ) : (
                   <span className="text-[#6f777d]">Not signed in, no account with this email</span>

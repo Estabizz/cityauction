@@ -58,7 +58,7 @@ export default async function AdminKycPage() {
               {result[1].map((k) => (
                 <tr key={k.id} className={t.row}>
                   <td className={t.td}>
-                    <TextLink href={`/admin/users?q=${encodeURIComponent(k.user.email ?? k.user.fullName ?? "")}`}>{k.user.fullName || k.user.email}</TextLink>
+                    <TextLink href={`/admin/users?q=${encodeURIComponent(k.user.email)}`}>{k.user.fullName || k.user.email}</TextLink>
                     <span className="block text-xs text-[#6f777d]">{k.user.email}</span>
                   </td>
                   <td className={t.td}>

@@ -75,8 +75,8 @@ export const NAV_LINKS: readonly NavItem[] = [
   { href: '/organizations', label: 'Banks & Institutions' },
   { href: '/how-it-works', label: 'How It Works' },
   { href: '/resources', label: 'Resources', children: [
-    { href: '/how-it-works', label: 'How auctions work' },
-    { href: '/verified-information-policy', label: 'Verification policy' },
+    { href: '/resources/blog', label: 'Blog' },
+    { href: '/resources/guides', label: 'Guides' },
     { href: '/resources/faqs', label: 'FAQs' },
   ]},
   { href: '/about', label: 'About' },

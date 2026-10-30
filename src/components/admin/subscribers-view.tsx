@@ -54,11 +54,11 @@ export function SubscribersView() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // Reload when anything changes: new rows, or edits by another admin.
-  const [seenVersion, setSeenVersion] = useState(live.version);
-  if (live.version !== seenVersion) {
-    setSeenVersion(live.version);
-    if (seenVersion) reload();
+  const liveTotal = live.data?.counts.subscribers.total;
+  const [seenTotal, setSeenTotal] = useState(liveTotal);
+  if (liveTotal !== seenTotal) {
+    setSeenTotal(liveTotal);
+    if (seenTotal !== undefined && page === 1) reload();
   }
 
   const changeStatus = async (sub: Subscriber, status: SubscriberStatusValue) => {

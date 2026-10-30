@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Cormorant_Garamond, Manrope } from "next/font/google";
-import { AttributionCapture } from "@/components/layout/attribution-capture";
 import "./globals.css";
 
 const inter = Inter({
@@ -105,7 +104,6 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-scroll-behavior="smooth"
       className={`${inter.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${manrope.variable} h-full`}
     >
       <head>
@@ -117,7 +115,6 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans-body antialiased bg-[#fbf9f5] text-[#182129]">
         {children}
-        <AttributionCapture />
       </body>
     </html>
   );

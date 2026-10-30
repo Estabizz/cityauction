@@ -24,14 +24,10 @@ export const COOKIE_NAME = "cityauction_auth_token";
 
 export interface UserSessionPayload {
   userId: string;
-  // Empty for mobile-only accounts.
   email: string;
-  mobile?: string;
   fullName: string;
   accountType: string;
   roles: string[];
-  // User.sessionVersion when the token was signed (see getCurrentUser).
-  sv?: number;
 }
 
 // 2. JWT Signing

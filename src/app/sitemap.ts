@@ -1,12 +1,10 @@
 import { MetadataRoute } from 'next';
-import { getPublicAuctionSitemapEntries } from '@/services/auction.service';
+import { MOCK_AUCTIONS } from '@/services/mock-data';
 import { PROPERTY_CATEGORIES } from '@/lib/constants';
 import { CITY_PAGES } from '@/content/cities';
 import { cityPath, getStateGroups, statePath } from '@/content/cities/states';
 
-export const dynamic = "force-dynamic";
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cityauction.in';
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -32,10 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const auctions = await getPublicAuctionSitemapEntries();
-  const auctionPages: MetadataRoute.Sitemap = auctions.map((auc) => ({
+  const auctionPages: MetadataRoute.Sitemap = MOCK_AUCTIONS.map((auc) => ({
     url: `${baseUrl}/auctions/${auc.id}`,
-    lastModified: auc.updatedAt,
+    lastModified: new Date(),
     changeFrequency: 'hourly',
     priority: 0.9,
   }));

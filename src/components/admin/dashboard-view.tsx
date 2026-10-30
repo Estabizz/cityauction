@@ -66,7 +66,7 @@ export function DashboardView() {
     );
   }
 
-  const { counts, newSince, leadsBySource, activity, status, buyerPortal } = data;
+  const { counts, newSince, leadsBySource, activity, status } = data;
   const maxSource = Math.max(1, ...leadsBySource.map((s) => s.total));
   const now = lastUpdated ?? undefined;
 
@@ -75,7 +75,7 @@ export function DashboardView() {
       <PageHeader
         eyebrow="Admin"
         title="Overview"
-        description="Everything visitors submit on cityauction.in, updated within seconds while this page is open."
+        description="Everything visitors submit on cityauction.in, updated every 15 seconds while this page is open."
         actions={
           <>
             <span className="text-xs text-[#6f777d]">Updated {lastUpdated ? timeAgo(new Date(lastUpdated)) : "—"}</span>
@@ -112,23 +112,6 @@ export function DashboardView() {
           fresh={newSince?.subscribers ?? 0}
         />
       </div>
-
-      <Panel title="Buyer portal" action={<span className="text-xs text-[#6f777d]">Open = new or in progress</span>}>
-        <div className="grid grid-cols-2 gap-3 p-4 sm:p-5 lg:grid-cols-5">
-          {[
-            { label: "Open callback requests", value: buyerPortal.openCallbacks, href: "/admin/leads?source=callback-request" },
-            { label: "Open inspection requests", value: buyerPortal.openInspections, href: "/admin/leads?source=inspection-request" },
-            { label: "Buyers (email verified)", value: buyerPortal.buyers, href: "/admin/users?buyers=1" },
-            { label: "Requirements with alerts on", value: buyerPortal.activeRequirements, href: "/admin/users?buyers=1" },
-            { label: "Saved listings", value: buyerPortal.savedListings, href: "/admin/users?buyers=1" },
-          ].map((s) => (
-            <Link key={s.label} href={s.href} className="rounded-xl border border-[#efe9df] bg-[#fdfcfa] p-3 transition-colors hover:border-[#b49361]">
-              <span className="block font-serif-heading text-3xl font-semibold text-[#091118]">{s.value.toLocaleString("en-IN")}</span>
-              <span className="text-xs text-[#6f777d]">{s.label}</span>
-            </Link>
-          ))}
-        </div>
-      </Panel>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Panel

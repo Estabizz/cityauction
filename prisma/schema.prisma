@@ -13,15 +13,6 @@ enum UserAccountType {
   ORGANIZATION
 }
 
-// What kind of buyer signed up (asked on the registration form).
-enum BuyerCategory {
-  INDIVIDUAL_BUYER
-  BUSINESS_BUYER
-  INVESTOR
-  BROKER
-  OTHER_PROFESSIONAL
-}
-
 enum BidderStatus {
   INCOMPLETE
   PENDING_REVIEW
@@ -165,15 +156,11 @@ enum ParticipantStatus {
 
 model User {
   id                String           @id @default(cuid())
-  // Nullable for legacy records. New registrations require a verified email.
-  email             String?          @unique
+  email             String           @unique
   phone             String?
-  // Legacy mobile identity, retained for existing records; no longer used for sign-in.
-  mobile            String?          @unique
   passwordHash      String?
   fullName          String?
   accountType       UserAccountType?
-  buyerCategory     BuyerCategory?
   pan               String?
   address           String?
   city              String?
@@ -186,16 +173,6 @@ model User {
   // One-time link to set or reset the password (admin bootstrap, forgot password).
   passwordSetToken   String?          @unique
   passwordSetExpires DateTime?
-  // Bumped by "log out everywhere"; sessions signed with an older value stop working.
-  sessionVersion    Int              @default(0)
-  // Set when the buyer finishes or skips the preferences step after sign-up.
-  onboardedAt       DateTime?
-  // Current marketing choices; every change is also logged in consent_events.
-  marketingEmail    Boolean          @default(false)
-  marketingSms      Boolean          @default(false)
-  marketingWhatsapp Boolean          @default(false)
-  // First-touch landing page, UTM values and referrer, captured at sign-up.
-  attribution       Json?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
@@ -212,8 +189,6 @@ model User {
   enquiries             Enquiry[]
   auditLogs             AuditLog[]
   blogs                 Blog[]
-  consentEvents         ConsentEvent[]
-  requirements          BuyerRequirement[]
 
   @@map("users")
 }
@@ -490,9 +465,6 @@ model Auction {
   terms               String?       @db.Text
   drtName             String?
   isOnline            Boolean       @default(true)
-  // Where the listing was sourced from (bank / portal notice ID) and when it was last checked.
-  sourceListingId     String?
-  sourceVerifiedAt    DateTime?
   publishedAt         DateTime?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
@@ -669,8 +641,6 @@ model Enquiry {
   pagePath   String?       @db.VarChar(500)
   metadata   Json?
   assignedTo String?
-  // Inspection requests: the buyer's preferred date.
-  preferredDate DateTime?
   adminNotes String?       @db.Text
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
@@ -680,7 +650,6 @@ model Enquiry {
 
   @@index([createdAt])
   @@index([source])
-  @@index([userId])
   @@map("enquiries")
 }
 
@@ -811,89 +780,4 @@ model Analytics {
   @@index([entityType])
   @@index([timestamp])
   @@map("analytics")
-}
-
-// One-time codes sent to a mobile number. Only an HMAC of the code is stored.
-model OtpChallenge {
-  id         String    @id @default(cuid())
-  mobile     String
-  purpose    String // register | login | link | reset-password | password-login
-  codeHash   String
-  attempts   Int       @default(0)
-  expiresAt  DateTime
-  consumedAt DateTime?
-  ipAddress  String?
-  createdAt  DateTime  @default(now())
-
-  @@index([mobile, createdAt])
-  @@index([ipAddress, createdAt])
-  @@map("otp_challenges")
-}
-
-// Append-only record of terms acceptance and marketing opt-ins/outs.
-model ConsentEvent {
-  id            String   @id @default(cuid())
-  userId        String
-  // TERMS_PRIVACY (required at sign-up) or MARKETING
-  kind          String
-  // For MARKETING: EMAIL, SMS or WHATSAPP
-  channel       String?
-  granted       Boolean
-  policyVersion String?
-  source        String // register, profile, ...
-  ipAddress     String?
-  userAgent     String?  @db.VarChar(500)
-  createdAt     DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("consent_events")
-}
-
-// A buyer's requirement ("what I'm looking for"). A buyer can have several;
-// each doubles as an alert that can be paused.
-model BuyerRequirement {
-  id            String   @id @default(cuid())
-  userId        String
-  name          String
-  assetClasses  Json // string[] of ASSET_CLASSES keys
-  cities        Json // string[] of city names, "PAN_INDIA" or "OTHER"
-  budgetRange   String?
-  minBudget     Decimal? @db.Decimal(15, 2)
-  maxBudget     Decimal? @db.Decimal(15, 2)
-  objective     String?
-  locality      String?  @db.VarChar(200)
-  minSize       Decimal? @db.Decimal(12, 2)
-  maxSize       Decimal? @db.Decimal(12, 2)
-  sizeUnit      String?
-  timeline      String?
-  funding       String?
-  alertsEnabled Boolean  @default(true)
-  alertChannels Json // string[]: EMAIL, SMS, WHATSAPP
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("buyer_requirements")
-}
-
-// Email-only verification. The legacy otp_challenges table is retained for
-// existing installations; it is no longer used by authentication.
-model EmailOtpChallenge {
-  id         String    @id @default(cuid())
-  email      String    @db.VarChar(191)
-  purpose    String
-  codeHash   String
-  attempts   Int       @default(0)
-  expiresAt  DateTime
-  consumedAt DateTime?
-  ipAddress  String?
-  createdAt  DateTime  @default(now())
-
-  @@index([email, createdAt])
-  @@index([ipAddress, createdAt])
-  @@map("email_otp_challenges")
 }

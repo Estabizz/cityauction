@@ -6,8 +6,6 @@ import type { CityAdSlot } from "@/content/cities/types";
 import { cityPath, statePath, stateSlug } from "@/content/cities/states";
 import type { CityPage as CityPageData } from "@/content/cities/types";
 import { CityAuctionFinder } from "@/components/city/city-auction-finder";
-import { AuctionDataUnavailable } from "@/lib/public-auctions";
-import type { AuctionCardData } from "@/types";
 import { getAuctions } from "@/services/auction.service";
 import "./city-page.css";
 
@@ -90,14 +88,7 @@ export default async function CityPage({ params }: PageProps) {
   const page = await resolvePage(params);
   if (!page) notFound();
 
-  let auctions: AuctionCardData[] = [];
-  let listingsUnavailable = false;
-  try {
-    ({ data: auctions } = await getAuctions({ city: page.city, limit: 50 }));
-  } catch (error) {
-    if (!(error instanceof AuctionDataUnavailable)) throw error;
-    listingsUnavailable = true;
-  }
+  const { data: auctions } = await getAuctions({ city: page.city, limit: 50 });
   const servicesId = `${page.slug}-services`;
   const pageUrl = `${SITE_URL}${cityPath(page)}`;
 
@@ -203,16 +194,7 @@ export default async function CityPage({ params }: PageProps) {
       <section className="city-section" id="discover">
         <div className="city-wrap city-main-grid">
           <div>
-            {listingsUnavailable ? (
-              <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-                Auction notices could not be loaded right now. Please try again shortly or <Link href="/contact" className="underline">contact our team</Link>.
-              </p>
-            ) : (
-              <>
-                <CityAuctionFinder page={page} localities={page.localities.items} auctions={auctions} />
-                {auctions.length === 50 && <p className="city-note">Showing up to 50 notices. <Link href={`/auctions?city=${encodeURIComponent(page.city)}`}>Search all notices in {page.city} →</Link></p>}
-              </>
-            )}
+            <CityAuctionFinder page={page} localities={page.localities.items} auctions={auctions} />
 
             <div className="city-introline">
               <div className="city-eyebrow">{page.categories.eyebrow}</div>

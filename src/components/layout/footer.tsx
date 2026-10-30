@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { SubscribeBox } from "@/components/subscribe/subscribe-box";
-import { FooterAccountLink } from "@/components/account/footer-account-links";
 
 export function Footer() {
   return (
@@ -50,8 +49,8 @@ export function Footer() {
             <Link href="/locations">Auctions by State &amp; City</Link>
             <Link href="/auctions?auctionType=SARFAESI">SARFAESI Auctions</Link>
             <Link href="/auctions?auctionType=DRT">DRT Auctions</Link>
-            <Link href="/auctions?auctionType=NPA">NPA Auctions</Link>
-            <Link href="/auctions?auctionType=FORWARD">Forward Auctions</Link>
+            <Link href="/auctions?auctionType=ARC">ARC Auctions</Link>
+            <Link href="/auctions?auctionType=IBC">IBC / Liquidation</Link>
           </div>
 
           {/* Col 2: Buyer Services */}
@@ -60,7 +59,7 @@ export function Footer() {
             <Link href="/how-it-works">How It Works</Link>
             <Link href="/auction-alerts">Personalised Alerts</Link>
             <Link href="/investor-desk">Investor Desk &amp; Diligence</Link>
-            <FooterAccountLink />
+            <Link href="/investor-login">Investor Portal Login</Link>
             <Link href="/auctions">Browse Auctions</Link>
           </div>
 
@@ -69,7 +68,7 @@ export function Footer() {
             <h4>Institutional</h4>
             <Link href="/liquidate-an-asset">Liquidate an Asset</Link>
             <Link href="/institutional-services">Institutional Services</Link>
-            <FooterAccountLink institutional />
+            <Link href="/financial-institution-login">Financial Institution Login</Link>
             <Link href="/liquidate-an-asset#dataroom">Buyer Data Room</Link>
           </div>
 

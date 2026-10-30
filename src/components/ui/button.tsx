@@ -2,25 +2,24 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
-import { buttonBaseClass, primaryButtonTone } from './styles';
 
 const buttonVariants = cva(
-  buttonBaseClass,
+  'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap cursor-pointer',
   {
     variants: {
       variant: {
-        primary: primaryButtonTone,
-        secondary: 'bg-[#f1f4f6] text-[#182129] hover:bg-[#e8edf1]',
+        primary: 'bg-primary text-white hover:bg-primary-700 active:bg-primary-800',
+        secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300',
         outline: 'border border-border bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100',
         ghost: 'text-gray-700 hover:bg-gray-100 active:bg-gray-200',
         destructive: 'bg-error text-white hover:bg-error-600 active:bg-error-700',
         accent: 'bg-accent text-primary-900 hover:bg-accent-300 active:bg-accent-400 font-semibold',
       },
       size: {
-        sm: 'min-h-11 px-3 text-xs',
-        md: 'h-12 px-4 text-sm',
+        sm: 'h-8 px-3 text-xs',
+        md: 'h-10 px-4 text-sm',
         lg: 'h-12 px-6 text-base',
-        icon: 'h-11 w-11',
+        icon: 'h-10 w-10',
       },
     },
     defaultVariants: {
