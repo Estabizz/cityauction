@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -18,6 +18,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
+import { activateDialog } from "@/lib/dialog-focus";
 import { AccountMenu } from "@/components/account/account-menu";
 import { LogoutButton } from "@/components/account/logout-button";
 import { LiveProvider, useLive } from "./live";
@@ -71,6 +72,15 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
   const account = { fullName: admin.name, email: admin.email, isAdmin: true };
   const [open, setOpen] = useState(false);
   const live = useLive();
+  const navigation = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open || !navigation.current) return;
+    const cleanup = activateDialog(navigation.current, () => setOpen(false));
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const closeOnDesktop = () => { if (desktop.matches) setOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => { cleanup(); desktop.removeEventListener("change", closeOnDesktop); };
+  }, [open]);
 
   const badgeCount = (key?: BadgeKey) => {
     const s = live.data?.newSince;
@@ -104,7 +114,9 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
           <button
             type="button"
             onClick={() => setOpen(!open)}
-            className="cursor-pointer rounded-lg p-1.5 hover:bg-white/10"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg hover:bg-white/10"
+            aria-controls="admin-navigation"
+            aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -117,16 +129,21 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
       )}
 
       <aside
-        className={`fixed top-0 z-30 flex h-screen w-64 shrink-0 flex-col justify-between overflow-y-auto bg-[#091118] text-white transition-transform duration-200 md:sticky ${
-          open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
+        id="admin-navigation"
+        ref={navigation}
+        role={open ? "dialog" : undefined}
+        aria-modal={open || undefined}
+        aria-label="Admin navigation"
+        tabIndex={open ? -1 : undefined}
+        className={`fixed inset-y-0 left-0 z-50 h-dvh w-64 shrink-0 flex-col overflow-hidden bg-[#091118] text-white ${open ? "flex" : "hidden md:flex"}`}
       >
-        <div>
-          <div className="border-b border-white/10 px-5 py-5">
+        <div className="shrink-0">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
             <Link href="/admin/dashboard" className="block">
               <span className="font-serif-heading block text-2xl font-semibold leading-none">CityAuction</span>
               <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b49361]">Admin panel</span>
             </Link>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close admin navigation" className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10 md:hidden"><X className="h-5 w-5" /></button>
           </div>
 
           <div className="mx-3 my-3 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
@@ -139,7 +156,8 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
             </div>
           </div>
 
-          <nav className="space-y-4 px-3 pb-4">
+        </div>
+          <nav className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 pb-4 [scrollbar-width:thin]" aria-label="Admin sections">
             {SECTIONS.map((section) => (
               <div key={section.heading}>
                 <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40">{section.heading}</p>
@@ -175,16 +193,15 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
               </div>
             ))}
           </nav>
-        </div>
 
-        <div className="space-y-2 border-t border-white/10 p-4">
+        <div className="shrink-0 space-y-2 border-t border-white/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-2 px-1 text-[11px] text-white/50">
             <span className={`h-2 w-2 rounded-full ${live.error ? "bg-red-400" : live.data ? "animate-pulse bg-emerald-400" : "bg-white/30"}`} />
             {live.error ? "Live updates paused" : live.data ? "Live · updates within seconds" : "Connecting…"}
           </div>
           <Link
             href="/"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-white/75 transition-colors hover:bg-white/10"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-white/75 transition-colors hover:bg-white/10"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to the site
@@ -193,7 +210,7 @@ function ShellFrame({ admin, children }: { admin: ShellAdmin; children: ReactNod
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1">
+      <main className="min-w-0 flex-1 md:ml-64">
         <div className="sticky top-0 z-40 hidden h-[76px] items-center justify-between border-b border-[#e4e8ec] bg-white px-6 md:flex lg:px-8">
           <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm text-[#687480] hover:text-[#182129]"><ArrowLeft className="h-4 w-4" /> Back to the site</Link>
           <AccountMenu session={account} roleLabel={admin.roleLabel} />

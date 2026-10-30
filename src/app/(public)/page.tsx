@@ -1,1199 +1,133 @@
-"use client";
-
-import { useState } from "react";
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AUCTION_TYPES } from "@/lib/constants";
-import { CITY_LIST } from "@/content/cities/list";
-import { cityPath } from "@/content/cities/paths";
-import { Honeypot, SubmitErrorNotice, submitEnquiry } from "@/components/forms/lead-submit";
-import { SubscribeBox } from "@/components/subscribe/subscribe-box";
-import {
-  Search,
-  ArrowRight,
-  Shield,
-  Phone,
-  Mail,
-  MapPin,
-  CheckCircle2,
-  HelpCircle,
-  ExternalLink,
-  MessageSquare,
-  Clock,
-  Sparkles,
-  Loader2,
-} from "lucide-react";
+import { ArrowRight, Building2, Factory, Handshake, Heart, Home, ListChecks, Mail, MapPin, MapPinned, Package, Phone, Search, ShieldCheck, Target, Tractor } from "lucide-react";
+import { HomeSearch } from "@/components/home/home-search";
+import { HomeEnquiryForm } from "@/components/home/home-enquiry";
+import { HOME_ASSETS, HOME_SERVICES, HOME_STEPS } from "@/content/homepage";
+import { cardClass } from "@/components/ui/styles";
+
+export const metadata: Metadata = {
+  title: "CityAuction | Auction Assets, Investor Support & Institutional Services",
+  description: "Discover institutional auction assets across India. Search by location and budget, save opportunities and get support from the CityAuction team.",
+  alternates: { canonical: "https://cityauction.in" },
+  openGraph: {
+    title: "CityAuction — See beyond the auction",
+    description: "Discover auction assets, evaluate opportunities and connect with the right support.",
+    url: "https://cityauction.in",
+    images: [{ url: "https://cityauction.in/images/cityauction-architecture.webp", width: 1664, height: 936, alt: "Architectural illustration for CityAuction" }],
+  },
+};
+
+const icons = { Home, Building2, Factory, MapPinned, Tractor, Package, Search, ShieldCheck, Handshake, Target };
+const container = "mx-auto w-full max-w-7xl px-5 sm:px-8";
+const section = "py-14 sm:py-20";
+const eyebrow = "text-xs font-semibold uppercase tracking-[.16em] text-[#84663c]";
+const heading = "mt-3 text-3xl font-semibold leading-tight tracking-tight text-[#182129] sm:text-4xl";
+const textLink = "inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#84663c] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#84663c]";
 
 export default function HomePage() {
-  const router = useRouter();
-
-  // Location options come from the published city pages, grouped by state.
-  const citiesByState = CITY_LIST.reduce<Record<string, typeof CITY_LIST>>((groups, c) => {
-    (groups[c.state] ??= []).push(c);
-    return groups;
-  }, {});
-
-  // Search State
-  const [location, setLocation] = useState("");
-  const [assetType, setAssetType] = useState("");
-  const [budget, setBudget] = useState("");
-  const [channel, setChannel] = useState("");
-
-  // Contact Form State
-  const [contactName, setContactName] = useState("");
-  const [contactMobile, setContactMobile] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [enquiryType, setEnquiryType] = useState("");
-  const [contactMessage, setContactMessage] = useState("");
-  const [contactLoading, setContactLoading] = useState(false);
-  const [contactStatus, setContactStatus] = useState<string | null>(null);
-  const [contactError, setContactError] = useState<string | null>(null);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const city = CITY_LIST.find((c) => c.slug === location);
-    // A city on its own opens that city's page; with other filters, search the marketplace there.
-    if (city && !assetType && !budget && !channel) {
-      router.push(cityPath(city));
-      return;
-    }
-    const params = new URLSearchParams();
-    if (city) params.set("city", city.city);
-    if (assetType) {
-      const typeMap: Record<string, string> = {
-        Residential: "RESIDENTIAL",
-        Commercial: "COMMERCIAL",
-        Industrial: "INDUSTRIAL",
-        "Land / Plot": "LAND",
-        "Plant & Machinery": "OTHER",
-        "Business / Going Concern": "OTHER",
-      };
-      params.set("category", typeMap[assetType] || assetType.toUpperCase());
-    }
-    if (channel) params.set("auctionType", channel);
-    if (budget) {
-      if (budget === "Below ₹25 Lakh") params.set("maxPrice", "2500000");
-      if (budget === "₹25–50 Lakh") {
-        params.set("minPrice", "2500000");
-        params.set("maxPrice", "5000000");
-      }
-      if (budget === "₹50 Lakh–₹1 Crore") {
-        params.set("minPrice", "5000000");
-        params.set("maxPrice", "10000000");
-      }
-      if (budget === "₹1–5 Crore") {
-        params.set("minPrice", "10000000");
-        params.set("maxPrice", "50000000");
-      }
-      if (budget === "₹5 Crore+") params.set("minPrice", "50000000");
-    }
-
-    router.push(`/auctions?${params.toString()}`);
-  };
-
-  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setContactLoading(true);
-    setContactStatus(null);
-    setContactError(null);
-
-    const result = await submitEnquiry(e.currentTarget, {
-      source: "homepage",
-      name: contactName,
-      phone: contactMobile,
-      email: contactEmail,
-      subject: enquiryType || "General Auction & Asset Enquiry",
-      message: contactMessage,
-      fields: { "Help with": enquiryType },
-    });
-
-    setContactLoading(false);
-    if (result.ok) {
-      setContactStatus(
-        "Thank you. Your enquiry has been received and routed to the relevant CityAuction desk. An advisor will contact you within 1 business day."
-      );
-      setContactName("");
-      setContactMobile("");
-      setContactEmail("");
-      setEnquiryType("");
-      setContactMessage("");
-    } else {
-      setContactError(result.error);
-    }
-  };
-
-  return (
-    <main id="mainContent">
-      {/* 1. HERO SECTION */}
-      <section className="hero-wrapper">
-        <div className="estabizz-container hero-grid">
-          <div>
-            <div className="eyebrow-text">The auction & asset opportunity ecosystem</div>
-            <h1 className="font-serif-heading text-4xl sm:text-6xl lg:text-7xl font-semibold leading-[0.92] text-white mt-4 tracking-tight">
-              See Beyond the Auction.<br />
-              <em className="text-[#dbc39a] not-italic font-medium">
-                Discover What It Could Become.
-              </em>
-            </h1>
-
-            <p className="hero-copy-text">
-              Discover institutional auction assets. Evaluate opportunities. Reach serious
-              buyers. Liquidate assets. Explore Customs auctions. Find capital, investors or
-              strategic partners for businesses and projects.
-            </p>
-
-            <div className="hero-promise-box">
-              Every asset has a story. The right buyer, capital or strategy can change what
-              happens next.
-            </div>
-
-            <div className="hero-routes-tags">
-              <Link href="/auctions" className="hero-route-tag hover:border-[#d9c39c] transition-colors">
-                Buy / Invest
-              </Link>
-              <Link href="/liquidate-an-asset" className="hero-route-tag hover:border-[#d9c39c] transition-colors">
-                Liquidate an Asset
-              </Link>
-              <Link href="/customs-auction" className="hero-route-tag hover:border-[#d9c39c] transition-colors">
-                Customs Auctions
-              </Link>
-              <Link href="/next-chapter" className="hero-route-tag hover:border-[#d9c39c] transition-colors">
-                Company / Project Capital
-              </Link>
-            </div>
-
-            <div className="actions-row">
-              <Link className="btn-pill btn-gold" href="/auctions">
-                Explore Auction Opportunities
-              </Link>
-              <a className="btn-pill btn-ghost" href="#help">
-                See Where CityAuction Can Help
-              </a>
-            </div>
+  return <div id="mainContent" className="bg-white text-[#182129]">
+    <section className="relative isolate overflow-hidden bg-[#0c1822]" aria-labelledby="home-heading">
+      <Image src="/images/cityauction-architecture.webp" alt="" fill preload sizes="100vw" className="-z-20 object-cover object-center" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#091118]/95 via-[#091118]/75 to-[#091118]/35" />
+      <div className={`${container} grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-20`}>
+        <div className="max-w-xl">
+          <p className="text-xs font-semibold uppercase tracking-[.17em] text-[#d9c39c]">Auction assets. Clearer decisions.</p>
+          <h1 id="home-heading" className="font-serif-heading mt-5 text-5xl font-semibold leading-[1.06] tracking-tight text-white sm:text-6xl lg:text-7xl">See beyond the auction.<span className="mt-2 block text-[#dbc39a]">Discover what it could become.</span></h1>
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-[#d2dbe1] sm:text-lg">Find auction assets, evaluate opportunities and get the support you need to move forward.</p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link href="/auctions" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#d9c39c] px-5 text-sm font-semibold text-[#091118] transition-colors hover:bg-[#ead8b7]">Explore auctions<ArrowRight className="h-4 w-4" /></Link>
+            <a href="#help" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10">How we can help</a>
           </div>
-
-          {/* Search Card */}
-          <form className="hero-card-box" onSubmit={handleSearchSubmit}>
-            <div className="eyebrow-text">Find an opportunity</div>
-            <h3 className="font-serif-heading text-2xl font-semibold mt-2 text-[#182129]">
-              Start with What You Are Looking For.
-            </h3>
-            <p className="text-xs text-[#6f777d] mt-1">
-              Search institutional auction opportunities by location, asset class, budget and channel.
-            </p>
-
-            <div className="search-form-grid">
-              <div className="field-custom">
-                <label htmlFor="location">Location</label>
-                <select
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                >
-                  <option value="">Select location</option>
-                  {Object.entries(citiesByState).map(([state, cities]) => (
-                    <optgroup key={state} label={state}>
-                      {cities.map((c) => (
-                        <option key={c.slug} value={c.slug}>
-                          {c.city}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field-custom">
-                <label htmlFor="assetType">Asset Type</label>
-                <select
-                  id="assetType"
-                  value={assetType}
-                  onChange={(e) => setAssetType(e.target.value)}
-                >
-                  <option value="">Select asset type</option>
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Land / Plot">Land / Plot</option>
-                  <option value="Plant & Machinery">Plant & Machinery</option>
-                  <option value="Business / Going Concern">Business / Going Concern</option>
-                </select>
-              </div>
-
-              <div className="field-custom">
-                <label htmlFor="budget">Budget</label>
-                <select
-                  id="budget"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                >
-                  <option value="">Any budget</option>
-                  <option value="Below ₹25 Lakh">Below ₹25 Lakh</option>
-                  <option value="₹25–50 Lakh">₹25–50 Lakh</option>
-                  <option value="₹50 Lakh–₹1 Crore">₹50 Lakh–₹1 Crore</option>
-                  <option value="₹1–5 Crore">₹1–5 Crore</option>
-                  <option value="₹5 Crore+">₹5 Crore+</option>
-                </select>
-              </div>
-
-              <div className="field-custom">
-                <label htmlFor="channel">Auction Channel</label>
-                <select
-                  id="channel"
-                  value={channel}
-                  onChange={(e) => setChannel(e.target.value)}
-                >
-                  <option value="">All channels</option>
-                  {AUCTION_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <button className="btn-pill btn-dark w-full mt-4" type="submit">
-              Search Opportunities
-            </button>
-            <div className="text-xs text-center mt-3">
-              <Link href="/locations" className="font-semibold text-[#84663c] underline underline-offset-2">
-                Browse all locations by state &amp; city →
-              </Link>
-            </div>
-            <div className="text-[11px] text-gray-500 mt-2 text-center">
-              Connected to 12,000+ active statutory Indian bank & NPA opportunities.
-            </div>
-          </form>
+          <p className="mt-6 max-w-md text-xs leading-relaxed text-[#bdc9d2]">Source-checked notices. Optional professional support. Bidding takes place on the authorised auction platform.</p>
         </div>
-      </section>
+        <HomeSearch />
+      </div>
+    </section>
 
-      {/* 2. CREDIBILITY & METRICS */}
-      <div className="metrics-wrapper">
-        <div className="estabizz-container">
-          <div className="metrics-card-grid">
-            <div className="metric-box">
-              <strong>Since 2016</strong>
-              <span>Journey in auction-market services</span>
-            </div>
-            <div className="metric-box">
-              <strong>100+</strong>
-              <span>Banks & institutions across our experience</span>
-            </div>
-            <div className="metric-box">
-              <strong>5,000+</strong>
-              <span>Auction properties / opportunities across our experience</span>
-            </div>
-            <div className="metric-box">
-              <strong>5,000+</strong>
-              <span>Buyer & investor network</span>
-            </div>
-          </div>
-          <div className="metrics-note-text">
-            Figures reflect cumulative promoter/team experience and network, including
-            engagements prior to the launch of CityAuction.
-          </div>
+    <section className="border-b border-[#e4e8ec] bg-[#f8fafb] py-6" aria-label="Your CityAuction account">
+      <div className={`${container} grid gap-5 sm:grid-cols-3 sm:gap-8`}>
+        {[
+          { icon: ShieldCheck, title: "Source-checked notices", text: "Review the source and official auction terms." },
+          { icon: Heart, title: "Save opportunities", text: "Keep your shortlisted properties in one place." },
+          { icon: ListChecks, title: "Track enquiries", text: "Follow your support and inspection requests." },
+        ].map(({ icon: Icon, title, text }) => <div key={title} className="flex items-start gap-3"><Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#84663c]" /><div><h2 className="text-sm font-semibold">{title}</h2><p className="mt-1 text-xs leading-relaxed text-[#687480]">{text}</p></div></div>)}
+      </div>
+    </section>
+
+    <section id="auctions" className={section} aria-labelledby="assets-heading">
+      <div className={container}>
+        <div id="asset-types" className="flex flex-wrap items-end justify-between gap-4">
+          <div><p className={eyebrow}>Explore by asset</p><h2 id="assets-heading" className={heading}>Start with what you know.</h2><p className="mt-3 max-w-xl text-sm leading-relaxed text-[#687480]">Browse published auction notices by property category.</p></div>
+          <Link href="/auctions" className={textLink}>View all auctions<ArrowRight className="h-4 w-4" /></Link>
+        </div>
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {HOME_ASSETS.map((asset) => {
+            const Icon = icons[asset.icon];
+            return <Link key={asset.value} href={`/auctions?category=${asset.value}`} className={`${cardClass} group flex min-w-0 items-start gap-4 p-5 transition-colors hover:border-[#b49361] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#84663c] sm:p-6`}>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f5f1e9] text-[#84663c]"><Icon className="h-5 w-5" /></span>
+              <div className="min-w-0 flex-1"><h3 className="font-semibold">{asset.title}</h3><p className="mt-1 text-sm leading-relaxed text-[#687480]">{asset.description}</p></div><ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#98a1ab] group-hover:text-[#84663c]" />
+            </Link>;
+          })}
+        </div>
+        <div id="closing-soon" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#f8fafb] px-5 py-3">
+          <p className="text-sm text-[#687480]">Looking for an approaching auction?</p>
+          <Link href="/auctions?status=CLOSING_SOON&sort=closing_soon" className={textLink}>Browse closing auctions<ArrowRight className="h-4 w-4" /></Link>
         </div>
       </div>
+    </section>
 
-      {/* 3. WHERE CITYAUCTION CAN HELP */}
-      <section className="estabizz-section white-bg" id="help">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Where CityAuction can help you</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                What Brings You to CityAuction?
-              </h2>
-              <p className="lead-text mt-3">
-                Whatever side of the opportunity you are on, start here.
-              </p>
-            </div>
-          </div>
-
-          <div className="help-grid-custom">
-            <article className="help-card-box">
-              <div>
-                <small>01 · Buyers & Investors</small>
-                <h3>I Want to Buy an Auction Asset</h3>
-                <p>
-                  Discover residential, commercial, industrial, land, machinery and other
-                  institutional auction assets across multiple legal and sale channels.
-                </p>
-              </div>
-              <Link href="/auctions">Explore Auctions →</Link>
-            </article>
-
-            <article className="help-card-box">
-              <div>
-                <small>02 · Investor Desk</small>
-                <h3>I Found an Asset and Need Help Evaluating It</h3>
-                <p>
-                  Access optional auction-notice interpretation, legal due diligence,
-                  title/encumbrance review, valuation, inspection and bidder-support services.
-                </p>
-              </div>
-              <Link href="/how-it-works">Understand the Journey →</Link>
-            </article>
-
-            <article className="help-card-box">
-              <div>
-                <small>03 · Personalised Alerts</small>
-                <h3>I Don&apos;t Want to Keep Searching Every Day</h3>
-                <p>
-                  Create a mandate around location, asset class, institution, budget or auction
-                  type. Send your preferences to our team, or see matching published properties in your dashboard.
-                </p>
-              </div>
-              <a href="#alerts">Create Your Mandate →</a>
-            </article>
-
-            <article className="help-card-box">
-              <div>
-                <small>04 · Banks / NBFCs / ARCs / Liquidators</small>
-                <h3>I Need Buyers for an Asset</h3>
-                <p>
-                  Structured asset presentation, buyer discovery, bidder engagement, inspection
-                  coordination, auction connectivity and institutional MIS.
-                </p>
-              </div>
-              <Link href="/liquidate-an-asset">Open Institutional Desk →</Link>
-            </article>
-
-            <article className="help-card-box">
-              <div>
-                <small>05 · Customs Opportunities</small>
-                <h3>I Want to Explore Customs Auction Goods</h3>
-                <p>
-                  Understand Customs lots, MSTC process, inspection, EMD, bidding, compliance,
-                  payment and lifting before participating through the authorised route.
-                </p>
-              </div>
-              <Link href="/customs-auction">Enter Customs Auction →</Link>
-            </article>
-
-            <article className="help-card-box">
-              <div>
-                <small>06 · Companies & Developers</small>
-                <h3>My Company or Project Needs a Buyer, Investor or JV Partner</h3>
-                <p>
-                  For businesses or projects facing capital pressure but still holding
-                  value—explore company sale, project sale, JV, investor induction, asset
-                  monetisation or promoter exit.
-                </p>
-              </div>
-              <Link href="/next-chapter">Explore Next Chapter →</Link>
-            </article>
-          </div>
-
-          <div className="quote-block">
-            “An auction may be one route to value. CityAuction is built around the wider question:
-            what is the right next move for the asset?”
-          </div>
+    <section id="help" className={`${section} bg-[#f8fafb]`} aria-labelledby="services-heading">
+      <div className={container}>
+        <p className={eyebrow}>The right support</p><h2 id="services-heading" className={heading}>What brings you to CityAuction?</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#687480]">Buying, selling or planning your next move—we can help you find the right desk.</p>
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {HOME_SERVICES.map((service) => {
+            const Icon = icons[service.icon];
+            return <article key={service.title} id={"anchor" in service ? service.anchor : undefined} className={`${cardClass} flex flex-col p-6`}>
+              <Icon className="h-6 w-6 text-[#84663c]" /><h3 className="mt-4 text-lg font-semibold tracking-tight">{service.title}</h3><p className="mt-2 flex-1 text-sm leading-relaxed text-[#687480]">{service.description}</p><Link href={service.href} className={`${textLink} mt-4`}>{service.link}<ArrowRight className="h-4 w-4" /></Link>
+            </article>;
+          })}
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* 4. FEATURED OPPORTUNITIES */}
-      <section className="estabizz-section ivory-bg" id="auctions">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Explore live opportunities</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                Start with the Asset You Understand.
-              </h2>
-              <p className="lead-text mt-3">
-                CityAuction should never invent inventory for presentation. These gateways are
-                designed to route visitors into the live auction marketplace.
-              </p>
-            </div>
-          </div>
-
-          <div className="opp-grid-custom">
-            <article className="opp-card-custom">
-              <div className="opp-img-box one" />
-              <div className="opp-body-box">
-                <div className="opp-top-box">
-                  <span className="opp-type-label">Residential & Commercial</span>
-                  <span className="opp-badge-label">Live Marketplace</span>
-                </div>
-                <h3 className="font-serif-heading text-xl font-bold mt-2 text-[#182129]">
-                  Property Auction Opportunities
-                </h3>
-                <p className="text-xs text-[#6f777d] mt-2">
-                  Explore residential, commercial, office, retail and mixed-use auction assets
-                  across supported locations and institutions.
-                </p>
-                <div className="opp-foot-box">
-                  <span className="text-gray-500">Search live inventory</span>
-                  <Link href="/auctions?category=RESIDENTIAL">Explore Properties →</Link>
-                </div>
-              </div>
-            </article>
-
-            <article className="opp-card-custom">
-              <div className="opp-img-box two" />
-              <div className="opp-body-box">
-                <div className="opp-top-box">
-                  <span className="opp-type-label">Land & Development</span>
-                  <span className="opp-badge-label">Live Marketplace</span>
-                </div>
-                <h3 className="font-serif-heading text-xl font-bold mt-2 text-[#182129]">
-                  Land & Development Opportunities
-                </h3>
-                <p className="text-xs text-[#6f777d] mt-2">
-                  Discover plots, land parcels, development sites and larger asset-backed
-                  opportunities suitable for investors and developers.
-                </p>
-                <div className="opp-foot-box">
-                  <span className="text-gray-500">Search live inventory</span>
-                  <Link href="/auctions?category=LAND">Explore Land →</Link>
-                </div>
-              </div>
-            </article>
-
-            <article className="opp-card-custom">
-              <div className="opp-img-box three" />
-              <div className="opp-body-box">
-                <div className="opp-top-box">
-                  <span className="opp-type-label">Industrial & Business</span>
-                  <span className="opp-badge-label">Live Marketplace</span>
-                </div>
-                <h3 className="font-serif-heading text-xl font-bold mt-2 text-[#182129]">
-                  Industrial & Business Assets
-                </h3>
-                <p className="text-xs text-[#6f777d] mt-2">
-                  Factories, warehouses, plant & machinery, industrial land and selected business /
-                  going-concern opportunities.
-                </p>
-                <div className="opp-foot-box">
-                  <span className="text-gray-500">Search live inventory</span>
-                  <Link href="/auctions?category=INDUSTRIAL">Explore Industrial →</Link>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div className="actions-row mt-8">
-            <Link className="btn-pill btn-dark" href="/auctions">
-              View All Auction Opportunities
-            </Link>
-          </div>
+    <section className={section} aria-labelledby="steps-heading">
+      <div className={container}>
+        <p className={eyebrow}>A clear next step</p><h2 id="steps-heading" className={heading}>Find. Evaluate. Move forward.</h2>
+        <div className="mt-8 grid gap-8 md:grid-cols-3">
+          {HOME_STEPS.map((step, index) => <article key={step.title} className="flex items-start gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d9c39c] text-sm font-semibold text-[#84663c]">{index + 1}</span><div><h3 className="text-lg font-semibold">{step.title}</h3><p className="mt-2 text-sm leading-relaxed text-[#687480]">{step.description}</p></div></article>)}
         </div>
-      </section>
+        <div className="mt-8"><Link href="/how-it-works" className={textLink}>See how CityAuction works<ArrowRight className="h-4 w-4" /></Link></div>
+      </div>
+    </section>
 
-      {/* 5. CLOSING SOON */}
-      <section className="estabizz-section white-bg" id="closing-soon">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Time-sensitive opportunities</div>
+    <section className="bg-[#132330] py-10 text-white sm:py-12" aria-labelledby="notice-heading">
+      <div className={`${container} grid items-center gap-6 lg:grid-cols-[1fr_auto]`}>
+        <div className="flex items-start gap-4"><ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-[#d9c39c]" /><div><h2 id="notice-heading" className="text-xl font-semibold tracking-tight">Know what verification means.</h2><p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c3ced6]">We check auction particulars against a published or institution-provided notice. This does not certify title, possession, encumbrances or value. Always complete your own due diligence.</p></div></div>
+        <Link href="/verified-information-policy" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#d9c39c] underline-offset-4 hover:underline">Our verification policy<ArrowRight className="h-4 w-4" /></Link>
+      </div>
+    </section>
+
+    <section id="contact" className={`${section} bg-[#f8fafb]`} aria-labelledby="contact-section-heading">
+      <div className={container}>
+        <div className="mb-7"><p className={eyebrow}>Contact CityAuction</p><h2 id="contact-section-heading" className={heading}>Let’s talk about your next step.</h2><p className="mt-3 text-sm text-[#687480]">For buying, selling or getting expert support.</p></div>
+        <div className="grid overflow-hidden rounded-3xl border border-[#e4e8ec] bg-white shadow-[0_12px_48px_-28px_rgba(24,33,41,.2)] lg:grid-cols-[.85fr_1.15fr]">
+          <aside className="bg-[#132330] p-6 text-white sm:p-8 lg:p-10" aria-label="Contact details">
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#d9c39c]">CityAuction</p><h3 className="mt-3 text-2xl font-semibold tracking-tight">A person to help you move forward.</h3><p className="mt-3 max-w-sm text-sm leading-relaxed text-[#c3ced6]">Auction support, asset sales and business opportunities.</p>
+            <div className="mt-8 space-y-6">
+              <a href="tel:+919825669668" className="flex min-h-11 items-start gap-3 text-sm hover:text-[#d9c39c]"><Phone className="mt-0.5 h-5 w-5 shrink-0 text-[#d9c39c]" /><span><span className="mb-1 block text-xs text-[#aebbc5]">Call us</span>+91 98256 69668</span></a>
+              <a href="mailto:info@estabizz.com" className="flex min-h-11 items-start gap-3 text-sm hover:text-[#d9c39c]"><Mail className="mt-0.5 h-5 w-5 shrink-0 text-[#d9c39c]" /><span className="min-w-0 break-all"><span className="mb-1 block text-xs text-[#aebbc5]">Email us</span>info@estabizz.com</span></a>
+              <div className="flex items-start gap-3 text-sm"><MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#d9c39c]" /><div><p className="mb-1 text-xs text-[#aebbc5]">Visit our office</p><p className="max-w-xs leading-relaxed">Gyan Marg, PDPU Road, Raysan,<br />Gandhinagar, Gujarat.</p></div></div>
             </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                Closing Soon.
-              </h2>
-              <p className="lead-text mt-3">
-                A production feed should surface auctions whose inspection, EMD or bidding
-                deadlines are approaching—without using artificial countdowns or fabricated
-                urgency.
-              </p>
-            </div>
-          </div>
-
-          <div className="why-grid-custom">
-            <article className="why-card-box">
-              <h3>EMD Deadline Approaching</h3>
-              <p>
-                Route buyers directly to live opportunities whose EMD window is nearing closure.
-              </p>
-              <div className="mt-4">
-                <Link className="btn-pill btn-light text-xs" href="/auctions?sort=closing_soon">
-                  View EMD Deadlines
-                </Link>
-              </div>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Inspection Window Closing</h3>
-              <p>
-                Surface assets where physical inspection remains possible but the permitted
-                window is limited.
-              </p>
-              <div className="mt-4">
-                <Link className="btn-pill btn-light text-xs" href="/auctions?sort=date_asc">
-                  View Inspection Deadlines
-                </Link>
-              </div>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Auction Closing Soon</h3>
-              <p>
-                Show live auctions approaching their scheduled close, subject to the auction
-                platform&apos;s extension rules.
-              </p>
-              <div className="mt-4">
-                <Link className="btn-pill btn-light text-xs" href="/auctions?status=CLOSING_SOON">
-                  View Closing Soon
-                </Link>
-              </div>
-            </article>
-          </div>
+            <a href="https://wa.me/919825669668" target="_blank" rel="noopener noreferrer" className="mt-8 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/25 px-5 text-sm font-semibold hover:bg-white/10">Chat on WhatsApp<ArrowRight className="h-4 w-4" /></a>
+            <p className="mt-8 border-t border-white/15 pt-5 text-xs leading-relaxed text-[#aebbc5]">A venture of Estabizz Fintech Private Limited.</p>
+          </aside>
+          <HomeEnquiryForm />
         </div>
-      </section>
-
-      {/* 6. SEARCH BY ASSET TYPE */}
-      <section className="estabizz-section ivory-bg" id="asset-types">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Explore by asset</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                Search the Way Buyers Actually Think.
-              </h2>
-              <p className="lead-text mt-3">
-                Some buyers start with the legal route. Many start with the asset itself.
-              </p>
-            </div>
-          </div>
-
-          <div className="universe-grid-custom">
-            {[
-              { type: "Residential", desc: "Flats, houses, villas and residential projects.", href: "/auctions?category=RESIDENTIAL" },
-              { type: "Commercial", desc: "Offices, retail, commercial premises and mixed-use assets.", href: "/auctions?category=COMMERCIAL" },
-              { type: "Industrial", desc: "Factories, warehouses and industrial premises.", href: "/auctions?category=INDUSTRIAL" },
-              { type: "Land", desc: "Plots, development land and larger land parcels.", href: "/auctions?category=LAND" },
-              { type: "Plant & Machinery", desc: "Industrial equipment, machinery and production assets.", href: "/auctions?category=OTHER" },
-              { type: "Vehicles", desc: "Commercial and other vehicle auction opportunities.", href: "/auctions?category=OTHER" },
-              { type: "Warehouse / Logistics", desc: "Storage, logistics and industrial-use assets.", href: "/auctions?category=INDUSTRIAL" },
-              { type: "Going Concern", desc: "Selected business and enterprise-sale opportunities.", href: "/auctions?category=OTHER" },
-            ].map((item) => (
-              <Link
-                key={item.type}
-                href={item.href}
-                className="help-card-box hover:border-[#b49361] transition-all"
-                style={{ minHeight: "auto" }}
-              >
-                <div>
-                  <small>Asset</small>
-                  <h3 className="text-xl mt-1 text-[#182129]">{item.type}</h3>
-                  <p className="text-xs text-[#6f777d] mt-1">{item.desc}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 7. AUCTION UNIVERSE */}
-      <section className="estabizz-section dark-bg">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Auction universe</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-white">
-                One Marketplace. Multiple Auction Channels.
-              </h2>
-              <p className="lead-text mt-3 text-[#aeb9c1]">
-                CityAuction brings together opportunities arising through enforcement, recovery,
-                insolvency, liquidation and institutional disposal.
-              </p>
-            </div>
-          </div>
-
-          <div className="universe-grid-custom">
-            <article className="universe-card-box">
-              <h3>SARFAESI Auctions</h3>
-              <p>Secured assets offered by eligible lenders under recovery proceedings.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>Bank & NBFC NPA Assets</h3>
-              <p>Residential, commercial, industrial and other secured assets offered for stressed-credit recovery.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>ARC Auctions</h3>
-              <p>Assets offered by Asset Reconstruction Companies as part of recovery or resolution strategies.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>DRT / Recovery Officer</h3>
-              <p>Assets arising through debt-recovery proceedings and Recovery Officer processes.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>NCLT & IBC Opportunities</h3>
-              <p>Assets and businesses arising through insolvency resolution and liquidation processes.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>Liquidation Auctions</h3>
-              <p>Assets offered by Liquidators and other authorised stakeholders.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>Customs Auctions</h3>
-              <p>Goods and cargo offered through authorised Customs auction/e-tender processes.</p>
-            </article>
-            <article className="universe-card-box">
-              <h3>Government & Court Auctions</h3>
-              <p>Selected opportunities arising through government authorities and judicial processes.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      {/* 8. HOW IT WORKS (BUILT FOR BOTH SIDES) */}
-      <section className="estabizz-section white-bg">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">How CityAuction works</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                Built for Both Sides of the Transaction.
-              </h2>
-              <p className="lead-text mt-3">
-                A buyer wants clarity before committing capital. An institution wants the asset
-                to reach people capable of acquiring it. CityAuction supports both journeys.
-              </p>
-            </div>
-          </div>
-
-          <div className="pathway-grid-custom">
-            <article className="pathway-card-box">
-              <small>For Buyers & Investors</small>
-              <h3>Discover → Understand → Evaluate → Participate → Acquire</h3>
-              <p>
-                Find relevant opportunities, understand the notice, assess the asset and access
-                optional professional support before entering the authorised auction process.
-              </p>
-              <div className="flow-pills">
-                <span>Discover</span>
-                <span>Understand</span>
-                <span>Evaluate</span>
-                <span>Prepare</span>
-                <span>Participate</span>
-                <span>Complete</span>
-              </div>
-              <div className="actions-row">
-                <Link className="btn-pill btn-dark text-xs" href="/how-it-works">
-                  See Buyer Journey
-                </Link>
-              </div>
-            </article>
-
-            <article className="pathway-card-box alt-dark">
-              <small>For Institutional Sellers</small>
-              <h3>Onboard → Position → Reach → Engage → Connect → Resolve</h3>
-              <p>
-                Structure the opportunity, improve presentation, reach relevant buyers, manage
-                interest and connect eligible participants to the authorised sale route.
-              </p>
-              <div className="flow-pills">
-                <span>Onboard</span>
-                <span>Position</span>
-                <span>Distribute</span>
-                <span>Engage</span>
-                <span>Qualify</span>
-                <span>Report</span>
-              </div>
-              <div className="actions-row">
-                <Link className="btn-pill btn-gold text-xs" href="/liquidate-an-asset">
-                  See Institutional Journey
-                </Link>
-              </div>
-            </article>
-          </div>
-
-          <div className="quote-block">
-            “An auction notice tells you what is being sold. Understanding tells you whether it
-            deserves your capital.”
-          </div>
-        </div>
-      </section>
-
-      {/* 9. ASSET LIQUIDATION & INSTITUTIONAL SERVICES */}
-      <section className="estabizz-section dark-bg" id="institutions">
-        <div className="estabizz-container spotlight-grid">
-          <div className="spot-copy">
-            <div className="eyebrow-text">Asset liquidation & institutional services</div>
-            <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-white mt-3">
-              Your Asset Deserves More Than Publication. It Deserves the Right Buyer Market.
-            </h2>
-            <p className="text-sm text-[#b8c3ca] leading-relaxed mt-4">
-              CityAuction supports Banks, NBFCs, ARCs, Liquidators, Insolvency Professionals,
-              Financial Institutions, Corporates and asset owners around the authorised sale
-              process.
-            </p>
-            <p className="text-sm text-[#b8c3ca] leading-relaxed mt-3">
-              The objective is not merely more visibility. It is relevant visibility—reaching the
-              buyer universe that can understand and acquire the asset.
-            </p>
-            <div className="flow-pills mt-6">
-              <span>Asset Onboarding</span>
-              <span>Positioning</span>
-              <span>Buyer Discovery</span>
-              <span>Lead Qualification</span>
-              <span>Auction Connectivity</span>
-              <span>Institutional MIS</span>
-            </div>
-            <div className="actions-row mt-6">
-              <Link className="btn-pill btn-gold text-xs" href="/liquidate-an-asset">
-                Liquidate an Asset
-              </Link>
-              <a className="btn-pill btn-ghost text-xs" href="#contact">
-                Speak with Institutional Desk
-              </a>
-            </div>
-          </div>
-
-          <div className="spotlight-cards-grid">
-            <div className="spot-card-box">
-              <strong>Asset Onboarding</strong>Structure asset information, documents and transaction particulars.
-            </div>
-            <div className="spot-card-box">
-              <strong>Asset Presentation</strong>Translate technical information into investor-friendly opportunity profiles.
-            </div>
-            <div className="spot-card-box">
-              <strong>Investor Discovery</strong>Reach relevant businesses, developers, HNIs and strategic buyers.
-            </div>
-            <div className="spot-card-box">
-              <strong>Lead Management</strong>Capture enquiries, inspection requests and bidder intent.
-            </div>
-            <div className="spot-card-box">
-              <strong>Data Room Support</strong>Organise seller-approved information for qualified buyer review.
-            </div>
-            <div className="spot-card-box">
-              <strong>Institutional MIS</strong>Track buyer reach, funnel activity and transaction status.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 10. CITYAUCTION CUSTOMS */}
-      <section className="estabizz-section ivory-bg">
-        <div className="estabizz-container spotlight-grid">
-          <div className="spot-copy">
-            <div className="eyebrow-text">CityAuction Customs</div>
-            <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129] mt-3">
-              Goods Enter the Auction. Prepared Buyers See the Opportunity.
-            </h2>
-            <p className="text-sm text-[#6f777d] leading-relaxed mt-4">
-              Customs auctions require more than finding a low starting price. Buyers need to
-              understand the lot, inspection window, eligibility, compliance, EMD, bidding
-              mechanics, post-bid payment and lifting obligations.
-            </p>
-            <p className="text-sm text-[#6f777d] leading-relaxed mt-3">
-              CityAuction Customs is designed to make those opportunities easier to discover and
-              harder to misunderstand—while the authorised Customs/MSTC process remains the
-              official route for bidding and completion.
-            </p>
-            <div className="actions-row mt-6">
-              <Link className="btn-pill btn-dark text-xs" href="/customs-auction">
-                Explore Customs Auctions
-              </Link>
-            </div>
-          </div>
-
-          <div className="spotlight-cards-grid">
-            <div className="spot-card-box">
-              <strong>Customs Lot Discovery</strong>Search by port, goods category, auction stage and opportunity type.
-            </div>
-            <div className="spot-card-box">
-              <strong>MSTC Process Guidance</strong>Understand registration, EMD, bidding and post-bid steps.
-            </div>
-            <div className="spot-card-box">
-              <strong>Inspection Readiness</strong>Know what to verify before bidding on “as-is-where-is” goods.
-            </div>
-            <div className="spot-card-box">
-              <strong>Compliance Intelligence</strong>Identify product-specific approvals, NOCs or restrictions that may matter.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 11. NEXT CHAPTER */}
-      <section className="estabizz-section white-bg">
-        <div className="estabizz-container spotlight-grid">
-          <div className="spot-copy">
-            <div className="eyebrow-text">CityAuction Next Chapter</div>
-            <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129] mt-3">
-              Some Assets Need a Buyer.<br />
-              Some Businesses Need a Next Chapter.
-            </h2>
-            <p className="text-sm text-[#6f777d] leading-relaxed mt-4">
-              A project can stop because capital stopped. A business can face financial pressure
-              while still owning substantial value.
-            </p>
-            <p className="text-sm text-[#6f777d] leading-relaxed mt-3">
-              Sometimes the answer is not another auction. It is the right investor, partner,
-              developer or new owner.
-            </p>
-            <div className="quote-block">
-              “We do not begin with what went wrong. We begin with what still holds value.”
-            </div>
-            <div className="actions-row mt-6">
-              <Link className="btn-pill btn-dark text-xs" href="/next-chapter">
-                Explore Next Chapter
-              </Link>
-            </div>
-          </div>
-
-          <div className="spotlight-cards-grid">
-            <div className="spot-card-box">
-              <strong>For Companies</strong>Business sale, investor induction, asset monetisation, strategic partner or promoter exit.
-            </div>
-            <div className="spot-card-box">
-              <strong>For Developers</strong>Project sale, JV, development partner, completion capital or sponsor transition.
-            </div>
-            <div className="spot-card-box">
-              <strong>For Investors</strong>Strategic acquisitions, land-backed opportunities and special-situation investments.
-            </div>
-            <div className="spot-card-box">
-              <strong>Private Mandates</strong>Confidential or NDA-led outreach where the situation should not be publicly marketed.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 12. PERSONALISED ALERTS */}
-      <section className="estabizz-section ivory-bg" id="alerts">
-        <div className="estabizz-container">
-          <div className="alerts-box-custom">
-            <div className="alerts-copy-box">
-              <div className="eyebrow-text">Personalised auction alerts</div>
-              <h3 className="font-serif-heading text-2xl sm:text-4xl font-semibold text-white mt-3">
-                Share What You Are Looking For.
-              </h3>
-              <p className="text-xs text-[#b7c1c8] leading-relaxed mt-3">
-                Property. Industrial asset. Customs lot. Business. Project. Tell us the mandate—not
-                just the search terms. Our team can review your enquiry. Automatic WhatsApp and email
-                opportunity alerts are not available yet.
-              </p>
-              <div className="quote-block text-sm">
-                “Clear preferences help our team understand the opportunities you need.”
-              </div>
-            </div>
-
-            <div className="alerts-form-box">
-              <h3 className="font-serif-heading text-2xl font-semibold text-[#182129]">
-                Build Your Opportunity Mandate
-              </h3>
-              <div className="alert-tags-grid">
-                <div className="alert-tag-item">City / Location</div>
-                <div className="alert-tag-item">Asset Category</div>
-                <div className="alert-tag-item">Investment Budget</div>
-                <div className="alert-tag-item">Bank / Institution</div>
-                <div className="alert-tag-item">Auction Type</div>
-                <div className="alert-tag-item">Reserve Price Range</div>
-                <div className="alert-tag-item">Customs Goods Category</div>
-                <div className="alert-tag-item">Company / Project Opportunity</div>
-              </div>
-              <div className="actions-row mt-6">
-                <a className="btn-pill btn-dark text-xs" href="#contact">
-                  Send buying preferences
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 13. WHY CITYAUCTION */}
-      <section className="estabizz-section white-bg">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Why CityAuction</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                The Market Has Information. What It Often Lacks Is Connection.
-              </h2>
-              <p className="lead-text mt-3">
-                CityAuction is being built to connect information, assets, buyers, institutions and
-                strategic capital—without pretending that one portal or one listing can replace
-                judgement, due diligence or the authorised transaction process.
-              </p>
-            </div>
-          </div>
-
-          <div className="why-grid-custom">
-            <article className="why-card-box">
-              <h3>Opportunity Over Distress</h3>
-              <p>
-                An asset may have entered the market through recovery, liquidation or financial
-                pressure. Its future value is defined by what the next owner can do with it.
-              </p>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Clarity Over Noise</h3>
-              <p>
-                More listings do not automatically create better decisions. We focus on
-                structuring and explaining the information that matters.
-              </p>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Knowledge Before Participation</h3>
-              <p>
-                Reserve price alone should never drive an acquisition. Title, possession, dues,
-                condition, compliance and transaction terms matter.
-              </p>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Relevant Reach Over Mere Visibility</h3>
-              <p>
-                For sellers, the objective is to reach people capable of acquiring the asset—not
-                simply more people.
-              </p>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Defined Verification</h3>
-              <p>
-                <span className="verified-info-span font-semibold text-emerald-800">
-                  Verified Auction Information{" "}
-                  <span className="tip-icon" tabIndex={0} aria-label="Verification explanation">
-                    i
-                    <span>
-                      Key auction particulars have been cross-checked against an
-                      institution-provided or published auction notice. This does not
-                      independently certify title, possession, encumbrances, valuation or physical
-                      condition.
-                    </span>
-                  </span>
-                </span>{" "}
-                means source-level verification—not automatic certification of title, possession or
-                market value.
-              </p>
-            </article>
-
-            <article className="why-card-box">
-              <h3>Human Judgement Remains Central</h3>
-              <p>
-                Technology can reduce friction and organise information. The investment or sale
-                decision remains with the relevant parties.
-              </p>
-            </article>
-          </div>
-
-          <div className="actions-row mt-8">
-            <Link className="btn-pill btn-dark" href="/about">
-              About CityAuction
-            </Link>
-            <Link className="btn-pill btn-light" href="/how-it-works">
-              How CityAuction Works
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 14. STAY UPDATED */}
-      <section className="estabizz-section dark-bg" id="subscribe">
-        <div className="estabizz-container">
-          <SubscribeBox variant="section" source="homepage" />
-        </div>
-      </section>
-
-      {/* 15. CONTACT CITYAUCTION */}
-      <section className="estabizz-section ivory-bg" id="contact">
-        <div className="estabizz-container">
-          <div className="section-head-grid">
-            <div>
-              <div className="eyebrow-text">Contact CityAuction</div>
-            </div>
-            <div>
-              <h2 className="font-serif-heading text-3xl sm:text-5xl font-semibold tracking-tight text-[#182129]">
-                Tell Us What You Are Trying to Find, Sell, Resolve or Take Forward.
-              </h2>
-              <p className="lead-text mt-3">
-                Whether you are an investor, institutional seller, developer, Liquidator, company
-                promoter or first-time auction buyer, start with the situation. We will route the
-                enquiry to the relevant CityAuction desk.
-              </p>
-            </div>
-          </div>
-
-          <div className="contact-wrap-box">
-            <div className="contact-info-panel">
-              <div className="eyebrow-text">CityAuction</div>
-              <h2 className="font-serif-heading text-2xl sm:text-3xl font-semibold mt-3 text-white">
-                A venture of Estabizz Fintech Private Limited
-              </h2>
-              <p className="text-xs text-[#b8c3ca] leading-relaxed mt-3">
-                Auction discovery, investor support, institutional asset liquidation, Customs
-                auction intelligence and strategic opportunity pathways.
-              </p>
-
-              <div className="contact-items-list text-xs">
-                <div className="contact-item-row">
-                  <small>Phone</small>
-                  <strong>
-                    <a href="tel:+919825669668" className="hover:underline">
-                      +91 98256 69668
-                    </a>
-                  </strong>
-                </div>
-
-                <div className="contact-item-row">
-                  <small>Email</small>
-                  <strong>
-                    <a href="mailto:info@estabizz.com" className="hover:underline">
-                      info@estabizz.com
-                    </a>
-                  </strong>
-                </div>
-
-                <div className="contact-item-row">
-                  <small>Office</small>
-                  <strong className="leading-snug">
-                    Gyan Marg, PDPU Road, Raysan, Gandhinagar, Gujarat – India
-                  </strong>
-                </div>
-
-                <div className="contact-item-row">
-                  <small>What can we discuss?</small>
-                  <strong className="leading-snug">
-                    Auction Opportunity · Due Diligence · Liquidation · Customs Auction · Company /
-                    Project Next Chapter
-                  </strong>
-                </div>
-              </div>
-
-              <div className="actions-row mt-6">
-                <a className="btn-pill btn-gold text-xs" href="tel:+919825669668">
-                  Call CityAuction
-                </a>
-                <a
-                  className="btn-pill btn-ghost text-xs"
-                  href="https://wa.me/919825669668"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  WhatsApp
-                </a>
-                <a
-                  className="btn-pill btn-ghost text-xs"
-                  href="mailto:info@estabizz.com?subject=Book%20a%20CityAuction%20Discussion"
-                >
-                  Book a Discussion
-                </a>
-              </div>
-            </div>
-
-            {/* Live Enquiry Form */}
-            <form className="contact-form-panel" onSubmit={handleContactSubmit}>
-              <div className="eyebrow-text">Start a conversation</div>
-              <h3 className="font-serif-heading text-2xl font-semibold mt-2 text-[#182129]">
-                How Can CityAuction Help?
-              </h3>
-              <p className="text-xs text-[#6f777d] mt-1">
-                Choose the area closest to your requirement. All enquiries are routed securely.
-              </p>
-
-              {contactStatus && (
-                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>{contactStatus}</span>
-                </div>
-              )}
-
-              <div className="contact-inputs-grid">
-                <div className="field-custom">
-                  <label htmlFor="contactName">Name</label>
-                  <input
-                    id="contactName"
-                    required
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Your full name"
-                  />
-                </div>
-
-                <div className="field-custom">
-                  <label htmlFor="contactMobile">Mobile</label>
-                  <input
-                    id="contactMobile"
-                    inputMode="tel"
-                    required
-                    value={contactMobile}
-                    onChange={(e) => setContactMobile(e.target.value)}
-                    placeholder="+91 98765 43210"
-                  />
-                </div>
-
-                <div className="field-custom">
-                  <label htmlFor="contactEmail">Email</label>
-                  <input
-                    id="contactEmail"
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="name@company.com"
-                  />
-                </div>
-
-                <div className="field-custom">
-                  <label htmlFor="enquiryType">I Need Help With</label>
-                  <select
-                    id="enquiryType"
-                    required
-                    value={enquiryType}
-                    onChange={(e) => setEnquiryType(e.target.value)}
-                  >
-                    <option value="">Select requirement</option>
-                    <option value="Buying / Investing in Auction Asset">Buying / Investing in Auction Asset</option>
-                    <option value="Due Diligence / Investor Support">Due Diligence / Investor Support</option>
-                    <option value="Personalised Auction Alert">Personalised Auction Alert</option>
-                    <option value="Liquidating an Asset">Liquidating an Asset</option>
-                    <option value="Customs Auction">Customs Auction</option>
-                    <option value="Company Sale / Investor / Promoter Exit">Company Sale / Investor / Promoter Exit</option>
-                    <option value="Developer Project Sale / JV / Investor">Developer Project Sale / JV / Investor</option>
-                    <option value="Institutional Partnership">Institutional Partnership</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="field-custom full">
-                  <label htmlFor="contactMessage">Tell Us the Situation</label>
-                  <textarea
-                    id="contactMessage"
-                    value={contactMessage}
-                    onChange={(e) => setContactMessage(e.target.value)}
-                    placeholder="Tell us what you are looking for, what asset/project/company is involved, location and what outcome you want to explore."
-                  />
-                </div>
-              </div>
-
-              <Honeypot />
-              {contactError && <SubmitErrorNotice message={contactError} />}
-
-              <button
-                className="btn-pill btn-dark w-full mt-4 flex items-center justify-center gap-2"
-                type="submit"
-                disabled={contactLoading}
-              >
-                {contactLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Submitting Enquiry...
-                  </>
-                ) : (
-                  <>
-                    Submit Enquiry
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-[#687480]"><p>Want to know more about CityAuction?</p><Link href="/about" className={textLink}>Meet CityAuction<ArrowRight className="h-4 w-4" /></Link></div>
+      </div>
+    </section>
+  </div>;
 }

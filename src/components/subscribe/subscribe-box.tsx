@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Honeypot, SubmitErrorNotice, postLead, readHoneypot } from "@/components/forms/lead-submit";
@@ -12,9 +12,9 @@ type SubscribeBoxProps = {
   source: "footer" | "homepage";
 };
 
-const HEADING = "Get new auction opportunities and city updates";
+const HEADING = "Stay informed with CityAuction";
 const BLURB =
-  "New bank and institutional auctions, plus city-level updates from CityAuction, sent to your inbox. Occasional emails only.";
+  "Sign up for occasional news and auction updates.";
 
 // Both variants sit on a dark ground, so the inputs share one dark style.
 // Border colours need "!": globals.css sets border-color on * outside Tailwind's layers.
@@ -30,9 +30,12 @@ export function SubscribeBox({ variant, source }: SubscribeBoxProps) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const pending = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (pending.current) return;
+    pending.current = true;
     setLoading(true);
     setError(null);
 
@@ -44,6 +47,7 @@ export function SubscribeBox({ variant, source }: SubscribeBoxProps) {
     });
 
     setLoading(false);
+    pending.current = false;
     if (result.ok) {
       setDone(result.message || "You're subscribed.");
       setEmail("");

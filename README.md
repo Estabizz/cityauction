@@ -148,3 +148,22 @@ Hostinger build constraint.
 ## License
 
 Proprietary and confidential. All rights reserved.
+
+## Homepage maintenance
+
+The homepage is a server component in `src/app/(public)/page.tsx`; only the search
+and enquiry forms hydrate in the browser. Service/category copy and destinations
+are in `src/content/homepage.ts`. Search uses the shared marketplace categories,
+channels and buyer budget ranges through `src/lib/home-search.ts`.
+
+`src/components/home/home-enquiry.tsx` owns the enquiry form, with short labels,
+inline validation and a full-width message field. It keeps the existing homepage
+lead source and subject values so admin reports remain consistent. The newsletter
+appears once, in the footer. No inventory totals or response-time commitments
+are hard-coded into the homepage.
+
+The hero at `public/images/cityauction-architecture.webp` is generated illustrative
+architecture, not an auction listing photograph. It is served locally through
+Next Image; the original generation is kept separately. The admin sidebar is
+fixed to the viewport, with only its navigation scrolling; the mobile drawer
+uses the common focus/scroll-lock helper.

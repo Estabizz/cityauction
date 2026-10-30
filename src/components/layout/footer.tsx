@@ -4,7 +4,7 @@ import { FooterAccountLink } from "@/components/account/footer-account-links";
 
 export function Footer() {
   return (
-    <footer className="estabizz-footer">
+    <footer id="subscribe" className="estabizz-footer">
       <div className="estabizz-container">
         <SubscribeBox variant="footer" source="footer" />
 
