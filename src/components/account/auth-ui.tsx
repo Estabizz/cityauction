@@ -246,11 +246,11 @@ export function CheckboxField({
   );
 }
 
-export function SubmitButton({ loading, children, loadingText }: { loading: boolean; children: React.ReactNode; loadingText: string }) {
+export function SubmitButton({ loading, children, loadingText, disabled = false }: { loading: boolean; children: React.ReactNode; loadingText: string; disabled?: boolean }) {
   return (
     <button
       type="submit"
-      disabled={loading}
+      disabled={loading || disabled}
       className={`w-full ${primaryButtonClass}`}
     >
       {loading ? (

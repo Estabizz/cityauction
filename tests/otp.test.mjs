@@ -92,7 +92,7 @@ function otpSetup({ configured = true, deliver = true, active = true, verified =
     verifyPassword: async (password) => password === "correct-password",
     signToken: async (payload) => { issued.push(payload); return "otp-session"; },
     COOKIE_NAME: "cityauction_auth_token", isAdmin: () => false,
-    getCurrentUser: async () => ({ userId: user.id }),
+    getCurrentUser: async () => ({ userId: user.id, sv: user.sessionVersion }),
   };
   const mocks = { "./db": { db }, "@/lib/db": { db }, "./email": mail, "@/lib/auth": auth };
   const otp = loadSource("src/lib/otp.ts", mocks, globals);
@@ -374,8 +374,9 @@ test("a code for another user's email-link flow cannot change this account", asy
 
 test("ordinary profile edits cannot change the sign-in email without OTP", async () => {
   const state = otpSetup();
+  state.mocks["@/lib/same-origin"] = { isSameOriginRequest: () => true };
   const route = loadSource("src/app/api/user/profile/route.ts", state.mocks, globals);
-  const response = await route.PATCH(request({ fullName: "Buyer", email: "new@example.test", buyerCategory: "", city: "Surat", state: "Gujarat" }));
+  const response = await route.PATCH(request({ fullName: "Buyer", email: "new@example.test", accountType: "INDIVIDUAL", updatedAt: "2026-10-01T00:00:00.000Z", buyerCategory: "", city: "Surat", state: "Gujarat" }));
   assert.equal(response.status, 400);
   assert.equal(state.user.email, EMAIL);
 });

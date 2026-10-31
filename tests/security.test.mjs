@@ -68,7 +68,7 @@ function passwordHandlers({ passwordValid = true, resetCount = 1 } = {}) {
   const writes = [];
   const issued = [];
   const db = { user: {
-    findUnique: async () => ({ id: account.id, isActive: true, deletedAt: null, passwordHash: "old-hash" }),
+    findUnique: async (query) => query.include ? account : ({ id: account.id, isActive: true, deletedAt: null, passwordHash: "old-hash", sessionVersion: account.sessionVersion, email: account.email }),
     update: async (query) => {
       writes.push(query);
       account.sessionVersion += query.data.sessionVersion.increment;
@@ -80,10 +80,13 @@ function passwordHandlers({ passwordValid = true, resetCount = 1 } = {}) {
       return { count: resetCount };
     },
   } };
+  db.emailOtpChallenge = { updateMany: async () => ({ count: 1 }) };
+  db.$transaction = async (work) => work(db);
   const mocks = {
+    "@/lib/same-origin": { isSameOriginRequest: () => true },
     "@/lib/db": { db },
     "@/lib/auth": {
-      getCurrentUser: async () => ({ userId: account.id }),
+      getCurrentUser: async () => ({ userId: account.id, sv: 3 }),
       hashPassword: async () => "new-hash",
       verifyPassword: async () => passwordValid,
       COOKIE_NAME: "cityauction_auth_token", isAdmin: () => false,
@@ -98,7 +101,7 @@ const jsonRequest = (body) => ({ json: async () => body });
 test("password change revokes older sessions and refreshes the current device", async () => {
   const state = passwordHandlers();
   const { POST } = loadSource("src/app/api/user/password/route.ts", state.mocks);
-  const response = await POST(jsonRequest({ currentPassword: "old-password", newPassword: "new-password" }));
+  const response = await POST(jsonRequest({ currentPassword: "old-password", newPassword: "new-password", confirmPassword: "new-password" }));
   assert.equal(response.status, 200);
   assert.equal(state.writes.length, 1);
   assert.equal(state.writes[0].data.sessionVersion.increment, 1);
@@ -110,7 +113,7 @@ test("password change revokes older sessions and refreshes the current device", 
 test("incorrect current password does not write or issue a new session", async () => {
   const state = passwordHandlers({ passwordValid: false });
   const { POST } = loadSource("src/app/api/user/password/route.ts", state.mocks);
-  const response = await POST(jsonRequest({ currentPassword: "wrong-password", newPassword: "new-password" }));
+  const response = await POST(jsonRequest({ currentPassword: "wrong-password", newPassword: "new-password", confirmPassword: "new-password" }));
   assert.equal(response.status, 400);
   assert.equal(state.writes.length, 0);
   assert.equal(state.issued.length, 0);
@@ -138,4 +141,27 @@ test("expired or already used reset link does not issue a session", async () => 
   const response = await POST(jsonRequest({ token: "a".repeat(64), password: "new-password" }));
   assert.equal(response.status, 400);
   assert.equal(state.issued.length, 0);
+});
+
+test("a concurrent password reset cannot be overwritten by an earlier change-password attempt", async () => {
+  const state = passwordHandlers({ resetCount: 0 });
+  const { POST } = loadSource("src/app/api/user/password/route.ts", state.mocks);
+  const response = await POST(jsonRequest({ currentPassword: "old-password", newPassword: "different-password", confirmPassword: "different-password" }));
+  assert.equal(response.status, 409); assert.equal(state.issued.length, 0);
+  assert.equal(state.writes[0].where.passwordHash, "old-hash"); assert.equal(state.writes[0].where.sessionVersion, 3);
+});
+
+test("repeated incorrect password changes are rate limited", async () => {
+  const state = passwordHandlers({ passwordValid: false });
+  const { POST } = loadSource("src/app/api/user/password/route.ts", state.mocks);
+  for (let attempt = 0; attempt < 10; attempt++) assert.equal((await POST(jsonRequest({ currentPassword: "wrong-password", newPassword: "different-password", confirmPassword: "different-password" }))).status, 400);
+  assert.equal((await POST(jsonRequest({ currentPassword: "wrong-password", newPassword: "different-password", confirmPassword: "different-password" }))).status, 429);
+  assert.equal(state.writes.length, 0);
+});
+
+test("a password change cannot resume a session revoked after the first authentication check", async () => {
+  const state = passwordHandlers(); state.mocks["@/lib/auth"].getCurrentUser = async () => ({ userId: "buyer-1", sv: 2 });
+  const { POST } = loadSource("src/app/api/user/password/route.ts", state.mocks);
+  const response = await POST(jsonRequest({ currentPassword: "old-password", newPassword: "different-password", confirmPassword: "different-password" }));
+  assert.equal(response.status, 401); assert.equal(state.writes.length, 0); assert.equal(state.issued.length, 0);
 });
