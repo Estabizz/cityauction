@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
     // Hostinger's build server reports 64 CPUs but caps threads per account, so
     // the default (CPUs - 1 = 63 workers) crashes with "can't spawn worker thread".
     cpus: 2,
+    // Keep a full 10 MB PDF plus multipart framing through the admin proxy.
+    proxyClientMaxBodySize: 11 * 1024 * 1024,
   },
   images: {
     remotePatterns: [

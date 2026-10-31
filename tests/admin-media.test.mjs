@@ -50,7 +50,7 @@ test("media serving checks publication or a fresh admin session before reading a
     const response = await GET(null, { params: Promise.resolve({ key }) });
     assert.equal(response.status, expected); assert.equal(reads, expected === 200 ? 1 : 0);
     assert.match(JSON.stringify(query), /"isPublic":true/); assert.match(JSON.stringify(query), /sourceVerifiedAt/);
-    if (response.status === 200) { assert.equal(response.headers.get("x-content-type-options"), "nosniff"); assert.equal(response.headers.get("cache-control"), "private, no-store"); }
+    assert.equal(response.headers.get("x-content-type-options"), "nosniff"); assert.equal(response.headers.get("cache-control"), "private, no-store");
   }
 });
 test("upload endpoints refuse non-admins and cross-origin writes before parsing file bytes", async () => {
