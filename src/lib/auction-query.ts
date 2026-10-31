@@ -22,6 +22,11 @@ export function locationWithin(match: Prisma.LocationWhereInput): Prisma.Locatio
 
 export function auctionWhere(filters: ValidAuctionFilters, now = new Date()): Prisma.AuctionWhereInput {
   const and: Prisma.AuctionWhereInput[] = [publicAuctionWhere(now)];
+  // Ending soon excludes historical and cancelled notices rather than sorting
+  // already-ended auctions to the top of an actionable search.
+  if (filters.sort === "closing_soon") and.push({
+    endDateTime: { gt: now }, status: { in: ["UPCOMING", "LIVE", "CLOSING_SOON"] },
+  });
   if (filters.status) and.push({ status: filters.status });
   if (filters.auctionType) and.push({ type: filters.auctionType });
   if (filters.category) and.push({ property: { category: { type: filters.category } } });

@@ -42,11 +42,11 @@ export const BUDGET_RANGES = [
 ] as const;
 
 export const SORT_OPTIONS = [
-  { value: 'date_asc', label: 'Auction Date (Soonest)' },
+  { value: 'date_asc', label: 'Auction date: earliest first' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
   { value: 'newest', label: 'Newly Added' },
-  { value: 'closing_soon', label: 'Closing Soon' },
+  { value: 'closing_soon', label: 'Ending soon (open auctions)' },
 ] as const;
 
 export const ITEMS_PER_PAGE = 20;

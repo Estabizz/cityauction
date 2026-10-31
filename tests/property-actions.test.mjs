@@ -124,6 +124,7 @@ test("a property card never nests the save button inside the property link", () 
   });
   const html = renderToStaticMarkup(React.createElement(AuctionCard, { auction: { id: "property-a", title: "Example property", reservePrice: 100000, emd: 10000, startDateTime: "2026-12-01T00:00:00Z", submissionDeadline: "2026-11-20T00:00:00Z", city: "Surat", state: "Gujarat" } }));
   assert.match(html, /^<article/);
-  assert.ok(html.indexOf("</a>") < html.indexOf("<button"));
+  for (const link of html.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)) assert.doesNotMatch(link[1], /<button\b/);
+  assert.match(html, /<button/);
   assert.match(html, /View property: Example property/);
 });

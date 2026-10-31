@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useId } from "react";
 import { createPortal } from "react-dom";
 import { activateDialog } from "@/lib/dialog-focus";
-import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { auctionFilterLabel, auctionSearchHref, removeAuctionFilter } from "@/lib/auction-discovery-ui";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -27,17 +29,21 @@ interface AuctionResultsClientProps {
     hasPrev: boolean;
   };
   activeFilters: Record<string, string | undefined>;
+  unavailable?: boolean;
 }
 
 export function AuctionResultsClient({
   auctions,
   pagination,
   activeFilters,
+  unavailable = false,
 }: AuctionResultsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const mobileFormId = useId();
   const filterPanel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!isMobileFiltersOpen || !filterPanel.current) return;
@@ -50,20 +56,15 @@ export function AuctionResultsClient({
 
   // Helper to remove an active filter chip
   const removeFilter = (key: string) => {
-    const params = new URLSearchParams(window.location.search);
-    params.delete(key);
-    if (key === "type" || key === "auctionType") { params.delete("type"); params.delete("auctionType"); }
-    if (key === "keyword" || key === "q") { params.delete("keyword"); params.delete("q"); }
-    if (key === "state") { params.delete("city"); params.delete("district"); }
-    params.set("page", "1");
-    router.push(`${pathname}?${params.toString()}`);
+    const params = removeAuctionFilter(searchParams.toString(), key);
+    router.push(auctionSearchHref(pathname, params), { scroll: false });
   };
 
   // Helper for pagination navigation
   const goToPage = (page: number) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
     params.set("page", page.toString());
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(auctionSearchHref(pathname, params));
   };
 
   // Active filter keys to show as chips
@@ -73,6 +74,7 @@ export function AuctionResultsClient({
 
   return (
     <>
+      <h2 className="sr-only">Auction results</h2>
       {/* Active Filter Chips */}
       {activeChips.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-4 bg-white p-3 rounded-xl border border-border">
@@ -84,13 +86,12 @@ export function AuctionResultsClient({
               key={k}
               className="inline-flex max-w-full min-w-0 items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-primary-50 text-primary border border-primary-100 font-medium"
             >
-              <span className="capitalize">{k}:</span>
-              <strong className="min-w-0 break-all">{v}</strong>
+              <span className="min-w-0 break-words">{auctionFilterLabel(k, v!)}</span>
               <button
                 type="button"
                 onClick={() => removeFilter(k)}
                 className="flex h-11 w-11 shrink-0 items-center justify-center hover:text-primary-800 transition-colors cursor-pointer"
-                aria-label={`Remove filter ${k}`}
+                aria-label={`Remove ${auctionFilterLabel(k, v!)}`}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -106,37 +107,48 @@ export function AuctionResultsClient({
         </div>
       )}
 
+      {!unavailable && <p role="status" aria-live="polite" className="sr-only">{pagination.total} auction notices found. Page {pagination.page} of {pagination.totalPages}.</p>}
       {/* Sort Bar */}
       <AuctionSortBar
         totalCount={pagination.total}
         currentCount={auctions.length}
+        page={pagination.page}
+        limit={pagination.limit}
+        activeFilterCount={activeChips.length}
+        unavailable={unavailable}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onOpenMobileFilters={() => setIsMobileFiltersOpen(true)}
       />
 
       {/* Empty State */}
-      {auctions.length === 0 ? (
-        <div className="bg-white rounded-xl border border-border p-12 text-center shadow-sm">
+      {unavailable ? (
+        <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-10 text-center">
+          <h2 className="text-lg font-semibold text-[#182129]">Auction listings couldn’t be loaded</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#46525d]">Please try again. Your search filters are still here.</p>
+          <button type="button" onClick={() => router.refresh()} className="mt-5 min-h-11 rounded-xl bg-[#132330] px-5 py-3 text-sm font-semibold text-white">Try again</button>
+          <Link href="/contact" className="ml-4 inline-flex min-h-11 items-center text-sm font-semibold text-[#84663c] underline">Contact team</Link>
+        </div>
+      ) : auctions.length === 0 ? (
+        <div role="status" className="bg-white rounded-2xl border border-border px-5 py-10 sm:p-12 text-center shadow-sm">
           <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
             <SearchX className="h-8 w-8" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-1">
-            No published auction notices found
+            {activeChips.length ? "No auctions match your filters" : "No auction notices available yet"}
           </h3>
           <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
-            No published notices match your current search. Try
-            adjusting your budget, location, or clearing some filters.
+            {activeChips.length ? "Try a wider budget, another location or fewer filters." : "Published, source-checked notices will appear here when available. Share your requirements with our team in the meantime."}
           </p>
-          <button
+          {activeChips.length > 0 && <button
             type="button"
             onClick={() => router.push(pathname)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-700 transition-colors cursor-pointer"
           >
-            Reset All Filters
-          </button>
+            Clear filters
+          </button>}
           <p className="mt-4 text-sm text-gray-600">
-            Need help finding a property? <a href="/contact" className="font-semibold text-primary underline">Send your requirements</a>.
+            Need help finding a property? <Link href="/contact" className="font-semibold text-primary underline">Send your requirements</Link>.
           </p>
         </div>
       ) : (
@@ -144,7 +156,7 @@ export function AuctionResultsClient({
         <div
           className={
             viewMode === "grid"
-              ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+              ? "grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5"
               : "flex flex-col gap-4"
           }
         >
@@ -159,7 +171,7 @@ export function AuctionResultsClient({
       )}
 
       {/* Pagination Controls */}
-      {pagination.totalPages > 1 && (
+      {!unavailable && pagination.totalPages > 1 && (
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white rounded-xl border border-border p-4 shadow-sm">
           <div className="text-xs text-gray-500">
             Page <strong className="text-gray-900">{pagination.page}</strong> of{" "}
@@ -242,17 +254,10 @@ export function AuctionResultsClient({
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <AuctionFilters />
+              <AuctionFilters formId={mobileFormId} onApply={() => setIsMobileFiltersOpen(false)} />
             </div>
-
-            <div className="shrink-0 pt-4 border-t border-border mt-4 pb-[env(safe-area-inset-bottom)]">
-              <button
-                type="button"
-                onClick={() => setIsMobileFiltersOpen(false)}
-                className="min-h-11 w-full py-2.5 bg-primary text-white font-semibold rounded-lg text-sm"
-              >
-                Show Results
-              </button>
+            <div className="shrink-0 border-t border-border pt-3 pb-[env(safe-area-inset-bottom)]">
+              <button type="submit" form={mobileFormId} className="min-h-11 w-full rounded-xl bg-[#132330] px-4 py-3 text-sm font-semibold text-white">Apply filters</button>
             </div>
           </div>
         </div>, document.body

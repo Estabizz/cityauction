@@ -325,3 +325,16 @@ test("OTP login returns the buyer to their listing and blocks external redirects
     assert.equal((await response.json()).redirectTo, expected);
   }
 });
+
+test("ending-soon searches exclude expired, closed and cancelled notices", async () => {
+  const rows = [
+    fixture("upcoming"),
+    fixture("expired", { endDateTime: date("2020-01-01") }),
+    fixture("closed", { status: "CLOSED" }),
+    fixture("cancelled", { status: "CANCELLED" }),
+    fixture("sold", { status: "SOLD" }),
+  ];
+  assert.deepEqual(ids(await setup(rows).service.getAuctions({ sort: "closing_soon" })), ["upcoming"]);
+  assert.equal((await setup(rows).service.getAuctions({ sort: "closing_soon", status: "CLOSED" })).data.length, 0);
+  assert.deepEqual(ids(await setup(rows).service.getAuctions({ status: "CLOSED" })), ["closed"]);
+});

@@ -8,6 +8,10 @@ import type { ViewMode } from "@/types";
 interface AuctionSortBarProps {
   totalCount: number;
   currentCount: number;
+  page: number;
+  limit: number;
+  activeFilterCount: number;
+  unavailable?: boolean;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   onOpenMobileFilters: () => void;
@@ -16,6 +20,7 @@ interface AuctionSortBarProps {
 export function AuctionSortBar({
   totalCount,
   currentCount,
+  page, limit, activeFilterCount, unavailable = false,
   viewMode,
   onViewModeChange,
   onOpenMobileFilters,
@@ -37,10 +42,10 @@ export function AuctionSortBar({
     <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col sm:flex-row flex-wrap items-center justify-between gap-3 mb-6">
       {/* Result stats */}
       <div className="text-sm text-gray-600 flex items-center gap-2">
-        <span>
-          Showing <strong className="text-gray-900 font-semibold">{currentCount}</strong> of{" "}
+        {unavailable ? <span>Listings temporarily unavailable</span> : <span>
+          Showing <strong className="text-gray-900 font-semibold">{currentCount ? `${(page - 1) * limit + 1}–${(page - 1) * limit + currentCount}` : "0"}</strong> of{" "}
           <strong className="text-gray-900 font-semibold">{totalCount}</strong> auction properties
-        </span>
+        </span>}
       </div>
 
       {/* Controls */}
@@ -48,10 +53,12 @@ export function AuctionSortBar({
         {/* Mobile Filter Button */}
         <button
           onClick={onOpenMobileFilters}
+          type="button"
+          aria-haspopup="dialog"
           className="lg:hidden flex min-h-11 shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
         >
           <SlidersHorizontal className="h-4 w-4" />
-          Filters
+          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
         </button>
 
         <div className="flex min-w-0 flex-1 sm:flex-none items-center gap-2">

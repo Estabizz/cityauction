@@ -1,406 +1,90 @@
 "use client";
 
+import { useId, useState, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useCallback, useState, useId } from "react";
+import { z } from "zod";
 import { CITY_LIST } from "@/content/cities/list";
-import {
-  RotateCcw,
-  SlidersHorizontal,
-  ChevronDown,
-  ChevronUp,
-  Building2,
-  MapPin,
-  IndianRupee,
-  Calendar,
-  Layers,
-  ShieldCheck,
-} from "lucide-react";
-import {
-  PROPERTY_CATEGORIES,
-  AUCTION_TYPES,
-  AUCTION_STATUSES,
-  POSSESSION_STATUSES,
-  INDIAN_STATES,
-  BUDGET_RANGES,
-} from "@/lib/constants";
+import { PROPERTY_CATEGORIES, AUCTION_TYPES, AUCTION_STATUSES, POSSESSION_STATUSES, INDIAN_STATES, BUDGET_RANGES } from "@/lib/constants";
+import { applyAuctionFilters, auctionSearchHref } from "@/lib/auction-discovery-ui";
 
-interface FilterSectionProps {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
+const fieldClass = "mt-1 min-h-11 w-full min-w-0 rounded-xl border border-[#dce2e7] bg-white px-3 py-2 text-sm text-[#182129] focus:outline-none focus:ring-2 focus:ring-[#b59461]";
+const fields = ["keyword", "state", "city", "district", "category", "auctionType", "status", "possession", "minPrice", "maxPrice", "dateFrom", "dateTo", "deadlineBefore", "organization"];
+
+export function AuctionFilters({ onApply, formId }: { onApply?: () => void; formId?: string }) {
+  const params = useSearchParams();
+  return <FilterForm key={params.toString()} current={params.toString()} onApply={onApply} formId={formId} />;
 }
 
-function FilterSection({ title, icon, children, defaultOpen = true }: FilterSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  const sectionId = useId();
-
-  return (
-    <div className="border-b border-border py-4 last:border-b-0">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        aria-controls={sectionId}
-        className="flex items-center justify-between min-h-11 w-full text-left font-semibold text-sm text-gray-900 group cursor-pointer"
-      >
-        <span className="flex items-center gap-2">
-          <span className="text-gray-400 group-hover:text-primary transition-colors">
-            {icon}
-          </span>
-          {title}
-        </span>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-gray-400" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-gray-400" />
-        )}
-      </button>
-      {isOpen && <div id={sectionId} className="mt-3 space-y-2">{children}</div>}
-    </div>
-  );
-}
-
-export function AuctionFilters() {
-  const router = useRouter();
-  const citySuggestionsId = useId();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const currentState = searchParams.get("state") || "";
-  const currentCity = searchParams.get("city") || "";
-  const currentCategory = (searchParams.get("category") || "").toUpperCase();
-  const currentAuctionType = (searchParams.get("type") || searchParams.get("auctionType") || "").toUpperCase();
-  const currentStatus = (searchParams.get("status") || "").toUpperCase();
-  const currentPossession = (searchParams.get("possession") || "").toUpperCase();
-  const currentMinPrice = searchParams.get("minPrice") || "";
-  const currentMaxPrice = searchParams.get("maxPrice") || "";
-  const currentKeyword = searchParams.get("keyword") || searchParams.get("q") || "";
-
-  const updateFilter = useCallback(
-    (name: string, value: string | null) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value && value !== "") {
-        params.set(name, value);
-      } else {
-        params.delete(name);
-      }
-      if (name === "type") params.delete("auctionType");
-      if (name === "keyword") params.delete("q");
-      if (name === "state") { params.delete("city"); params.delete("district"); }
-      params.set("page", "1"); // Reset page on filter change
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [router, pathname, searchParams]
-  );
-
-  const clearAllFilters = useCallback(() => {
-    router.push(pathname, { scroll: false });
-  }, [router, pathname]);
-
-  const hasActiveFilters =
-    Boolean(currentState) ||
-    Boolean(currentCity) ||
-    Boolean(currentCategory) ||
-    Boolean(currentAuctionType) ||
-    Boolean(currentStatus) ||
-    Boolean(currentPossession) ||
-    Boolean(currentMinPrice) ||
-    Boolean(currentMaxPrice) ||
-    Boolean(currentKeyword);
-
-  return (
-    <aside className="bg-white rounded-xl border border-border p-5 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-border">
-        <div className="flex items-center gap-2 font-bold text-gray-900">
-          <SlidersHorizontal className="h-4 w-4 text-primary" />
-          <span>Filters</span>
+function FilterForm({ current, onApply, formId }: { current: string; onApply?: () => void; formId?: string }) {
+  const router = useRouter(); const pathname = usePathname(); const id = useId();
+  const params = new URLSearchParams(current);
+  const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(fields.map((key) => {
+    const value = (key === "auctionType" ? params.get("type") || params.get(key) : key === "keyword" ? params.get(key) || params.get("q") : params.get(key)) || "";
+    return [key, ["category", "auctionType", "status", "possession"].includes(key) ? value.toUpperCase() : value];
+  })));
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pending, startTransition] = useTransition();
+  function update(key: string, value: string) {
+    setValues((previous) => ({ ...previous, [key]: value, ...(key === "state" ? { city: "", district: "" } : {}) }));
+    setErrors({});
+  }
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      const next = applyAuctionFilters(current, values);
+      startTransition(() => { router.push(auctionSearchHref(pathname, next), { scroll: false }); });
+      onApply?.();
+    } catch (error) {
+      if (!(error instanceof z.ZodError)) throw error;
+      const issues = Object.fromEntries(error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+      setErrors(issues);
+      const first = String(error.issues[0]?.path[0]);
+      event.currentTarget.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
+    }
+  }
+  function input(key: string, label: string, type = "text", placeholder = "") {
+    return <label className="block min-w-0 text-sm font-medium text-[#46525d]" key={key} htmlFor={`${id}-${key}`}>{label}
+      <input id={`${id}-${key}`} name={key} type={type} value={values[key]} onChange={(event) => update(key, event.target.value)}
+        placeholder={placeholder} maxLength={type === "text" ? 160 : undefined} min={type === "number" ? 0 : undefined} step={type === "number" ? "0.01" : undefined}
+        list={key === "city" ? `${id}-cities` : undefined} className={fieldClass} aria-invalid={Boolean(errors[key])} aria-describedby={errors[key] ? `${id}-${key}-error` : undefined} />
+      {errors[key] && <span id={`${id}-${key}-error`} className="mt-1 block text-xs text-red-700">{errors[key]}</span>}
+    </label>;
+  }
+  function select(key: string, label: string, options: readonly { value: string; label: string }[]) {
+    return <label className="block text-sm font-medium text-[#46525d]" htmlFor={`${id}-${key}`} key={key}>{label}
+      <select id={`${id}-${key}`} name={key} value={values[key]} onChange={(event) => update(key, event.target.value)} className={fieldClass}>
+        <option value="">Any {label.toLowerCase()}</option>{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select></label>;
+  }
+  const states: { value: string; label: string }[] = INDIAN_STATES.map((state) => ({ value: state, label: state }));
+  if (values.state && !states.some((state) => state.value === values.state)) states.unshift({ value: values.state, label: values.state });
+  return <form id={formId} onSubmit={submit} className="min-w-0 rounded-2xl border border-[#e4e8ec] bg-white p-4 sm:p-5" aria-label="Auction search filters">
+    <div className="mb-5 flex items-center justify-between gap-2"><h2 className="font-semibold text-[#182129]">Search auctions</h2>
+      <button type="button" onClick={() => { router.push(pathname, { scroll: false }); onApply?.(); }} className="min-h-11 px-2 text-sm font-semibold text-[#84663c] underline">Reset</button></div>
+    <fieldset disabled={pending} className="min-w-0 space-y-4 disabled:opacity-60">
+      {input("keyword", "Keyword or auction ID", "text", "Area, property or notice number")}
+      {select("state", "State", states)}
+      {input("city", "City", "text", "e.g. Ahmedabad")}
+      <datalist id={`${id}-cities`}>{CITY_LIST.filter((city) => !values.state || city.state === values.state).map((city) => <option key={city.slug} value={city.city} />)}</datalist>
+      {select("category", "Property type", PROPERTY_CATEGORIES)}
+      <div><p className="mb-2 text-sm font-medium text-[#46525d]">Reserve price</p><div className="flex flex-wrap gap-1.5">{BUDGET_RANGES.map((range) => {
+        const [min, max = ""] = range.value.split("-"); const selected = values.minPrice === min && values.maxPrice === max;
+        return <button type="button" key={range.value} aria-pressed={selected} onClick={() => { setValues((previous) => ({ ...previous, minPrice: min, maxPrice: max })); setErrors({}); }}
+          className={`min-h-11 rounded-lg border px-2 py-1 text-xs ${selected ? "border-[#b59461] bg-[#f6edd6]" : "border-[#e4e8ec] bg-[#f7f9fa]"}`}>{range.label}</button>;
+      })}</div></div>
+      <div className="grid min-w-0 grid-cols-2 gap-2">{input("minPrice", "Min price (₹)", "number", "0")}{input("maxPrice", "Max price (₹)", "number", "Any")}</div>
+      <details open={Boolean(values.dateFrom || values.dateTo || values.deadlineBefore || values.status || values.auctionType || values.possession || values.district || values.organization)}>
+        <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-[#84663c]">Dates & more filters</summary>
+        <div className="min-w-0 space-y-4 pt-2">
+          {input("dateFrom", "Auction from", "date")}{input("dateTo", "Auction to", "date")}
+          {input("deadlineBefore", "Submission on or before", "date")}
+          <p className="text-xs text-[#687480]">Dates use Indian Standard Time (IST).</p>
+          {select("status", "Status", AUCTION_STATUSES)}{select("auctionType", "Auction type", AUCTION_TYPES)}{select("possession", "Possession", POSSESSION_STATUSES)}
+          {input("district", "District")}{input("organization", "Bank or institution")}
         </div>
-        {hasActiveFilters && (
-          <button
-            onClick={clearAllFilters}
-            className="flex items-center gap-1 text-xs text-primary font-medium hover:text-primary-700 transition-colors cursor-pointer"
-          >
-            <RotateCcw className="h-3 w-3" />
-            Reset All
-          </button>
-        )}
-      </div>
-
-      {/* Keyword Search */}
-      <div className="py-4 border-b border-border">
-        <label htmlFor={`${citySuggestionsId}-keyword`} className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-          Keyword / Auction ID
-        </label>
-        <input
-          type="text"
-          id={`${citySuggestionsId}-keyword`}
-          placeholder="e.g. Bandra, SARB, 3 BHK..."
-          key={currentKeyword}
-          defaultValue={currentKeyword}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              updateFilter("keyword", e.currentTarget.value);
-            }
-          }}
-          onBlur={(e) => updateFilter("keyword", e.target.value)}
-          className="w-full h-9 rounded-lg border border-border bg-gray-50 px-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-        />
-      </div>
-
-      {/* Location */}
-      <FilterSection
-        title="Location"
-        icon={<MapPin className="h-4 w-4" />}
-        defaultOpen={true}
-      >
-        <div className="space-y-2">
-          <div>
-            <label htmlFor={`${citySuggestionsId}-state`} className="block text-[11px] text-gray-500 mb-1">State</label>
-            <select
-              id={`${citySuggestionsId}-state`}
-              value={currentState}
-              onChange={(e) => updateFilter("state", e.target.value)}
-              className="w-full h-9 rounded-lg border border-border bg-gray-50 px-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            >
-              <option value="">All States / UTs</option>
-              {INDIAN_STATES.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor={`${citySuggestionsId}-city`} className="block text-[11px] text-gray-500 mb-1">City / District</label>
-            <input
-              type="text"
-              placeholder="e.g. Surat, Ahmedabad..."
-              id={`${citySuggestionsId}-city`}
-              list={citySuggestionsId}
-              key={currentCity}
-          defaultValue={currentCity}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  updateFilter("city", e.currentTarget.value);
-                }
-              }}
-              onBlur={(e) => updateFilter("city", e.target.value)}
-              className="w-full h-9 rounded-lg border border-border bg-gray-50 px-3 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-            <datalist id={citySuggestionsId}>
-              {CITY_LIST.map((c) => (
-                <option key={c.slug} value={c.city} />
-              ))}
-            </datalist>
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Property Type */}
-      <FilterSection
-        title="Property Type"
-        icon={<Layers className="h-4 w-4" />}
-        defaultOpen={true}
-      >
-        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
-            <input
-              type="radio"
-              name="category"
-              checked={!currentCategory}
-              onChange={() => updateFilter("category", null)}
-              className="text-primary focus:ring-primary h-3.5 w-3.5"
-            />
-            <span>All Categories</span>
-          </label>
-          {PROPERTY_CATEGORIES.map((cat) => (
-            <label
-              key={cat.value}
-              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
-            >
-              <input
-                type="radio"
-                name="category"
-                value={cat.value}
-                checked={currentCategory === cat.value}
-                onChange={() => updateFilter("category", cat.value)}
-                className="text-primary focus:ring-primary h-3.5 w-3.5"
-              />
-              <span>{cat.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Reserve Price Range */}
-      <FilterSection
-        title="Reserve Price"
-        icon={<IndianRupee className="h-4 w-4" />}
-        defaultOpen={true}
-      >
-        <div className="space-y-2">
-          {/* Quick preset ranges */}
-          <div className="flex flex-wrap gap-1 mb-2">
-            {BUDGET_RANGES.map((r) => (
-              <button
-                key={r.value}
-                type="button"
-                onClick={() => {
-                  const [min, max] = r.value.split("-");
-                  const params = new URLSearchParams(searchParams.toString());
-                  if (min) params.set("minPrice", min);
-                  else params.delete("minPrice");
-                  if (max) params.set("maxPrice", max);
-                  else params.delete("maxPrice");
-                  params.set("page", "1");
-                  router.push(`${pathname}?${params.toString()}`, { scroll: false });
-                }}
-                className="min-h-11 sm:min-h-0 px-2 py-1 text-[10px] bg-gray-100 hover:bg-primary-50 hover:text-primary rounded text-gray-700 font-medium transition-colors cursor-pointer"
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label htmlFor={`${citySuggestionsId}-min`} className="block text-[10px] text-gray-500 mb-1">Min (₹)</label>
-              <input
-                type="number"
-                placeholder="0"
-                id={`${citySuggestionsId}-min`}
-                key={currentMinPrice}
-          defaultValue={currentMinPrice}
-                onBlur={(e) => updateFilter("minPrice", e.target.value)}
-                className="w-full h-8 rounded border border-border bg-gray-50 px-2 text-xs tabular-nums"
-              />
-            </div>
-            <div>
-              <label htmlFor={`${citySuggestionsId}-max`} className="block text-[10px] text-gray-500 mb-1">Max (₹)</label>
-              <input
-                type="number"
-                placeholder="Any"
-                id={`${citySuggestionsId}-max`}
-                key={currentMaxPrice}
-          defaultValue={currentMaxPrice}
-                onBlur={(e) => updateFilter("maxPrice", e.target.value)}
-                className="w-full h-8 rounded border border-border bg-gray-50 px-2 text-xs tabular-nums"
-              />
-            </div>
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Auction Status */}
-      <FilterSection
-        title="Auction Status"
-        icon={<Calendar className="h-4 w-4" />}
-        defaultOpen={false}
-      >
-        <div className="space-y-1.5">
-          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
-            <input
-              type="radio"
-              name="status"
-              checked={!currentStatus}
-              onChange={() => updateFilter("status", null)}
-              className="text-primary focus:ring-primary h-3.5 w-3.5"
-            />
-            <span>All Statuses</span>
-          </label>
-          {AUCTION_STATUSES.map((st) => (
-            <label
-              key={st.value}
-              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
-            >
-              <input
-                type="radio"
-                name="status"
-                value={st.value}
-                checked={currentStatus === st.value}
-                onChange={() => updateFilter("status", st.value)}
-                className="text-primary focus:ring-primary h-3.5 w-3.5"
-              />
-              <span>{st.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Auction Legal Type */}
-      <FilterSection
-        title="Auction Legal Type"
-        icon={<Building2 className="h-4 w-4" />}
-        defaultOpen={false}
-      >
-        <div className="space-y-1.5">
-          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
-            <input
-              type="radio"
-              name="auctionType"
-              checked={!currentAuctionType}
-              onChange={() => updateFilter("type", null)}
-              className="text-primary focus:ring-primary h-3.5 w-3.5"
-            />
-            <span>All Types</span>
-          </label>
-          {AUCTION_TYPES.map((t) => (
-            <label
-              key={t.value}
-              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
-            >
-              <input
-                type="radio"
-                name="auctionType"
-                value={t.value}
-                checked={currentAuctionType === t.value}
-                onChange={() => updateFilter("type", t.value)}
-                className="text-primary focus:ring-primary h-3.5 w-3.5"
-              />
-              <span>{t.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Possession Status */}
-      <FilterSection
-        title="Possession Status"
-        icon={<ShieldCheck className="h-4 w-4" />}
-        defaultOpen={false}
-      >
-        <div className="space-y-1.5">
-          <label className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary">
-            <input
-              type="radio"
-              name="possession"
-              checked={!currentPossession}
-              onChange={() => updateFilter("possession", null)}
-              className="text-primary focus:ring-primary h-3.5 w-3.5"
-            />
-            <span>Any Possession</span>
-          </label>
-          {POSSESSION_STATUSES.map((pos) => (
-            <label
-              key={pos.value}
-              className="flex min-h-11 sm:min-h-0 items-center gap-2 text-xs text-gray-700 cursor-pointer hover:text-primary"
-            >
-              <input
-                type="radio"
-                name="possession"
-                value={pos.value}
-                checked={currentPossession === pos.value}
-                onChange={() => updateFilter("possession", pos.value)}
-                className="text-primary focus:ring-primary h-3.5 w-3.5"
-              />
-              <span>{pos.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-    </aside>
-  );
+      </details>
+      {Object.keys(errors).length > 0 && <p role="alert" className="text-sm text-red-700">Check the highlighted search fields.</p>}
+      <button type="submit" className={`${formId ? "hidden" : ""} min-h-11 w-full rounded-xl bg-[#132330] px-4 py-3 text-sm font-semibold text-white`}>{pending ? "Searching…" : "Apply filters"}</button>
+    </fieldset>
+  </form>;
 }

@@ -167,3 +167,9 @@ architecture, not an auction listing photograph. It is served locally through
 Next Image; the original generation is kept separately. The admin sidebar is
 fixed to the viewport, with only its navigation scrolling; the mobile drawer
 uses the common focus/scroll-lock helper.
+
+### Auction discovery maintenance
+
+The marketplace filter form submits a complete draft once with **Apply filters**. Keep URL parsing in `src/lib/auction-search.ts` and URL/display helpers in `src/lib/auction-discovery-ui.ts`; chips and sorting must preserve unrelated filters and reset pagination. City and district are distinct fields. Date filters and card times use IST. The “Ending soon” sort includes only open-status notices with a future end time; historical notices remain available through other sorts and explicit status filters.
+
+Cards show exact INR reserve/EMD amounts and all three notice deadlines in grid and list views. Missing or broken images use a labelled placeholder. A database outage must display retry guidance without claiming the inventory is empty. Guest save actions return through sign-in to the selected listing; never nest the save button inside its link. Regression coverage lives in `tests/auction-listing-ui.test.mjs`, `tests/auction-discovery.test.mjs` and `tests/property-actions.test.mjs`.

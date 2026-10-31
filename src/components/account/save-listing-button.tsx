@@ -16,7 +16,7 @@ export function SavedPropertiesNotice() {
   return state.message ? <p role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">{state.message}</p> : null;
 }
 
-export function SaveListingButton({ auctionId, variant = "icon", className = "" }: { auctionId: string; variant?: "icon" | "button"; className?: string }) {
+export function SaveListingButton({ auctionId, variant = "icon", className = "", propertyTitle }: { auctionId: string; propertyTitle?: string; variant?: "icon" | "button"; className?: string }) {
   const router = useRouter();
   const state = useSavedProperties();
   const [checking, setChecking] = useState(false);
@@ -53,7 +53,7 @@ export function SaveListingButton({ auctionId, variant = "icon", className = "" 
 
   const label = saved ? PROPERTY_ACTIONS.remove : PROPERTY_ACTIONS.save;
   return <span className={`inline-flex flex-col items-end gap-1.5 ${className}`}>
-    <button type="button" onClick={onClick} disabled={busy} aria-pressed={saved} aria-label={label} title={label}
+    <button type="button" onClick={onClick} disabled={busy} aria-pressed={saved} aria-label={propertyTitle ? `${label}: ${propertyTitle}` : label} title={label}
       className={`inline-flex items-center justify-center gap-2 border text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#84663c] disabled:opacity-60 ${variant === "button" ? "min-h-11 rounded-xl px-3.5 py-2.5" : "h-11 w-11 rounded-full shadow-sm"} ${saved ? "border-red-200 bg-red-50 text-red-700" : "border-[#e4e8ec] bg-white text-[#687480] hover:bg-[#f4f6f8]"}`}>
       {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />}
       {variant === "button" && <span>{saved ? PROPERTY_ACTIONS.saved : PROPERTY_ACTIONS.save}</span>}

@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { AuctionCardData, PaginatedResponse } from "@/types";
+import { AuctionDataUnavailable } from "@/lib/public-auctions";
 import { getAuctions } from "@/services/auction.service";
 import { AuctionFilters } from "@/components/auction/auction-filters";
 import { AuctionResultsClient } from "@/components/auction/auction-results-client";
@@ -35,12 +37,21 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
       <div className="container-wide py-12">
         <h1 className="text-2xl font-bold text-primary">Check your search filters</h1>
         <p role="alert" className="my-4 text-sm text-gray-700">{error.issues[0]?.message}</p>
-        <Link href="/auctions" className="font-semibold text-primary underline">Clear filters and search again</Link>
+<Link href="/auctions" className="font-semibold text-primary underline">Clear filters and search again</Link>
+        <div className="mt-6 max-w-md"><Suspense><AuctionFilters /></Suspense></div>
       </div>
     );
   }
 
-  const { data: auctions, pagination } = await getAuctions(filters);
+  let result: PaginatedResponse<AuctionCardData>;
+  let unavailable = false;
+  try { result = await getAuctions(filters); }
+  catch (error) {
+    if (!(error instanceof AuctionDataUnavailable)) throw error;
+    unavailable = true;
+    result = { data: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 1, hasNext: false, hasPrev: false } };
+  }
+  const { data: auctions, pagination } = result;
   // When the city filter matches a published city page, link to it.
   const cityPage = findCityByName(resolvedParams.city);
 
@@ -91,17 +102,18 @@ export default async function AuctionsPage({ searchParams }: PageProps) {
         {/* Main Grid: Sidebar Filters + Results */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
           {/* Desktop Filter Sidebar */}
-          <div className="hidden lg:block lg:col-span-1 sticky top-24">
+          <div className="hidden min-w-0 lg:block lg:col-span-1 sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain [scrollbar-width:thin]">
             <Suspense fallback={<div className="h-96 bg-white rounded-xl animate-pulse" />}>
               <AuctionFilters />
             </Suspense>
           </div>
 
           {/* Results Area */}
-          <div className="lg:col-span-3">
+          <div className="min-w-0 lg:col-span-3">
             <Suspense fallback={<div className="h-96 bg-white rounded-xl animate-pulse" />}>
               <AuctionResultsClient
                 auctions={auctions}
+                unavailable={unavailable}
                 pagination={pagination}
                 activeFilters={Object.fromEntries(Object.entries(filters).map(([key, value]) => [key, value?.toString()]))}
               />
