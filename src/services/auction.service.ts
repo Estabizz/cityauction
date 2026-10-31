@@ -1,3 +1,4 @@
+import { getAdminActor } from "@/lib/admin/guard";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { AuctionFilters, PaginatedResponse, AuctionCardData, DetailedAuction } from "@/types";
@@ -52,9 +53,16 @@ export async function getAuctions(filters: AuctionFilters = {}): Promise<Paginat
 }
 
 export async function getAuctionById(idOrSlug: string): Promise<DetailedAuction | null> {
+  return readAuctionDetail(idOrSlug, false);
+}
+export async function getAdminAuctionPreview(id: string): Promise<DetailedAuction | null> {
+  if (!await getAdminActor()) return null;
+  return readAuctionDetail(id, true);
+}
+async function readAuctionDetail(idOrSlug: string, preview: boolean): Promise<DetailedAuction | null> {
   try {
     const dbAuction = await db.auction.findFirst({
-      where: { AND: [publicAuctionWhere(), { OR: [
+      where: { AND: [preview ? { deletedAt: null } : publicAuctionWhere(), { OR: [
         { id: idOrSlug }, { auctionNumber: idOrSlug }, { property: { slug: idOrSlug } },
       ] }] },
       include: {

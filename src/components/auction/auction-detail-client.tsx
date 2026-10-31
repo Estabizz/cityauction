@@ -18,7 +18,7 @@ const box = "min-w-0 rounded-2xl border border-[#e4e8ec] bg-white p-5 sm:p-6";
 const heading = "mb-4 text-lg font-semibold text-[#182129]";
 const section = "scroll-mt-28";
 
-export function AuctionDetailClient({ auction, initialNow }: { auction: DetailedAuction; initialNow: number }) {
+export function AuctionDetailClient({ auction, initialNow, preview = false }: { auction: DetailedAuction; initialNow: number; preview?: boolean }) {
   const cityPage = findCityByName(auction.city);
   const [now, setNow] = useState(initialNow);
   const [sharing, setSharing] = useState(false);
@@ -53,13 +53,13 @@ export function AuctionDetailClient({ auction, initialNow }: { auction: Detailed
             <p className="mt-3 flex items-start gap-2 text-sm text-[#687480]"><MapPin aria-hidden="true" className="h-4 w-4 shrink-0" /><span>{cityPage ? <Link href={cityPath(cityPage)} className="underline">{auction.city}</Link> : auction.city}, {auction.state}</span></p>
             <p className="mt-2 break-words text-xs text-[#687480]">{auction.organizationName} · Notice {auction.auctionNumber}</p>
           </div>
-          <div id="property-save" className="min-w-0 shrink-0 scroll-mt-28 space-y-2 lg:max-w-80"><div className="flex flex-wrap items-start gap-2">
+          {!preview && <div id="property-save" className="min-w-0 shrink-0 scroll-mt-28 space-y-2 lg:max-w-80"><div className="flex flex-wrap items-start gap-2">
             <SaveListingButton auctionId={auction.id} propertyTitle={auction.title} variant="button" />
             <button type="button" onClick={() => void share()} disabled={sharing} className="flex min-h-11 items-center gap-2 rounded-xl border border-[#e4e8ec] px-4 text-sm font-semibold disabled:opacity-60"><Share2 className="h-4 w-4" />{sharing ? "Sharing…" : "Share"}</button>
           </div>
             {shareMessage && <p role="status" className="text-xs text-[#46525d]">{shareMessage}</p>}
             {shareUrl && <label className="block text-xs text-[#687480]">Property link<input readOnly value={shareUrl} onFocus={(event) => event.target.select()} className="mt-1 min-h-11 w-full rounded-xl border border-[#dce2e7] px-3 text-xs" /></label>}
-          </div>
+          </div>}
         </div>
       </div>
     </header>
@@ -76,8 +76,8 @@ export function AuctionDetailClient({ auction, initialNow }: { auction: Detailed
           <dl className="space-y-4 border-y border-[#e4e8ec] py-4 text-sm">{[["Auction starts", auction.startDateTime], ["Auction ends", auction.endDateTime], ["Submission deadline", auction.submissionDeadline], ["Inspection in notice", auction.inspectionDate]].map(([label, value]) => <div key={label}><dt className="text-xs text-[#687480]">{label}</dt><dd className="mt-1 font-medium tabular-nums text-[#182129]">{value ? <time dateTime={value}>{auctionDate(value, true)}</time> : "Not provided"}</dd></div>)}</dl>
           <div role="status" className={`rounded-xl border p-4 text-sm ${availability.canInspect ? "border-[#e4e8ec] bg-[#f7f9fa]" : "border-amber-200 bg-amber-50"}`}><h3 className="font-semibold text-[#182129]">{availability.title}</h3><p className="mt-1 leading-relaxed text-[#46525d]">{availability.message}</p></div>
           <div id="property-actions" className="scroll-mt-28 space-y-3"><h2 className="font-semibold text-[#182129]">Ask about this property</h2>
-            <PropertyRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} kind="contact" />
-            {availability.canInspect ? <InspectionRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} submissionDeadline={auction.submissionDeadline} /> : <p className="text-xs leading-relaxed text-[#687480]">New inspection requests are unavailable for this notice. You can still contact the team or save it for reference.</p>}
+            {!preview && <PropertyRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} kind="contact" />}
+            {preview ? <p className="text-sm text-[#687480]">Preview only. Buyer actions are disabled. This preview does not publish the notice.</p> : availability.canInspect ? <InspectionRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} submissionDeadline={auction.submissionDeadline} /> : <p className="text-xs leading-relaxed text-[#687480]">New inspection requests are unavailable for this notice. You can still contact the team or save it for reference.</p>}
           </div>
           <p className="border-t border-[#e4e8ec] pt-4 text-xs leading-relaxed text-[#687480]">Submit bids and EMD payments through the official process in the auction notice. CityAuction does not accept bids or EMD payments on this page.</p>
         </aside>

@@ -72,7 +72,7 @@ export async function requireAdminPage(): Promise<void> {
   try {
     actor = await getAdminActor();
   } catch {
-    return;
+    throw new Error("Admin access could not be verified. Please try again.");
   }
   if (!actor) redirect("/login?next=/admin/dashboard");
 }

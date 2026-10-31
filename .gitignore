@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Original image generations; optimised site assets live under public/images.
 /generated_images/
+
+# Local development uploads (production uses durable domain storage).
+/.local/

@@ -1,25 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { MarketplaceEmpty, MarketplacePage } from "@/components/admin/marketplace";
+import { requireAdminPage } from "@/lib/admin/guard";
+import { PageHeader } from "@/components/admin/ui";
+import { RecordEditor } from "@/components/admin/record-editor";
 
-export const metadata: Metadata = { title: "Publish auction" };
-
-// The old page was a form that saved nothing. Say so instead of pretending.
-export default function AdminCreateAuctionPage() {
-  return (
-    <MarketplacePage
-      title="Publish an auction"
-      description="Creating auction notices from the admin panel is not built yet."
-      count={null}
-    >
-      <MarketplaceEmpty title="Not available yet">
-        Auction publishing needs lenders, properties and locations in the database first. Until then, see what is already
-        stored on the{" "}
-        <Link href="/admin/auctions" className="font-semibold text-[#7a5f33] hover:underline">
-          Auctions
-        </Link>{" "}
-        page.
-      </MarketplaceEmpty>
-    </MarketplacePage>
-  );
+export const metadata: Metadata = { title: "Add auction notice" };
+export default async function EditorPage() {
+  await requireAdminPage();
+  return <div className="space-y-6"><PageHeader eyebrow="Marketplace" title="Add auction notice" description="Save a draft, preview the notice, then publish after checking the original source." /><RecordEditor kind="auction" /></div>;
 }

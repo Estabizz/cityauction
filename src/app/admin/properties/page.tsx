@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { requireAdminPage } from "@/lib/admin/guard";
@@ -31,9 +32,10 @@ export default async function AdminPropertiesPage() {
   return (
     <MarketplacePage
       title="Properties"
-      description="Properties stored in the database, with the lender and how many auctions each one has."
+      description="Manage property details and photos. Editing a property withdraws linked notices until reviewed again. Showing the latest 100 records."
       count={result ? result[0] : null}
     >
+      <div className="p-4"><Link href="/admin/properties/create" className="inline-flex min-h-11 items-center rounded-xl bg-[#132330] px-4 text-sm font-semibold text-white">Add property</Link></div>
       {!result ? (
         <DatabaseError />
       ) : result[1].length === 0 ? (
@@ -57,7 +59,7 @@ export default async function AdminPropertiesPage() {
               {result[1].map((p) => (
                 <tr key={p.id} className={t.row}>
                   <td className={t.td}>
-                    <span className="block font-semibold text-[#182129]">{p.title}</span>
+                    <Link href={`/admin/properties/${p.id}`} className="block min-h-11 py-2 font-semibold text-[#84663c] underline">{p.title}</Link>
                     <span className="block text-xs text-[#6f777d]">
                       {p.location.name} · {p._count.auctions} auction{p._count.auctions === 1 ? "" : "s"}
                     </span>
