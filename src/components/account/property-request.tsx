@@ -6,7 +6,7 @@ import { CalendarCheck, CheckCircle2, Loader2, MessageCircle } from "lucide-reac
 import { inputClass, textareaClass } from "@/components/ui/styles";
 import { PROPERTY_ACTIONS, propertyRequestMessage, propertySignInHref, type PropertyRequestKind } from "@/lib/property-actions";
 
-export function PropertyRequest({ auctionId, auctionNumber, kind }: { auctionId: string; auctionNumber: string; kind: PropertyRequestKind }) {
+export function PropertyRequest({ auctionId, auctionNumber, kind, submissionDeadline }: { auctionId: string; auctionNumber: string; kind: PropertyRequestKind; submissionDeadline?: string }) {
   const [open, setOpen] = useState(false);
   const [checking, setChecking] = useState(false);
   const [preferredDate, setPreferredDate] = useState("");
@@ -21,6 +21,8 @@ export function PropertyRequest({ auctionId, auctionNumber, kind }: { auctionId:
   const id = useId();
   const inspection = kind === "inspection";
   const label = PROPERTY_ACTIONS[kind];
+  const deadline = submissionDeadline ? new Date(submissionDeadline).getTime() : NaN;
+  const latestDate = Number.isFinite(deadline) ? new Date(deadline + 19_800_000).toISOString().slice(0, 10) : undefined;
 
   async function start() {
     if (active.current) return;
@@ -60,6 +62,9 @@ export function PropertyRequest({ auctionId, auctionNumber, kind }: { auctionId:
     event.preventDefault();
     if (active.current) return;
     if (!inspection && message.trim().length < 5) { setError("Please enter a message with at least 5 characters."); inputRef.current?.focus(); return; }
+    if (inspection && preferredDate && ((today && preferredDate < today) || (latestDate && preferredDate > latestDate))) {
+      setError("Please choose a date between today and the submission deadline."); return;
+    }
     active.current = true; setLoading(true); setError(null); setNeedsSignIn(false);
     try {
       const response = await fetch("/api/user/requests", {
@@ -81,11 +86,11 @@ export function PropertyRequest({ auctionId, auctionNumber, kind }: { auctionId:
       {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : inspection ? <CalendarCheck className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}{label}
     </button> : <form onSubmit={submit} className="space-y-3 rounded-xl border border-[#e4e8ec] bg-[#f8fafb] p-4">
       <h3 className="text-sm font-semibold text-[#182129]">{label}</h3>
-      {inspection && <label className="block text-xs font-medium text-[#687480]" htmlFor={`${id}-date`}>Preferred date (optional)<input id={`${id}-date`} type="date" min={today} value={preferredDate} onChange={(event) => setPreferredDate(event.target.value)} disabled={loading} className={`mt-1.5 ${inputClass}`} /></label>}
+      {inspection && <label className="block text-xs font-medium text-[#687480]" htmlFor={`${id}-date`}>Preferred date (optional)<input id={`${id}-date`} type="date" min={today} max={latestDate} value={preferredDate} onChange={(event) => setPreferredDate(event.target.value)} disabled={loading} className={`mt-1.5 ${inputClass}`} /></label>}
       <label htmlFor={`${id}-message`} className="block text-xs font-medium text-[#687480]">{inspection ? "Anything we should know? (optional)" : "How can we help with this property?"}</label>
       <textarea ref={inputRef} id={`${id}-message`} value={message} onChange={(event) => setMessage(event.target.value)} maxLength={2000} rows={3} required={!inspection} disabled={loading} className={textareaClass} />
       {inspection && <p className="text-[11px] leading-relaxed text-[#687480]">An inspection request does not confirm a booking. Availability and dates require the selling institution’s approval.</p>}
-      <div className="flex gap-2"><button type="button" disabled={loading} onClick={() => { setOpen(false); setError(null); }} className="min-h-10 flex-1 rounded-lg border border-[#dce1e6] bg-white px-3 text-xs font-semibold disabled:opacity-60">Cancel</button><button type="submit" disabled={loading} className="flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#132330] px-3 text-xs font-semibold text-white disabled:opacity-60">{loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{loading ? "Sending…" : inspection ? "Send request" : "Send message"}</button></div>
+      <div className="flex gap-2"><button type="button" disabled={loading} onClick={() => { setOpen(false); setError(null); }} className="min-h-11 flex-1 rounded-lg border border-[#dce1e6] bg-white px-3 text-xs font-semibold disabled:opacity-60">Cancel</button><button type="submit" disabled={loading} className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#132330] px-3 text-xs font-semibold text-white disabled:opacity-60">{loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{loading ? "Sending…" : inspection ? "Send request" : "Send message"}</button></div>
     </form>}
     {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">{error} {needsSignIn && <Link href={propertySignInHref(auctionId, kind)} className="font-semibold underline">Sign in again</Link>}</p>}
   </div>;

@@ -1,3 +1,5 @@
+import { inspectionDateError } from "@/lib/auction-detail";
+import type { AuctionSchedule } from "@/lib/auction-detail";
 import { publicAuctionWhere } from "@/lib/public-auctions";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -59,13 +61,19 @@ export async function POST(req: Request) {
     const user = await db.user.findUnique({ where: { id: session.userId }, select: { fullName: true, email: true, mobile: true, phone: true } });
     if (!user) return jsonError("Please sign in.", 401);
 
-    let auction: { id: string; auctionNumber: string; propertyId: string; property: { title: string } } | null = null;
+    let auction: (AuctionSchedule & { id: string; auctionNumber: string; propertyId: string; property: { title: string } }) | null = null;
     if (input.auctionId) {
       auction = await db.auction.findFirst({
         where: { AND: [publicAuctionWhere(), { id: input.auctionId }] },
-        select: { id: true, auctionNumber: true, propertyId: true, property: { select: { title: true } } },
+        select: { id: true, auctionNumber: true, propertyId: true, status: true, startDateTime: true, endDateTime: true, submissionDeadline: true, property: { select: { title: true } } },
       });
       if (!auction) return jsonError("This listing isn't available for requests right now. Please contact us instead.", 404);
+    }
+
+    if (input.type === "inspection" && auction) {
+      const date = input.preferredDate ? new Date(input.preferredDate.getTime() + 19_800_000).toISOString().slice(0, 10) : undefined;
+      const error = inspectionDateError(auction, date);
+      if (error) return jsonError(error, inspectionDateError(auction, undefined) ? 409 : 400);
     }
 
     const subject =

@@ -235,7 +235,7 @@ test("buyers can save a public listing; guests and hidden listings cannot create
 test("inspection requests retain the buyer, auction, property and tracking reference", async () => {
   const state = setup([valid, ...hidden]);
   const { POST } = loadSource("src/app/api/user/requests/route.ts", state.mocks);
-  const response = await POST(request({ type: "inspection", auctionId: valid.id, preferredDate: "2099-01-10" }));
+  const response = await POST(request({ type: "inspection", auctionId: valid.id, preferredDate: "2030-02-08" }));
   assert.equal(response.status, 200);
   assert.equal((await response.json()).reference, "CA-123456");
   assert.equal(state.writes[0].userId, "buyer-1");
@@ -337,4 +337,26 @@ test("ending-soon searches exclude expired, closed and cancelled notices", async
   assert.deepEqual(ids(await setup(rows).service.getAuctions({ sort: "closing_soon" })), ["upcoming"]);
   assert.equal((await setup(rows).service.getAuctions({ sort: "closing_soon", status: "CLOSED" })).data.length, 0);
   assert.deepEqual(ids(await setup(rows).service.getAuctions({ status: "CLOSED" })), ["closed"]);
+});
+
+for (const changes of [
+  { status: "CLOSED" }, { status: "SOLD" }, { status: "CANCELLED" },
+  { submissionDeadline: date("2020-01-01") },
+  { startDateTime: date("2020-01-01"), endDateTime: date("2020-01-02"), submissionDeadline: date("2019-12-31") },
+]) {
+  test(`inspection API blocks unavailable notice while retaining contact enquiries: ${JSON.stringify(changes)}`, async () => {
+    const state = setup([fixture("record", changes)]);
+    const { POST } = loadSource("src/app/api/user/requests/route.ts", state.mocks);
+    assert.equal((await POST(request({ type: "inspection", auctionId: "record" }))).status, 409);
+    assert.equal(state.writes.length, 0);
+    assert.equal((await POST(request({ type: "support", auctionId: "record", message: "Please confirm the current position." }))).status, 200);
+    assert.equal(state.writes.length, 1);
+  });
+}
+
+test("inspection API rejects preferred dates after the recorded submission day", async () => {
+  const state = setup([valid]);
+  const { POST } = loadSource("src/app/api/user/requests/route.ts", state.mocks);
+  assert.equal((await POST(request({ type: "inspection", auctionId: valid.id, preferredDate: "2030-02-10" }))).status, 400);
+  assert.equal(state.writes.length, 0);
 });

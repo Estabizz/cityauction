@@ -74,7 +74,7 @@ export async function getAuctionById(idOrSlug: string): Promise<DetailedAuction 
       address: dbAuction.property.address || '',
       description: dbAuction.description || dbAuction.property.description || '',
       area: Number(dbAuction.property.area) || 0,
-      areaUnit: dbAuction.property.areaUnit || 'sq ft',
+      areaUnit: dbAuction.property.areaUnit || '',
       contactOfficerName: dbAuction.contactOfficerName || '',
       contactOfficerPhone: dbAuction.contactOfficerPhone || '',
       contactOfficerEmail: dbAuction.contactOfficerEmail || '',
@@ -83,7 +83,7 @@ export async function getAuctionById(idOrSlug: string): Promise<DetailedAuction 
       documents: dbAuction.documents.map((doc) => ({
         name: doc.name,
         type: doc.type,
-        size: `${Math.round(doc.fileSize / 1024)} KB`,
+        size: doc.fileSize > 0 ? (doc.fileSize < 1024 ? `${doc.fileSize} bytes` : `${Math.ceil(doc.fileSize / 1024)} KB`) : "",
         url: doc.url,
       })),
       organization: {
@@ -104,7 +104,7 @@ export async function getAuctionById(idOrSlug: string): Promise<DetailedAuction 
 
 export async function getRelatedAuctions(currentId: string, categoryType?: string, limit = 4): Promise<AuctionCardData[]> {
   try {
-    const all = await getAuctions({ category: categoryType, limit: Math.min(50, limit + 1) });
+    const all = await getAuctions({ category: categoryType, sort: "closing_soon", limit: Math.min(50, limit + 1) });
     return all.data.filter((a) => a.id !== currentId).slice(0, limit);
   } catch (error) {
     if (!(error instanceof AuctionDataUnavailable)) throw error;

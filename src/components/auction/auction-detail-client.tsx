@@ -1,491 +1,106 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  Clock,
-  MapPin,
-  Download,
-  Share2,
-  FileText,
-  ShieldAlert,
-  Phone,
-  Mail,
-  CheckCircle2,
-  AlertTriangle,
-  Maximize2,
-} from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { AuctionStatusBadge, Badge } from "@/components/ui/badge";
-import type { DetailedAuction } from "@/services/mock-data";
+import { ArrowUpRight, FileText, MapPin, Share2 } from "lucide-react";
+import type { DetailedAuction } from "@/types";
+import { auctionDate, auctionMoney } from "@/lib/auction-discovery-ui";
+import { auctionAvailability, auctionContactEmail, auctionContactPhone, safeAuctionUrl } from "@/lib/auction-detail";
+import { POSSESSION_STATUSES } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
 import { cityPath, findCityByName } from "@/content/cities/paths";
 import { PropertyRequest } from "@/components/account/property-request";
 import { InspectionRequest } from "@/components/account/inspection-request";
 import { SaveListingButton } from "@/components/account/save-listing-button";
+import { PropertyGallery } from "./property-gallery";
 
-interface AuctionDetailClientProps {
-  auction: DetailedAuction;
-}
+const box = "min-w-0 rounded-2xl border border-[#e4e8ec] bg-white p-5 sm:p-6";
+const heading = "mb-4 text-lg font-semibold text-[#182129]";
+const section = "scroll-mt-28";
 
-export function AuctionDetailClient({ auction }: AuctionDetailClientProps) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+export function AuctionDetailClient({ auction, initialNow }: { auction: DetailedAuction; initialNow: number }) {
   const cityPage = findCityByName(auction.city);
-  const [activeTab, setActiveTab] = useState<"description" | "location" | "terms" | "documents" | "officer">("description");
-  const [shareCopied, setShareCopied] = useState(false);
-
-  // Live countdown timer state
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
-
-  useEffect(() => {
-    const targetDate = new Date(auction.startDateTime).getTime();
-
-    const updateTimer = () => {
-      const now = Date.now();
-      const diff = targetDate - now;
-
-      if (diff <= 0) {
-        setTimeLeft(null);
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [auction.startDateTime]);
-
-  const handleShare = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2000);
-    }
-  };
-
-  const images = auction.images && auction.images.length > 0 ? auction.images : [auction.primaryImage || ''];
-
-  return (
-    <div>
-      <div className="container-wide py-3 text-xs text-gray-600">
-        <p>Source reference: <strong>{auction.sourceListingId}</strong> · Source checked {auction.sourceVerifiedAt ? formatDate(auction.sourceVerifiedAt) : "date not recorded"}.
-          Confirm current dates, availability and terms with the auctioning authority.</p>
-      </div>
-      {/* Top Header */}
-      <div className="bg-white border-b border-border py-6">
-        <div className="container-wide">
-          {/* Breadcrumb */}
-          <nav className="text-xs text-gray-500 mb-3 flex items-center gap-1.5 flex-wrap">
-            <Link href="/" className="hover:text-primary">Home</Link>
-            <span>&gt;</span>
-            <Link href="/auctions" className="hover:text-primary">Auctions</Link>
-            <span>&gt;</span>
-            <Link href={`/auctions?state=${encodeURIComponent(auction.state)}`} className="hover:text-primary">
-              {auction.state}
-            </Link>
-            <span>&gt;</span>
-            <span className="text-gray-900 font-medium truncate max-w-xs">{auction.title}</span>
-          </nav>
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                <span className="font-mono text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200">
-                  {auction.auctionNumber}
-                </span>
-                <Badge variant="primary">{auction.auctionType}</Badge>
-                <AuctionStatusBadge status={auction.status} />
-                <span className="text-xs text-gray-500 flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {cityPage ? (
-                    <Link href={cityPath(cityPage)} className="underline underline-offset-2 hover:text-primary">
-                      {auction.city}
-                    </Link>
-                  ) : (
-                    auction.city
-                  )}
-                  , {auction.state}
-                </span>
-              </div>
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
-                {auction.title}
-              </h1>
-            </div>
-
-            {/* Actions */}
-            <div id="property-save" className="scroll-mt-24 flex flex-wrap items-start gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleShare}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
-              >
-                <Share2 className="h-4 w-4" />
-                <span>{shareCopied ? "Copied!" : "Share"}</span>
-              </button>
-              <SaveListingButton auctionId={auction.id} variant="button" />
-            </div>
+  const [now, setNow] = useState(initialNow);
+  const [sharing, setSharing] = useState(false);
+  const [shareMessage, setShareMessage] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30_000); return () => clearInterval(timer); }, []);
+  const availability = auctionAvailability(auction, now);
+  const possession = POSSESSION_STATUSES.find((item) => item.value === auction.possessionStatus)?.label ?? "Not provided";
+  const officerPhone = auctionContactPhone(auction.contactOfficerPhone);
+  const officerEmail = auctionContactEmail(auction.contactOfficerEmail);
+  const institutionWebsite = safeAuctionUrl(auction.organization.website);
+  const sourceUrl = safeAuctionUrl(auction.sourceListingId);
+  async function share() {
+    if (sharing) return;
+    setSharing(true); setShareMessage(""); setShareUrl("");
+    const url = `${window.location.origin}/auctions/${encodeURIComponent(auction.id)}`;
+    try {
+      if (navigator.share) { await navigator.share({ title: auction.title, url }); setShareMessage("Share options opened."); }
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(url); setShareMessage("Property link copied."); }
+      else { setShareUrl(url); setShareMessage("Copy this property link to share it."); }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === "AbortError")) { setShareUrl(url); setShareMessage("Sharing couldn’t be completed. You can copy the link below."); }
+    } finally { setSharing(false); }
+  }
+  return <div>
+    <header className="border-b border-[#e4e8ec] bg-white py-6 sm:py-8">
+      <div className="container-wide min-w-0">
+        <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap gap-2 text-xs text-[#687480]"><Link href="/">Home</Link><span aria-hidden="true">/</span><Link href="/auctions">Auctions</Link><span aria-hidden="true">/</span><span aria-current="page" className="break-words">{auction.auctionNumber}</span></nav>
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+          <div className="min-w-0"><div className="mb-3 flex flex-wrap items-center gap-2"><Badge>{auction.categoryName}</Badge><Badge>{auction.auctionType}</Badge><Badge variant={availability.canInspect ? "info" : "warning"}>{availability.title}</Badge></div>
+            <h1 className="break-words text-2xl font-semibold leading-tight text-[#182129] sm:text-3xl">{auction.title}</h1>
+            <p className="mt-3 flex items-start gap-2 text-sm text-[#687480]"><MapPin aria-hidden="true" className="h-4 w-4 shrink-0" /><span>{cityPage ? <Link href={cityPath(cityPage)} className="underline">{auction.city}</Link> : auction.city}, {auction.state}</span></p>
+            <p className="mt-2 break-words text-xs text-[#687480]">{auction.organizationName} · Notice {auction.auctionNumber}</p>
+          </div>
+          <div id="property-save" className="min-w-0 shrink-0 scroll-mt-28 space-y-2 lg:max-w-80"><div className="flex flex-wrap items-start gap-2">
+            <SaveListingButton auctionId={auction.id} propertyTitle={auction.title} variant="button" />
+            <button type="button" onClick={() => void share()} disabled={sharing} className="flex min-h-11 items-center gap-2 rounded-xl border border-[#e4e8ec] px-4 text-sm font-semibold disabled:opacity-60"><Share2 className="h-4 w-4" />{sharing ? "Sharing…" : "Share"}</button>
+          </div>
+            {shareMessage && <p role="status" className="text-xs text-[#46525d]">{shareMessage}</p>}
+            {shareUrl && <label className="block text-xs text-[#687480]">Property link<input readOnly value={shareUrl} onFocus={(event) => event.target.select()} className="mt-1 min-h-11 w-full rounded-xl border border-[#dce2e7] px-3 text-xs" /></label>}
           </div>
         </div>
       </div>
-
-      {/* Main Body */}
-      <div className="container-wide py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Left / Center Column (2 cols) */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Image Gallery */}
-            <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
-              <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
-                <img
-                  src={images[selectedImageIndex]}
-                  alt={auction.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-3 right-3 px-3 py-1 bg-black/70 backdrop-blur-xs text-white text-xs font-semibold rounded-md flex items-center gap-1.5">
-                  <Maximize2 className="h-3.5 w-3.5" />
-                  <span>Photo {selectedImageIndex + 1} of {images.length}</span>
-                </div>
-              </div>
-
-              {/* Thumbnails */}
-              {images.length > 1 && (
-                <div className="p-3 flex items-center gap-3 overflow-x-auto bg-gray-50 border-t border-border">
-                  {images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setSelectedImageIndex(idx)}
-                      className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                        selectedImageIndex === idx
-                          ? "border-primary shadow-xs ring-2 ring-primary/20"
-                          : "border-transparent opacity-70 hover:opacity-100"
-                      }`}
-                    >
-                      <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Key Information Summary Grid */}
-            <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 pb-3 border-b border-border flex items-center justify-between">
-                <span>Auction & Asset Overview</span>
-                <span className="text-xs font-normal text-gray-500">SARFAESI Ref ID: {auction.auctionNumber}</span>
-              </h2>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Reserve Price
-                  </span>
-                  <span className="text-xl font-bold text-primary font-mono tabular-nums">
-                    {formatCurrency(auction.reservePrice)}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    EMD (10%)
-                  </span>
-                  <span className="text-base font-semibold text-gray-900 font-mono tabular-nums">
-                    {formatCurrency(auction.emd)}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Bid Increment
-                  </span>
-                  <span className="text-base font-semibold text-gray-900 font-mono tabular-nums">
-                    {formatCurrency(auction.bidIncrement || 50000)}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Possession Status
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-gray-900">
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    {auction.possessionStatus}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Auction Date
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {formatDate(auction.startDateTime)}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Auction Time
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    11:00 AM – 03:00 PM
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Submission Deadline
-                  </span>
-                  <span className="text-sm font-semibold text-red-600">
-                    {formatDate(auction.submissionDeadline)} (05:00 PM)
-                  </span>
-                </div>
-
-                <div>
-                  <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-                    Built-up Area
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {auction.area ? `${auction.area.toLocaleString()} ${auction.areaUnit}` : 'Refer Notice'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Content Tabs */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-              {/* Tab Navigation */}
-              <div className="flex border-b border-border bg-gray-50 overflow-x-auto">
-                {[
-                  { id: "description", label: "Description" },
-                  { id: "location", label: "Location & Address" },
-                  { id: "terms", label: "Terms & Conditions" },
-                  { id: "documents", label: `Documents (${auction.documents.length})` },
-                  { id: "officer", label: "Auction Officer" },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                    className={`px-5 py-3.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
-                      activeTab === tab.id
-                        ? "border-primary text-primary bg-white"
-                        : "border-transparent text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab Panels */}
-              <div className="p-6">
-                {activeTab === "description" && (
-                  <div className="space-y-4">
-                    <h3 className="text-base font-bold text-gray-900">Property Details & Schedule</h3>
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                      {auction.description}
-                    </p>
-                    <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
-                      <div>
-                        <strong>Statutory Disclaimer:</strong> Bidders are strongly advised to inspect the property physically and verify the title, revenue records, society no-dues, and local municipal charges independently prior to submitting their bids.
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "location" && (
-                  <div className="space-y-4">
-                    <h3 className="text-base font-bold text-gray-900">Official Registered Address</h3>
-                    <div className="p-4 rounded-xl bg-gray-50 border border-border text-sm text-gray-800 flex items-start gap-2.5">
-                      <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-gray-900 mb-1">{auction.title}</p>
-                        <p className="text-gray-600">{auction.address}</p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          District: {auction.city} | State: {auction.state}
-                        </p>
-                        {cityPage && (
-                          <Link
-                            href={cityPath(cityPage)}
-                            className="inline-block text-xs font-semibold text-primary mt-2 hover:underline"
-                          >
-                            More about {cityPage.city} auctions, localities &amp; guidance →
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "terms" && (
-                  <div className="space-y-4 text-sm text-gray-700">
-                    <h3 className="text-base font-bold text-gray-900">E-Auction Legal Rules & Guidelines</h3>
-                    <div className="prose prose-sm max-w-none whitespace-pre-line leading-relaxed">
-                      {auction.terms}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "documents" && (
-                  <div className="space-y-3">
-                    <h3 className="text-base font-bold text-gray-900 mb-2">Downloadable Auction Documents</h3>
-                    {auction.documents.map((doc, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-gray-50 hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-                            <FileText className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <span className="block text-sm font-semibold text-gray-900">{doc.name}</span>
-                            <span className="text-xs text-gray-500">
-                              Format: PDF • File size: {doc.size}
-                            </span>
-                          </div>
-                        </div>
-                        <a
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold text-primary hover:bg-primary-50 transition-colors"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          Download
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeTab === "officer" && (
-                  <div className="space-y-4">
-                    <h3 className="text-base font-bold text-gray-900">Authorised Recovery Officer</h3>
-                    <div className="p-5 rounded-xl border border-border bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                          {auction.organization.name}
-                        </span>
-                        <h4 className="text-base font-bold text-gray-900 mt-1">{auction.contactOfficerName}</h4>
-                        <div className="mt-3 space-y-1 text-sm text-gray-600">
-                          <p className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-400" />
-                            <a href={`tel:${auction.contactOfficerPhone}`} className="hover:text-primary">
-                              {auction.contactOfficerPhone}
-                            </a>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-gray-400" />
-                            <a href={`mailto:${auction.contactOfficerEmail}`} className="hover:text-primary">
-                              {auction.contactOfficerEmail}
-                            </a>
-                          </p>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+    </header>
+    <div className="container-wide py-6 sm:py-8">
+      <div className="mb-5 rounded-xl border border-[#e4e8ec] bg-white px-4 py-3 text-xs leading-relaxed text-[#687480]">
+        <p className="break-words">Source reference: <strong>{auction.sourceListingId || "Not provided"}</strong> · Checked {auctionDate(auction.sourceVerifiedAt || "")}.</p>
+        <p>Source checks do not confirm title or current availability. Confirm changes with the auctioning authority. <Link href="/verified-information-policy" className="font-medium underline">Verification policy</Link></p>
+      </div>
+      <nav aria-label="Property sections" className="mb-5 flex gap-2 overflow-x-auto pb-1 text-sm font-medium">{[["property-overview", "Overview"], ["property-location", "Location"], ["property-documents", `Documents (${auction.documents.length})`], ["property-terms", "Terms"], ["property-officer", "Auction contact"]].map(([id, label]) => <a key={id} href={`#${id}`} className="inline-flex min-h-11 shrink-0 items-center rounded-xl border border-[#e4e8ec] bg-white px-4">{label}</a>)}</nav>
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2 lg:row-start-1"><PropertyGallery key={auction.id} images={auction.images} primaryImage={auction.primaryImage} title={auction.title} /></div>
+        <aside aria-label="Auction summary and enquiries" className={`${box} space-y-5 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto`}>
+          <div><h2 className="text-sm text-[#687480]">Reserve price</h2><p className="mt-1 break-words text-3xl font-semibold tabular-nums text-[#182129]">{auctionMoney(auction.reservePrice)}</p><p className="mt-2 break-words text-sm text-[#46525d]">EMD: <strong>{auctionMoney(auction.emd)}</strong></p><p className="mt-1 break-words text-sm text-[#46525d]">Bid increment: <strong>{auctionMoney(auction.bidIncrement)}</strong></p></div>
+          <dl className="space-y-4 border-y border-[#e4e8ec] py-4 text-sm">{[["Auction starts", auction.startDateTime], ["Auction ends", auction.endDateTime], ["Submission deadline", auction.submissionDeadline], ["Inspection in notice", auction.inspectionDate]].map(([label, value]) => <div key={label}><dt className="text-xs text-[#687480]">{label}</dt><dd className="mt-1 font-medium tabular-nums text-[#182129]">{value ? <time dateTime={value}>{auctionDate(value, true)}</time> : "Not provided"}</dd></div>)}</dl>
+          <div role="status" className={`rounded-xl border p-4 text-sm ${availability.canInspect ? "border-[#e4e8ec] bg-[#f7f9fa]" : "border-amber-200 bg-amber-50"}`}><h3 className="font-semibold text-[#182129]">{availability.title}</h3><p className="mt-1 leading-relaxed text-[#46525d]">{availability.message}</p></div>
+          <div id="property-actions" className="scroll-mt-28 space-y-3"><h2 className="font-semibold text-[#182129]">Ask about this property</h2>
+            <PropertyRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} kind="contact" />
+            {availability.canInspect ? <InspectionRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} submissionDeadline={auction.submissionDeadline} /> : <p className="text-xs leading-relaxed text-[#687480]">New inspection requests are unavailable for this notice. You can still contact the team or save it for reference.</p>}
           </div>
-
-          {/* Right Column: Sticky Bidding & Action Card */}
-          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-            {/* Live Countdown Card */}
-            {timeLeft && (
-              <div className="bg-gradient-to-br from-primary-800 to-primary-900 text-white rounded-2xl p-5 shadow-lg border border-primary-700">
-                <div className="flex items-center gap-2 text-xs font-semibold text-accent uppercase tracking-wider mb-3">
-                  <Clock className="h-4 w-4" />
-                  <span>Auction Commences In</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  <div className="bg-white/10 rounded-xl p-2">
-                    <span className="block text-2xl font-bold font-mono">{timeLeft.days}</span>
-                    <span className="text-[10px] text-primary-200 uppercase">Days</span>
-                  </div>
-                  <div className="bg-white/10 rounded-xl p-2">
-                    <span className="block text-2xl font-bold font-mono">{timeLeft.hours}</span>
-                    <span className="text-[10px] text-primary-200 uppercase">Hours</span>
-                  </div>
-                  <div className="bg-white/10 rounded-xl p-2">
-                    <span className="block text-2xl font-bold font-mono">{timeLeft.minutes}</span>
-                    <span className="text-[10px] text-primary-200 uppercase">Mins</span>
-                  </div>
-                  <div className="bg-white/10 rounded-xl p-2">
-                    <span className="block text-2xl font-bold font-mono">{timeLeft.seconds}</span>
-                    <span className="text-[10px] text-primary-200 uppercase">Secs</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Bidding Participation Card */}
-            <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
-              <div className="mb-4">
-                <span className="text-xs text-gray-500 uppercase tracking-wider block font-medium">
-                  Current Reserve Price
-                </span>
-                <span className="text-2xl font-bold text-primary font-mono tabular-nums block mt-1">
-                  {formatCurrency(auction.reservePrice)}
-                </span>
-                <span className="text-xs text-gray-500 mt-1 block">
-                  Mandatory EMD: <strong>{formatCurrency(auction.emd)}</strong>
-                </span>
-              </div>
-
-              <div id="property-actions" className="scroll-mt-24 space-y-3 pt-4 border-t border-border">
-                <p className="text-sm text-gray-600">
-                  Online bidding and EMD payments are coming soon. Contact our team for help with participation.
-                </p>
-                <PropertyRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} kind="contact" />
-
-                <InspectionRequest auctionId={auction.id} auctionNumber={auction.auctionNumber} />
-              </div>
-
-              {/* Institution badge */}
-              <div className="mt-6 pt-4 border-t border-border flex items-center gap-3">
-                {auction.organization.logo && (
-                  <img
-                    src={auction.organization.logo}
-                    alt={auction.organization.name}
-                    className="w-10 h-10 rounded-lg object-cover border border-border"
-                  />
-                )}
-                <div>
-                  <span className="text-[11px] text-gray-400 uppercase tracking-wider block">Lender / Institution</span>
-                  <span className="text-xs font-bold text-gray-900 block">{auction.organization.name}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Participation guidance */}
-            <div className="bg-gray-50 rounded-2xl border border-border p-5 space-y-3 text-xs text-gray-600">
-              <div className="flex items-start gap-2.5">
-                <ShieldAlert className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <span>
-                  <strong>Check the auction notice:</strong> Confirm the source, dates and participation requirements with the auctioning authority.
-                </span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                <span>
-                  <strong>EMD and refunds:</strong> Follow the payment instructions and refund terms in the official auction notice.
-                </span>
-              </div>
-            </div>
-          </div>
+          <p className="border-t border-[#e4e8ec] pt-4 text-xs leading-relaxed text-[#687480]">Submit bids and EMD payments through the official process in the auction notice. CityAuction does not accept bids or EMD payments on this page.</p>
+        </aside>
+        <div className="min-w-0 space-y-6 lg:col-span-2 lg:row-start-2">
+          <section id="property-overview" className={`${box} ${section}`}><h2 className={heading}>Property overview</h2>
+            <dl className="mb-5 grid grid-cols-1 gap-4 border-b border-[#e4e8ec] pb-5 sm:grid-cols-2"><div><dt className="text-xs text-[#687480]">Property type</dt><dd className="mt-1 text-sm font-medium">{auction.categoryName || "Not provided"}</dd></div><div><dt className="text-xs text-[#687480]">Possession</dt><dd className="mt-1 text-sm font-medium">{possession}</dd></div><div><dt className="text-xs text-[#687480]">Area in notice</dt><dd className="mt-1 text-sm font-medium">{Number.isFinite(auction.area) && auction.area > 0 ? `${auction.area.toLocaleString("en-IN")} ${auction.areaUnit || "(unit not provided)"}` : "Not provided"}</dd></div></dl>
+            <p className="whitespace-pre-line break-words text-sm leading-relaxed text-[#46525d]">{auction.description.trim() || "A property description has not been supplied. Refer to the official notice or contact the team."}</p>
+          </section>
+          <section id="property-location" className={`${box} ${section}`}><h2 className={heading}>Location & address</h2><p className="whitespace-pre-line break-words text-sm leading-relaxed text-[#46525d]">{auction.address.trim() || "The full property address has not been supplied. Confirm it before planning a visit."}</p><p className="mt-3 text-sm text-[#687480]">{auction.city}, {auction.state}</p>{cityPage && <Link href={cityPath(cityPage)} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[#84663c] underline">Explore {cityPage.city} auctions</Link>}</section>
+          <section id="property-documents" className={`${box} ${section}`}><h2 className={heading}>Auction documents</h2><p className="mb-4 text-xs leading-relaxed text-[#687480]">Open the official notice and check for amendments before participating. Documents open in a new tab.</p>
+            {auction.documents.length ? <ul className="space-y-3">{auction.documents.map((doc, index) => {
+              const href = safeAuctionUrl(doc.url);
+              return <li key={`${doc.name}-${index}`} className="flex flex-col justify-between gap-3 rounded-xl border border-[#e4e8ec] p-4 sm:flex-row sm:items-center"><div className="flex min-w-0 items-start gap-3"><FileText aria-hidden="true" className="h-5 w-5 shrink-0 text-[#84663c]" /><div className="min-w-0"><h3 className="break-words text-sm font-semibold">{doc.name || "Auction document"}</h3>{doc.size && <p className="mt-1 text-xs text-[#687480]">File size: {doc.size}</p>}</div></div>{href ? <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${doc.name || "auction document"} (new tab)`} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#dce2e7] px-4 text-sm font-semibold">Open document<ArrowUpRight className="h-4 w-4" /></a> : <p className="text-xs text-[#687480]">Document link unavailable. Ask the team for a copy.</p>}</li>;
+            })}</ul> : <p className="text-sm text-[#687480]">No public documents have been supplied. Ask the team for the current auction notice.</p>}
+            {sourceUrl && <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#84663c] underline">Open source reference<ArrowUpRight className="h-4 w-4" /></a>}
+          </section>
+          <section id="property-terms" className={`${box} ${section}`}><h2 className={heading}>Terms & conditions</h2><p className="whitespace-pre-line break-words text-sm leading-relaxed text-[#46525d]">{auction.terms.trim() || "Terms have not been supplied here. The selling institution’s current auction notice governs participation."}</p><p className="mt-4 rounded-xl bg-[#f7f9fa] p-4 text-xs leading-relaxed text-[#687480]">Inspect the property and independently check title, possession, dues and charges before bidding. Confirm payment and refund instructions directly with the selling institution.</p></section>
+          <section id="property-officer" className={`${box} ${section}`}><h2 className={heading}>Auction contact</h2><p className="break-words text-sm font-semibold">{auction.organization.name}</p>{auction.contactOfficerName && <p className="mt-2 break-words text-sm text-[#46525d]">{auction.contactOfficerName}</p>}
+            <div className="mt-3 flex flex-col items-start gap-2">{officerPhone && <a href={`tel:${officerPhone}`} className="inline-flex min-h-11 items-center break-all text-sm font-medium text-[#84663c] underline">{auction.contactOfficerPhone}</a>}{officerEmail && <a href={`mailto:${officerEmail}`} className="inline-flex min-h-11 items-center break-all text-sm font-medium text-[#84663c] underline">{officerEmail}</a>}{!officerPhone && !officerEmail && <p className="text-sm text-[#687480]">Officer contact details have not been supplied. Use Contact team for help.</p>}{institutionWebsite && <a href={institutionWebsite} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#84663c] underline">Institution website<ArrowUpRight className="h-4 w-4" /></a>}</div>
+          </section>
+          <Link href="/auctions" className="inline-flex min-h-11 items-center text-sm font-semibold text-[#84663c] underline">Back to all auctions</Link>
         </div>
       </div>
-
     </div>
-  );
+  </div>;
 }
