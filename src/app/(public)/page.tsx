@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, Factory, Handshake, Heart, Home, ListChecks, Mail, MapPin, MapPinned, Package, Phone, Search, ShieldCheck, Target, Tractor } from "lucide-react";
 import { HomeSearch } from "@/components/home/home-search";
-import { HomeEnquiryForm } from "@/components/home/home-enquiry";
+import { CrmHomeEnquiry as HomeEnquiryForm } from "@/components/forms/crm-form";
 import { HOME_ASSETS, HOME_SERVICES, HOME_STEPS } from "@/content/homepage";
 import { cardClass } from "@/components/ui/styles";
 
@@ -113,7 +113,7 @@ export default function HomePage() {
     <section id="contact" className={`${section} bg-[#f8fafb]`} aria-labelledby="contact-section-heading">
       <div className={container}>
         <div className="mb-7"><p className={eyebrow}>Contact CityAuction</p><h2 id="contact-section-heading" className={heading}>Let’s talk about your next step.</h2><p className="mt-3 text-sm text-[#687480]">For buying, selling or getting expert support.</p></div>
-        <div className="grid overflow-hidden rounded-3xl border border-[#e4e8ec] bg-white shadow-[0_12px_48px_-28px_rgba(24,33,41,.2)] lg:grid-cols-[.85fr_1.15fr]">
+        <div className="grid rounded-3xl border border-[#e4e8ec] bg-white shadow-[0_12px_48px_-28px_rgba(24,33,41,.2)]">
           <aside className="bg-[#132330] p-6 text-white sm:p-8 lg:p-10" aria-label="Contact details">
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#d9c39c]">CityAuction</p><h3 className="mt-3 text-2xl font-semibold tracking-tight">A person to help you move forward.</h3><p className="mt-3 max-w-sm text-sm leading-relaxed text-[#c3ced6]">Auction support, asset sales and business opportunities.</p>
             <div className="mt-8 space-y-6">

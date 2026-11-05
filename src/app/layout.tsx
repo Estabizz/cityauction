@@ -105,6 +105,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${manrope.variable} h-full`}
     >

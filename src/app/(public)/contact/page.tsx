@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAuctionById } from "@/services/auction.service";
 import { AuctionDataUnavailable } from "@/lib/public-auctions";
-import { ContactForm } from "@/components/forms/contact-form";
+import { CrmContactForm as ContactForm } from "@/components/forms/crm-form";
 
 export const metadata: Metadata = {
   title: "Contact Us | CityAuction",
@@ -193,8 +193,8 @@ export default async function ContactPage({ searchParams }: {
       {/* Contact Form Section */}
       <section className="estabizz-section bg-[#f6f2ea]" id="contact-form">
         <div className="estabizz-container">
-          <div className="nc-cta" style={{ background: "radial-gradient(circle at 78% 15%,rgba(180,147,97,.16),transparent 24%), linear-gradient(145deg,#0f1921,#152833)" }}>
-            <div className="max-w-xl text-white">
+          <div className="nc-cta" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", background: "radial-gradient(circle at 78% 15%,rgba(180,147,97,.16),transparent 24%), linear-gradient(145deg,#0f1921,#152833)" }}>
+            <div className="w-full min-w-0 text-white">
               <div className="eyebrow-text !text-[#d9c39c]">Contact details</div>
               <h2 className="font-serif-heading text-white mt-3" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, lineHeight: 1.15 }}>
                 Start with the Situation.
@@ -203,7 +203,7 @@ export default async function ContactPage({ searchParams }: {
                 Share enough context for us to route the enquiry to the right CityAuction desk.
               </p>
 
-              <div className="mt-8 space-y-4">
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="pb-3 border-b border-white/10">
                   <small className="text-xs uppercase text-[#cdb187] font-bold">Phone</small>
                   <strong className="block text-white mt-1">
@@ -245,7 +245,7 @@ export default async function ContactPage({ searchParams }: {
               </div>
             </div>
 
-            <div>
+            <div className="w-full min-w-0">
               <ContactForm key={listing?.id || initialSubject} listing={listing} listingUnavailable={listingUnavailable} initialSubject={initialSubject} />
             </div>
           </div>

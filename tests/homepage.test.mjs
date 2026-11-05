@@ -80,7 +80,7 @@ test("homepage has one primary heading, unique field IDs and working section anc
   const html = pageMarkup();
   assert.equal((html.match(/<h1\b/g) || []).length, 1);
   assert.doesNotMatch(html, /<main\b/); // The public layout supplies the main landmark.
-  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+  const ids = [...html.matchAll(/(?:^|\s)id="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length);
   for (const match of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(match[1]), `Missing section ${match[1]}`);
   for (const match of html.matchAll(/for="([^"]+)"/g)) assert.ok(ids.includes(match[1]), `Missing field ${match[1]}`);
@@ -91,8 +91,8 @@ test("homepage omits unsupported inventory totals, false deadline filters and du
   const html = pageMarkup();
   assert.doesNotMatch(html, /12,000|100\+|5,000|1 business day|production feed|fabricated urgency|View EMD Deadlines|View Inspection Deadlines|Customs Lot Discovery/);
   assert.doesNotMatch(html, /subscribe-section-email/);
-  assert.match(html, /home-contact-message/);
-  assert.match(html, /Property, location and how we can help\./);
+  assert.match(html, /inline-S7nLTeZoR7PYkJSwN7tA/);
+  assert.match(html, /CA \| Contact Us and Enquiry Routing/);
   assert.doesNotMatch(html, /Tell us what you are looking for, what asset\/project/);
 });
 
