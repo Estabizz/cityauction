@@ -28,8 +28,18 @@ and does not require a database migration or admin seed.
 - Multi-keyword search requires each meaningful token in a question/answer.
   A single keyword can also match its topic. Common abbreviations such as
   EMD, KYC and DSC have equivalent search terms. Title matches rank first.
-- Individual answer URLs, e.g. `?question=faq-2505#faq-2505`, locate the right
-  topic/page and open the requested answer, overriding stale filters.
+- Clean URLs (slugs in `urls.json`, allocated by `scripts/generate-faq-urls.py`):
+  - answers: `/resources/faqs/<question-slug>` — one question per page, with
+    previous/next links within its topic and related questions;
+  - topics: `/resources/faqs/topics/<topic-slug>`;
+  - categories: `/resources/faqs/categories/<category-slug>`.
+  Topic/category pages have their own heading, breadcrumb and canonical URL.
+  Slugs are permanent once allocated: re-running the script after copy edits
+  keeps existing slugs and only adds new ones. Never rename a published slug.
+- Legacy query links (`?question=`, `?topic=`, `?group=`) get an HTTP 308
+  from `src/proxy.ts` to the clean URL, keeping any search and page filters.
+- Answer pages render on request (`force-dynamic`); the build does not
+  prerender 2,505 pages. The sitemap lists every answer, topic and category.
 - Accordion state uses stable source IDs; each results change resets state.
   Buttons expose expanded/controlled-region relationships and visible focus.
 - Desktop category navigation is sticky with its own bounded overflow.

@@ -1,6 +1,8 @@
 import "server-only";
 import library from "@/content/faqs/library.json";
 import type { FaqFilters, FaqResultItem } from "./faq-types";
+import { faqHref, faqQuestionPath } from "./faq-urls";
+export { faqHref } from "./faq-urls";
 
 export const FAQ_PAGE_SIZE = 20;
 export const FAQ_SOURCE = library.source;
@@ -22,11 +24,27 @@ const index = library.items.map(item => ({ item, title: normalise(item.question)
 const STOP_WORDS = new Set(["a", "an", "the", "is", "are", "of", "to", "i", "can", "how", "what", "does", "do", "for", "in", "and", "my", "should"]);
 const ALIASES: Record<string, string[]> = { emd: ["emd", "earnest money deposit"], kyc: ["kyc", "know your customer"], dsc: ["dsc", "digital signature"], nri: ["nri", "non resident"], gst: ["gst", "goods and services tax"], tds: ["tds", "tax deducted"] };
 
-export function faqHref(values: Partial<FaqFilters> = {}, anchor = ""): string {
-  const params = new URLSearchParams();
-  for (const key of ["q", "group", "topic", "question"] as const) if (values[key]) params.set(key, String(values[key]));
-  if (values.page && values.page > 1) params.set("page", String(values.page));
-  return `/resources/faqs${params.size ? `?${params}` : ""}${anchor ? `#${anchor}` : ""}`;
+export function getFaq(id: string) {
+  const item = itemById.get(id);
+  if (!item) return null;
+  const topic = topicById.get(item.topicId)!;
+  return { ...item, topic: topic.title, href: faqQuestionPath(item.id)!, topicRecord: topic };
+}
+
+/** Previous/next questions in the same topic, in source order. */
+export function getFaqNeighbours(id: string) {
+  const item = itemById.get(id);
+  if (!item) return { previous: null, next: null };
+  const siblings = library.items.filter(row => row.topicId === item.topicId);
+  const at = siblings.findIndex(row => row.id === id);
+  const link = (row: typeof item | undefined) => row ? { id: row.id, number: row.number, question: row.question, href: faqQuestionPath(row.id)! } : null;
+  return { previous: link(siblings[at - 1]), next: link(siblings[at + 1]) };
+}
+
+export function faqSitemapPaths() {
+  return [...library.items.map(item => faqHref({ question: item.id })),
+    ...FAQ_TOPICS.map(topic => faqHref({ topic: topic.id })),
+    ...FAQ_GROUPS.map(group => faqHref({ group: group.id }))];
 }
 
 export function findFaqs(params: Record<string, string | string[] | undefined> = {}) {
@@ -51,7 +69,7 @@ export function findFaqs(params: Record<string, string | string[] | undefined> =
   const requestedPage = /^[1-9]\d{0,5}$/.test(get("page")) ? Number(get("page")) : 1;
   const page = selected ? Math.floor(filtered.findIndex(row => row.item.id === selected.id) / FAQ_PAGE_SIZE) + 1 : Math.min(requestedPage, pageCount);
   const filters: FaqFilters = { q: selected ? "" : q, group, topic, page, question: selected?.id || "" };
-  const items: FaqResultItem[] = filtered.slice((page - 1) * FAQ_PAGE_SIZE, page * FAQ_PAGE_SIZE).map(row => ({ ...row.item, topic: topicById.get(row.item.topicId)!.title }));
+  const items: FaqResultItem[] = filtered.slice((page - 1) * FAQ_PAGE_SIZE, page * FAQ_PAGE_SIZE).map(row => ({ ...row.item, topic: topicById.get(row.item.topicId)!.title, href: faqQuestionPath(row.item.id)! }));
   return { filters, items, counts, total: filtered.length, allMatches: searched.length, pageCount,
     from: filtered.length ? (page - 1) * FAQ_PAGE_SIZE + 1 : 0, to: Math.min(page * FAQ_PAGE_SIZE, filtered.length),
     topicOptions: FAQ_TOPICS.filter(value => !group || value.groupId === group) };

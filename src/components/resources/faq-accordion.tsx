@@ -33,7 +33,7 @@ export function FaqAccordion({ items, selectedQuestion = "" }: { items: FaqResul
             </h3>
             <div id={`${faq.id}-answer`} role="region" aria-labelledby={`${faq.id}-question`} hidden={!isOpen} className="border-t border-gray-100 px-5 py-5 sm:px-6">
               <p className="text-sm leading-7 text-gray-600 break-words">{faq.answer}</p>
-              <Link href={`/resources/faqs?question=${faq.id}#${faq.id}`} className="mt-4 inline-flex items-center gap-1.5 rounded text-xs font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4" aria-label={`Link to answer ${faq.number}: ${faq.question}`}>
+              <Link href={faq.href} className="mt-4 inline-flex items-center gap-1.5 rounded text-xs font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4" aria-label={`Link to answer ${faq.number}: ${faq.question}`}>
                 <Link2 className="h-3.5 w-3.5" aria-hidden="true" /> Link to this answer <span className="text-gray-400">· Q{faq.number}</span>
               </Link>
             </div>

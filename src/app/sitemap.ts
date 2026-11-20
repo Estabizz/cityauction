@@ -3,6 +3,8 @@ import { getPublicAuctionSitemapEntries } from '@/services/auction.service';
 import { PROPERTY_CATEGORIES } from '@/lib/constants';
 import { CITY_PAGES } from '@/content/cities';
 import { cityPath, getStateGroups, statePath } from '@/content/cities/states';
+import { faqSitemapPaths } from '@/lib/faq-library';
+import { faqAbsoluteUrl } from '@/lib/faq-urls';
 
 export const dynamic = "force-dynamic";
 
@@ -54,5 +56,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...statePages, ...cityPages, ...categoryPages, ...auctionPages];
+  const faqPages: MetadataRoute.Sitemap = faqSitemapPaths().map(path => ({
+    url: faqAbsoluteUrl(path), changeFrequency: 'monthly', priority: 0.5,
+  }));
+  return [...staticPages, ...statePages, ...cityPages, ...categoryPages, ...auctionPages, ...faqPages];
 }

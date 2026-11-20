@@ -1,11 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE_NAME, isAdmin, verifyToken } from "@/lib/session-token";
+import { legacyFaqRedirect } from "@/lib/faq-urls";
 
 // Gate the private areas before they render:
 // - /admin/** and /api/admin/** need an ADMIN or SUPER_ADMIN session
 // - /dashboard/** and /api/user/** need any signed-in session
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  // Public FAQ redirects run before any session gate. Keep shared query links
+  // as real HTTP 308s, even though the FAQ index page uses a loading/streaming boundary.
+  if (pathname === "/resources/faqs") {
+    const destination = legacyFaqRedirect(request.nextUrl.searchParams);
+    return destination
+      ? NextResponse.redirect(new URL(destination, request.url), 308)
+      : NextResponse.next();
+  }
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const session = token ? await verifyToken(token) : null;
 
@@ -34,5 +43,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*", "/api/admin/:path*", "/api/user/:path*"],
+  matcher: ["/admin/:path*", "/dashboard/:path*", "/api/admin/:path*", "/api/user/:path*", "/resources/faqs"],
 };
