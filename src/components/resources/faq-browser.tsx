@@ -1,27 +1,22 @@
 import Link from "next/link";
-import type { Metadata } from "next";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Phone, Search, ShieldCheck } from "lucide-react";
 import { FaqAccordion } from "@/components/resources/faq-accordion";
 import { FAQ_GROUPS, FAQ_SOURCE, FAQ_STARTERS, FAQ_TOPICS, faqHref, findFaqs } from "@/lib/faq-library";
 
-type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const result = findFaqs(await searchParams);
-  const title = result.filters.topic ? FAQ_TOPICS.find(topic => topic.id === result.filters.topic)?.title : FAQ_GROUPS.find(group => group.id === result.filters.group)?.title;
-  return {
-    title: title ? `${title} FAQs` : "Frequently Asked Questions",
-    description: "Explore 2,505 auction questions across 78 topics: EMD, bidding, title checks, possession, finance, taxes, liquidation and other assets.",
-    alternates: { canonical: faqHref({ group: result.filters.group, topic: result.filters.topic, page: result.filters.page }) },
-    robots: result.filters.q ? { index: false, follow: true } : { index: true, follow: true },
-  };
-}
+import type { FaqSearchParams } from "@/lib/faq-types";
 
-export default async function FaqsPage({ searchParams }: Props) {
-  const result = findFaqs(await searchParams);
+const FAQ_SCOPE_NOTE = "Search within this section or open any answer for its own page.";
+
+export function FaqBrowser({ params }: { params: FaqSearchParams }) {
+  const result = findFaqs(params);
   const { filters, items, counts, total, from, to, pageCount, topicOptions } = result;
   const selectedTopic = FAQ_TOPICS.find(topic => topic.id === filters.topic);
   const selectedGroup = FAQ_GROUPS.find(group => group.id === filters.group);
   const isFiltered = Boolean(filters.q || filters.group || filters.topic);
+  // Topic and category routes get their own heading and breadcrumb trail.
+  const scope = selectedTopic
+    ? { title: selectedTopic.title, description: `${selectedTopic.count} questions${selectedGroup ? ` in ${selectedGroup.title}` : ""}. ${FAQ_SCOPE_NOTE}` }
+    : selectedGroup ? { title: selectedGroup.title, description: `${selectedGroup.description}. ${FAQ_SCOPE_NOTE}` } : null;
   const navigation = { q: filters.q, group: filters.group, topic: filters.topic };
   const pageNumbers = [...new Set([1, filters.page - 1, filters.page, filters.page + 1, pageCount])].filter(page => page >= 1 && page <= pageCount).sort((a, b) => a - b);
 
@@ -32,13 +27,17 @@ export default async function FaqsPage({ searchParams }: Props) {
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-6">
             <Link href="/" className="hover:text-primary">Home</Link><span aria-hidden="true">/</span>
             <Link href="/resources" className="hover:text-primary">Resources</Link><span aria-hidden="true">/</span>
-            <span aria-current="page" className="text-gray-900">FAQs</span>
+            {scope ? <>
+              <Link href="/resources/faqs" className="hover:text-primary">FAQs</Link><span aria-hidden="true">/</span>
+              {selectedTopic && selectedGroup && <><Link href={faqHref({ group: selectedGroup.id })} className="hover:text-primary">{selectedGroup.title}</Link><span aria-hidden="true">/</span></>}
+              <span aria-current="page" className="text-gray-900">{scope.title}</span>
+            </> : <span aria-current="page" className="text-gray-900">FAQs</span>}
           </nav>
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-3xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent mb-3">CityAuction help centre</p>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Frequently asked questions</h1>
-              <p className="mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-gray-600">Understand the auction process, check the risks and plan your next step. Find guidance from your first search to taking ownership.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent mb-3">{scope ? "CityAuction FAQs" : "CityAuction help centre"}</p>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">{scope ? `${scope.title}: frequently asked questions` : "Frequently asked questions"}</h1>
+              <p className="mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-gray-600">{scope ? scope.description : "Understand the auction process, check the risks and plan your next step. Find guidance from your first search to taking ownership."}</p>
             </div>
             <div className="flex shrink-0 items-center gap-6 text-sm">
               <div><strong className="block text-2xl font-semibold text-primary">{FAQ_SOURCE.questionCount.toLocaleString("en-IN")}</strong><span className="text-xs text-gray-500">Questions answered</span></div>

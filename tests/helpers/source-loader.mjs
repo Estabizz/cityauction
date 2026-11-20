@@ -26,6 +26,7 @@ export function loadSource(relativePath, mocks = {}, globals = {}) {
         ? path.join(root, "src", id.slice(2))
         : id.startsWith(".") ? path.resolve(path.dirname(filename), id) : null;
       if (!local) return nativeRequire(id);
+      if (local.endsWith(".json")) return JSON.parse(fs.readFileSync(local, "utf8"));
       if (/[/\\]services[/\\](bidding|payment)\.service$/.test(local) || local === path.join(root, "src/lib/db")) {
         throw new Error(`Unexpected infrastructure dependency: ${id}`);
       }
